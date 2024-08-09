@@ -149,6 +149,24 @@ public abstract class EventStoreTests
                 }));
             }
         }
+
+        public class AppendingMultipleEvents : EventStoreTests
+        {
+            [Test]
+            public async Task allows_to_read_the_stream()
+            {
+                var evt1 = AnEvent();
+                var evt2 = AnEvent();
+                var evt3 = AnEvent();
+                var events = new List<EventData>{evt1, evt2, evt3};
+
+                await _eventStore.AppendAsync("stream-id", events);
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                Assert.That(readStreamResult.ToList(), Is.EqualTo(events));
+            }
+        }
     }
 
 

@@ -107,4 +107,12 @@ public class EventStore
 
         await command.ExecuteNonQueryAsync();
     }
+
+    public async Task AppendAsync(string streamId, List<EventData> events)
+    {
+        foreach (var evt in events)
+        {
+            await AppendAsync(streamId, evt);
+        }
+    }
 }
