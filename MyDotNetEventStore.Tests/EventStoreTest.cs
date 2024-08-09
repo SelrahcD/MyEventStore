@@ -131,6 +131,28 @@ public abstract class EventStoreTests
 
     }
 
+    public class AppendingEvents : EventStoreTests
+    {
+        public class AppendingOneEvent : EventStoreTests
+        {
+            [Test]
+            public async Task allows_to_read_the_stream()
+            {
+                var evt1 = AnEvent();
+                await _eventStore.AppendAsync("stream-id", evt1);
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
+                {
+                    evt1,
+                }));
+            }
+        }
+    }
+
+
+
     private EventData AnEvent()
     {
         var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
