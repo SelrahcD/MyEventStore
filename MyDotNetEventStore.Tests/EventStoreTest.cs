@@ -108,6 +108,25 @@ public abstract class EventStoreTests
                     evt3
                 }));
             }
+
+            [Test]
+            public async Task doesnt_return_events_appended_to_another_stream()
+            {
+                var evtInStream = AnEvent();
+                var evtInAnotherStream = AnEvent();
+
+                await _eventStore.AppendAsync("stream-id", evtInStream);
+                await _eventStore.AppendAsync("another-stream-id", evtInAnotherStream);
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                var readEvents = readStreamResult.ToList();
+
+                Assert.That(readEvents, Is.EqualTo(new List<EventData>
+                {
+                    evtInStream,
+                }));
+            }
         }
 
     }
