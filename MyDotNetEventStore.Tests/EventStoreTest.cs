@@ -110,9 +110,7 @@ public abstract class EventStoreTests
     {
         var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
 
-        var eventType = SelectRandom(fakeEventTypes);
-
-        return new EventData(eventType);
+        return new EventData(SelectRandom(fakeEventTypes));
     }
 
     private static T SelectRandom<T>(List<T> elements)
