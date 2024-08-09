@@ -115,7 +115,7 @@ public abstract class EventStoreTests
         return new EventData(eventType);
     }
 
-    private static string SelectRandom(List<string> elements)
+    private static T SelectRandom<T>(List<T> elements)
     {
         var random = new Random();
         var randomIndex = random.Next(elements.Count);
