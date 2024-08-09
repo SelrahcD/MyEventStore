@@ -3,7 +3,8 @@ using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
 
-public class EventStoreTests
+[TestFixture]
+public abstract class EventStoreTests
 {
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
         .Build();
@@ -43,19 +44,22 @@ public class EventStoreTests
         }
     }
 
-
-    public class Reading_a_stream
+    public class ReadingAStream : EventStoreTests
     {
 
-        [Test]
-        public void returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound_when_stream_doesnt_exist()
+        public class WhenTheStreamDoesntExists
         {
-            var eventStore = new EventStore();
+            [Test]
+            public void returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
+            {
+                var eventStore = new EventStore();
 
-            var readStreamResult = eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+                var readStreamResult = eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
-            Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
+                Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
+            }
         }
+
     }
     
 }
