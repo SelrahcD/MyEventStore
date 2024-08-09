@@ -13,7 +13,8 @@ public class ConcurrencyException: Exception
 public enum StreamState
 {
     NoStream,
-    Any
+    Any,
+    StreamExists
 }
 
 public class ReadStreamResult : IEnumerable<EventData>
@@ -114,14 +115,19 @@ public class EventStore
     public async Task AppendAsync(string streamId, EventData evt, StreamState streamState =  StreamState.Any)
     {
 
-        if (streamState == StreamState.NoStream)
+        if (streamState == StreamState.NoStream || streamState == StreamState.StreamExists)
         {
             var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
             checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
 
-            if (await checkStreamCommand.ExecuteScalarAsync() != null)
+            var streamExists = await checkStreamCommand.ExecuteScalarAsync() != null;
+
+            switch (streamExists)
             {
-                throw new ConcurrencyException($"Stream '{streamId}' already exists.");
+                case true when streamState == StreamState.NoStream:
+                    throw new ConcurrencyException($"Stream '{streamId}' already exists.");
+                case false when streamState == StreamState.StreamExists:
+                    throw new ConcurrencyException($"Stream '{streamId}' doesn't exists.");
             }
         }
 

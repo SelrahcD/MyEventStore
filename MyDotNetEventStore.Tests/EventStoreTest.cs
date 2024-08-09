@@ -182,6 +182,30 @@ public abstract class EventStoreTests
                 }
 
                 [TestFixture]
+                public class WithStreamStateStreamExists : EventStoreTests
+                {
+                    [Test]
+                    public async Task Doesnt_allow_to_write_to_an_non_existing_stream()
+                    {
+                        var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                            await _eventStore.AppendAsync("a-non-existing-id", AnEvent(), StreamState.StreamExists));
+
+                        Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
+                    }
+
+                    [Test]
+                    public async Task Allows_to_write_to_an_existing_stream()
+                    {
+                        await _eventStore.AppendAsync("stream-id", AnEvent());
+
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("stream-id", AnEvent(), StreamState.StreamExists);
+                        });
+                    }
+                }
+
+                [TestFixture]
                 public class WithStreamStateAny : EventStoreTests
                 {
                     [Test]
