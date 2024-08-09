@@ -149,29 +149,36 @@ public abstract class EventStoreTests
                 }));
             }
 
-            public class PerformsConcurrencyChecks : EventStoreTests
+            [TestFixture]
+            public class PerformsConcurrencyChecks
             {
-                [Test]
-                public async Task Doesnt_allow_to_write_to_an_existing_stream_if_StreamState_NoStream_is_specified()
+
+                [TestFixture]
+                public class WithStreamStateNoStream : EventStoreTests
                 {
-                    await _eventStore.AppendAsync("stream-id", AnEvent());
-
-                    var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("stream-id", AnEvent(), StreamState.NoStream));
-
-                    Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
-                }
-
-                [Test]
-                public Task Allows_to_write_to_a_non_existing_stream_if_StreamState_NoStream_is_specified()
-                {
-                    Assert.DoesNotThrowAsync(async () =>
+                    [Test]
+                    public async Task Doesnt_allow_to_write_to_an_existing_stream()
                     {
-                        await _eventStore.AppendAsync("a-non-existing-id", AnEvent(), StreamState.NoStream);
-                    });
+                        await _eventStore.AppendAsync("stream-id", AnEvent());
 
-                    return Task.CompletedTask;
+                        var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                            await _eventStore.AppendAsync("stream-id", AnEvent(), StreamState.NoStream));
+
+                        Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
+                    }
+
+                    [Test]
+                    public Task Allows_to_write_to_a_non_existing_stream()
+                    {
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("a-non-existing-id", AnEvent(), StreamState.NoStream);
+                        });
+
+                        return Task.CompletedTask;
+                    }
                 }
+
             }
         }
 
