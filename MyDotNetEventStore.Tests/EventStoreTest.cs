@@ -4,7 +4,6 @@ using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
 
-[TestFixture]
 public abstract class EventStoreTests
 {
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
@@ -61,6 +60,7 @@ public abstract class EventStoreTests
         await _connection.CloseAsync();
     }
 
+    [TestFixture]
     public class ReadingAStream : EventStoreTests
     {
 
@@ -131,8 +131,10 @@ public abstract class EventStoreTests
 
     }
 
-    public class AppendingEvents : EventStoreTests
+    [TestFixture]
+    public class AppendingEvents
     {
+        [TestFixture]
         public class AppendingOneEvent : EventStoreTests
         {
             [Test]
@@ -182,6 +184,7 @@ public abstract class EventStoreTests
             }
         }
 
+        [TestFixture]
         public class AppendingMultipleEvents : EventStoreTests
         {
             [Test]
