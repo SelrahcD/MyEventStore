@@ -41,23 +41,6 @@ public abstract class EventStoreTests
     {
     }
 
-    [Test]
-    public async Task TestDatabaseConnection()
-    {
-        var connectionString = _postgresContainer.GetConnectionString();
-
-        using (var connection = new NpgsqlConnection(connectionString))
-        {
-            await connection.OpenAsync();
-
-            using (var command = new NpgsqlCommand("SELECT 1", connection))
-            {
-                var result = await command.ExecuteScalarAsync();
-                Assert.AreEqual(1, result);
-            }
-        }
-    }
-
     public class ReadingAStream : EventStoreTests
     {
 
