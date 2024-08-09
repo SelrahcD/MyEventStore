@@ -108,12 +108,17 @@ public abstract class EventStoreTests
 
     private EventData AnEvent()
     {
-        var random = new Random();
         var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
-        var randomIndex = random.Next(fakeEventTypes.Count);
 
-        var eventType = fakeEventTypes[randomIndex];
+        var eventType = SelectRandom(fakeEventTypes);
+
         return new EventData(eventType);
     }
-    
+
+    private static string SelectRandom(List<string> elements)
+    {
+        var random = new Random();
+        var randomIndex = random.Next(elements.Count);
+        return elements[randomIndex];
+    }
 }
