@@ -89,17 +89,23 @@ public abstract class EventStoreTests
             }
 
             [Test]
-            public async Task returns_all_events_appended_to_the_stream()
+            public async Task returns_all_events_appended_to_the_stream_in_order()
             {
-                var evt = AnEvent();
+                var evt1 = AnEvent();
+                var evt2 = AnEvent();
+                var evt3 = AnEvent();
 
-                await _eventStore.AppendAsync("stream-id", evt);
+                await _eventStore.AppendAsync("stream-id", evt1);
+                await _eventStore.AppendAsync("stream-id", evt2);
+                await _eventStore.AppendAsync("stream-id", evt3);
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
                 {
-                    evt
+                    evt1,
+                    evt2,
+                    evt3
                 }));
             }
         }
