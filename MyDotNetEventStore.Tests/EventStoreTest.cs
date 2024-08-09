@@ -1,4 +1,6 @@
+using System.Collections;
 using Npgsql;
+using NUnit.Framework.Internal;
 using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
@@ -82,10 +84,27 @@ public abstract class EventStoreTests
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.Ok));
             }
+
+            [Test]
+            public async Task returns_all_events_appended_to_the_stream()
+            {
+                await _eventStore.AppendAsync("stream-id");
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
+                {
+                    new EventData()
+                }));
+            }
         }
 
     }
     
+}
+
+public record EventData
+{
 }
 
 public enum ReadState
@@ -123,13 +142,18 @@ public class EventStore
     }
 }
 
-public class ReadStreamResult
+public class ReadStreamResult : IEnumerable<EventData>
 {
     private readonly ReadState _state;
+    private readonly List<EventData> _events;
 
     private ReadStreamResult(ReadState state)
     {
         _state = state;
+        _events = new List<EventData>()
+        {
+            new EventData(),
+        };
     }
 
     public ReadState State()
@@ -145,5 +169,18 @@ public class ReadStreamResult
     public static ReadStreamResult StreamFound(string streamId)
     {
         return new(ReadState.Ok);
+    }
+
+    public IEnumerator<EventData> GetEnumerator()
+    {
+        foreach (var evt in _events)
+        {
+            yield return evt;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
