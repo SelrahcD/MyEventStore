@@ -78,7 +78,7 @@ public abstract class EventStoreTests
             [Test]
             public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
             {
-                await _eventStore.AppendAsync("stream-id");
+                await _eventStore.AppendAsync("stream-id", AnEvent());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
@@ -88,23 +88,34 @@ public abstract class EventStoreTests
             [Test]
             public async Task returns_all_events_appended_to_the_stream()
             {
-                await _eventStore.AppendAsync("stream-id");
+                await _eventStore.AppendAsync("stream-id", AnEvent());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
                 {
-                    new EventData()
+                    AnEvent()
                 }));
             }
         }
 
+    }
+
+    private EventData AnEvent()
+    {
+        return new EventData("event-type");
     }
     
 }
 
 public record EventData
 {
+    public string EventType { get; }
+
+    public EventData(string eventType)
+    {
+        EventType = eventType;
+    }
 }
 
 public enum ReadState
@@ -133,7 +144,7 @@ public class EventStore
         return result != null ? ReadStreamResult.StreamFound(streamId) : ReadStreamResult.StreamNotFound(streamId);
     }
 
-    public async Task AppendAsync(string streamId)
+    public async Task AppendAsync(string streamId, EventData evt)
     {
         var command = new NpgsqlCommand("INSERT INTO streams (stream_id) VALUES (@stream_id);", _npgsqlConnection);
         command.Parameters.AddWithValue("stream_id", streamId);
@@ -152,7 +163,7 @@ public class ReadStreamResult : IEnumerable<EventData>
         _state = state;
         _events = new List<EventData>()
         {
-            new EventData(),
+            new EventData("event-type"),
         };
     }
 
