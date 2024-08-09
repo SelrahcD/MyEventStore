@@ -181,6 +181,32 @@ public abstract class EventStoreTests
                     }
                 }
 
+                [TestFixture]
+                public class WithStreamStateAny : EventStoreTests
+                {
+                    [Test]
+                    public async Task Allow_to_write_to_an_existing_stream()
+                    {
+                        await _eventStore.AppendAsync("stream-id", AnEvent());
+
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("stream-id", AnEvent(), StreamState.Any);
+                        });
+                    }
+
+                    [Test]
+                    public Task Allows_to_write_to_a_non_existing_stream()
+                    {
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("a-non-existing-id", AnEvent(), StreamState.Any);
+                        });
+
+                        return Task.CompletedTask;
+                    }
+                }
+
             }
         }
 
