@@ -88,13 +88,15 @@ public abstract class EventStoreTests
             [Test]
             public async Task returns_all_events_appended_to_the_stream()
             {
-                await _eventStore.AppendAsync("stream-id", AnEvent());
+                var evt = AnEvent();
+
+                await _eventStore.AppendAsync("stream-id", evt);
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
                 {
-                    AnEvent()
+                    evt
                 }));
             }
         }
