@@ -3,10 +3,20 @@ using Npgsql;
 
 namespace MyDotNetEventStore.Tests;
 
-public class ConcurrencyException: Exception
+public class ConcurrencyException : Exception
 {
     public ConcurrencyException(string message) : base(message)
     {
+    }
+
+    public static ConcurrencyException StreamDoesntExist(string streamId)
+    {
+        return new ConcurrencyException($"Stream '{streamId}' doesn't exists.");
+    }
+
+    public static ConcurrencyException StreamAlreadyExists(string streamId)
+    {
+        return new ConcurrencyException($"Stream '{streamId}' already exists.");
     }
 }
 
@@ -112,12 +122,12 @@ public class EventStore
         return ReadStreamResult.StreamFound(streamId, events);
     }
 
-    public async Task AppendAsync(string streamId, EventData evt, StreamState streamState =  StreamState.Any)
+    public async Task AppendAsync(string streamId, EventData evt, StreamState streamState = StreamState.Any)
     {
-
         if (streamState == StreamState.NoStream || streamState == StreamState.StreamExists)
         {
-            var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
+            var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
+                _npgsqlConnection);
             checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
 
             var streamExists = await checkStreamCommand.ExecuteScalarAsync() != null;
@@ -125,9 +135,9 @@ public class EventStore
             switch (streamExists)
             {
                 case true when streamState == StreamState.NoStream:
-                    throw new ConcurrencyException($"Stream '{streamId}' already exists.");
+                    throw ConcurrencyException.StreamAlreadyExists(streamId);
                 case false when streamState == StreamState.StreamExists:
-                    throw new ConcurrencyException($"Stream '{streamId}' doesn't exists.");
+                    throw ConcurrencyException.StreamDoesntExist(streamId);
             }
         }
 
