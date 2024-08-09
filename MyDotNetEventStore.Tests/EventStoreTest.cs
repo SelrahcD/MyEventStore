@@ -25,9 +25,10 @@ public abstract class EventStoreTests
         await connection.OpenAsync();
 
         var command = new NpgsqlCommand($"""
-                                         CREATE TABLE IF NOT EXISTS streams (
-                                             id SERIAL PRIMARY KEY,
-                                             stream_id TEXT NOT NULL
+                                         CREATE TABLE IF NOT EXISTS events (
+                                             position SERIAL PRIMARY KEY,
+                                             stream_id TEXT NOT NULL,
+                                             event_type TEXT NOT NULL
                                          );
                                          """, connection);
 
@@ -137,7 +138,7 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-        var command = new NpgsqlCommand("SELECT 1 FROM streams WHERE stream_id = @stream_id;", _npgsqlConnection);
+        var command = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
         command.Parameters.AddWithValue("stream_id", streamId);
 
         var result = await command.ExecuteScalarAsync();
@@ -148,8 +149,9 @@ public class EventStore
 
     public async Task AppendAsync(string streamId, EventData evt)
     {
-        var command = new NpgsqlCommand("INSERT INTO streams (stream_id) VALUES (@stream_id);", _npgsqlConnection);
+        var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type) VALUES (@stream_id, @event_type);", _npgsqlConnection);
         command.Parameters.AddWithValue("stream_id", streamId);
+        command.Parameters.AddWithValue("event_type", evt.EventType);
 
         await command.ExecuteNonQueryAsync();
     }
