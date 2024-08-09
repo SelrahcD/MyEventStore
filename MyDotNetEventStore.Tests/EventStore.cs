@@ -115,7 +115,6 @@ public class EventStore
         {
             var eventType = reader.GetString(0);
 
-            // Assuming EventData has a constructor or factory method that takes eventType
             events.Add(new EventData(eventType));
         }
 
