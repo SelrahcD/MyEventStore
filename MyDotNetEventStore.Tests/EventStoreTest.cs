@@ -56,6 +56,9 @@ public abstract class EventStoreTests
     [TearDown]
     public async Task TearDown()
     {
+        var command = new NpgsqlCommand("DELETE FROM events", _connection);
+        await command.ExecuteNonQueryAsync();
+
         await _connection.CloseAsync();
     }
 
@@ -106,7 +109,12 @@ public abstract class EventStoreTests
 
     private EventData AnEvent()
     {
-        return new EventData("event-type");
+        var random = new Random();
+        var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
+        var randomIndex = random.Next(fakeEventTypes.Count);
+
+        var eventType = fakeEventTypes[randomIndex];
+        return new EventData(eventType);
     }
     
 }
@@ -138,13 +146,32 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-        var command = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
+        var command = new NpgsqlCommand("""
+                                        SELECT event_type FROM events
+                                        WHERE stream_id = @stream_id
+                                        ORDER BY position ASC;
+                                        """, _npgsqlConnection);
+
         command.Parameters.AddWithValue("stream_id", streamId);
 
-        var result = await command.ExecuteScalarAsync();
+        var events = new List<EventData>();
 
-        // If result is not null, the stream exists
-        return result != null ? ReadStreamResult.StreamFound(streamId) : ReadStreamResult.StreamNotFound(streamId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!reader.HasRows)
+        {
+            return ReadStreamResult.StreamNotFound(streamId);
+        }
+
+        while (await reader.ReadAsync())
+        {
+            var eventType = reader.GetString(0);
+
+            // Assuming EventData has a constructor or factory method that takes eventType
+            events.Add(new EventData(eventType));
+        }
+
+        return ReadStreamResult.StreamFound(streamId, events);
     }
 
     public async Task AppendAsync(string streamId, EventData evt)
@@ -162,13 +189,10 @@ public class ReadStreamResult : IEnumerable<EventData>
     private readonly ReadState _state;
     private readonly List<EventData> _events;
 
-    private ReadStreamResult(ReadState state)
+    private ReadStreamResult(ReadState state, List<EventData> events)
     {
         _state = state;
-        _events = new List<EventData>()
-        {
-            new EventData("event-type"),
-        };
+        _events = events;
     }
 
     public ReadState State()
@@ -178,12 +202,12 @@ public class ReadStreamResult : IEnumerable<EventData>
 
     public static ReadStreamResult StreamNotFound(string streamId)
     {
-        return new(ReadState.StreamNotFound);
+        return new(ReadState.StreamNotFound, new List<EventData>());
     }
 
-    public static ReadStreamResult StreamFound(string streamId)
+    public static ReadStreamResult StreamFound(string streamId, List<EventData> events)
     {
-        return new(ReadState.Ok);
+        return new(ReadState.Ok, events);
     }
 
     public IEnumerator<EventData> GetEnumerator()
