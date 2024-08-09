@@ -248,6 +248,89 @@ public abstract class EventStoreTests
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(events));
             }
+
+            [TestFixture]
+            public class PerformsConcurrencyChecks
+            {
+
+                [TestFixture]
+                public class WithStreamStateNoStream : EventStoreTests
+                {
+                    [Test]
+                    public async Task Doesnt_allow_to_write_to_an_existing_stream()
+                    {
+                        await _eventStore.AppendAsync("stream-id", MultipleEvents());
+
+                        var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                            await _eventStore.AppendAsync("stream-id", MultipleEvents(), StreamState.NoStream));
+
+                        Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
+                    }
+
+                    [Test]
+                    public Task Allows_to_write_to_a_non_existing_stream()
+                    {
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("a-non-existing-id", MultipleEvents(), StreamState.NoStream);
+                        });
+
+                        return Task.CompletedTask;
+                    }
+                }
+
+                [TestFixture]
+                public class WithStreamStateStreamExists : EventStoreTests
+                {
+                    [Test]
+                    public async Task Doesnt_allow_to_write_to_an_non_existing_stream()
+                    {
+                        var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                            await _eventStore.AppendAsync("a-non-existing-id", MultipleEvents(), StreamState.StreamExists));
+
+                        Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
+                    }
+
+                    [Test]
+                    public async Task Allows_to_write_to_an_existing_stream()
+                    {
+                        await _eventStore.AppendAsync("stream-id", MultipleEvents());
+
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("stream-id", MultipleEvents(), StreamState.StreamExists);
+                        });
+                    }
+                }
+
+                [TestFixture]
+                public class WithStreamStateAny : EventStoreTests
+                {
+                    [Test]
+                    public async Task Allow_to_write_to_an_existing_stream()
+                    {
+                        await _eventStore.AppendAsync("stream-id", MultipleEvents());
+
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("stream-id", MultipleEvents(), StreamState.Any);
+                        });
+                    }
+
+                    [Test]
+                    public Task Allows_to_write_to_a_non_existing_stream()
+                    {
+                        Assert.DoesNotThrowAsync(async () =>
+                        {
+                            await _eventStore.AppendAsync("a-non-existing-id", MultipleEvents(), StreamState.Any);
+                        });
+
+                        return Task.CompletedTask;
+                    }
+                }
+
+            }
+
         }
     }
 

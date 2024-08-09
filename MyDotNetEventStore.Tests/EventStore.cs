@@ -124,6 +124,11 @@ public class EventStore
 
     public async Task AppendAsync(string streamId, EventData evt, StreamState streamState = StreamState.Any)
     {
+        await AppendAsync(streamId, [evt], streamState);
+    }
+
+    public async Task AppendAsync(string streamId, List<EventData> events, StreamState streamState = StreamState.Any)
+    {
         if (streamState == StreamState.NoStream || streamState == StreamState.StreamExists)
         {
             var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
@@ -141,19 +146,14 @@ public class EventStore
             }
         }
 
-        var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type) VALUES (@stream_id, @event_type);",
-            _npgsqlConnection);
-        command.Parameters.AddWithValue("stream_id", streamId);
-        command.Parameters.AddWithValue("event_type", evt.EventType);
-
-        await command.ExecuteNonQueryAsync();
-    }
-
-    public async Task AppendAsync(string streamId, List<EventData> events)
-    {
         foreach (var evt in events)
         {
-            await AppendAsync(streamId, evt);
+            var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type) VALUES (@stream_id, @event_type);",
+                _npgsqlConnection);
+            command.Parameters.AddWithValue("stream_id", streamId);
+            command.Parameters.AddWithValue("event_type", evt.EventType);
+
+            await command.ExecuteNonQueryAsync();
         }
     }
 }
