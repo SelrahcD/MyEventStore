@@ -240,10 +240,7 @@ public abstract class EventStoreTests
             [Test]
             public async Task allows_to_read_the_stream()
             {
-                var evt1 = AnEvent();
-                var evt2 = AnEvent();
-                var evt3 = AnEvent();
-                var events = new List<EventData>{evt1, evt2, evt3};
+                var events = MultipleEvents();
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -255,13 +252,22 @@ public abstract class EventStoreTests
     }
 
 
-
     private EventData AnEvent()
     {
         var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
 
         return new EventData(SelectRandom(fakeEventTypes));
     }
+
+    private List<EventData> MultipleEvents()
+    {
+        var evt1 = AnEvent();
+        var evt2 = AnEvent();
+        var evt3 = AnEvent();
+        var events = new List<EventData>{evt1, evt2, evt3};
+        return events;
+    }
+
 
     private static T SelectRandom<T>(List<T> elements)
     {
