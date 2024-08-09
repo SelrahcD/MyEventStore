@@ -113,14 +113,16 @@ public class EventStore
 
     public async Task AppendAsync(string streamId, EventData evt, StreamState streamState =  StreamState.Any)
     {
-        var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
-        checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
 
-        var streamExists = await checkStreamCommand.ExecuteScalarAsync() != null;
-
-        if (streamExists && streamState == StreamState.NoStream)
+        if (streamState == StreamState.NoStream)
         {
-            throw new ConcurrencyException($"Stream '{streamId}' already exists.");
+            var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
+            checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
+
+            if (await checkStreamCommand.ExecuteScalarAsync() != null)
+            {
+                throw new ConcurrencyException($"Stream '{streamId}' already exists.");
+            }
         }
 
         var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type) VALUES (@stream_id, @event_type);",
