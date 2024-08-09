@@ -9,6 +9,10 @@ public abstract class EventStoreTests
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
         .Build();
 
+    private EventStore _eventStore;
+
+    private NpgsqlConnection _connection;
+
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
@@ -37,8 +41,19 @@ public abstract class EventStoreTests
     }
 
     [SetUp]
-    public void Setup()
+    public async Task Setup()
     {
+        _connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
+
+        await _connection.OpenAsync();
+
+        _eventStore = new EventStore(_connection);
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        await _connection.CloseAsync();
     }
 
     public class ReadingAStream : EventStoreTests
@@ -46,16 +61,11 @@ public abstract class EventStoreTests
 
         public class WhenTheStreamDoesntExists : EventStoreTests
         {
+
             [Test]
             public async Task returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
             {
-                await using var connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
-
-                await connection.OpenAsync();
-
-                var eventStore = new EventStore(connection);
-
-                var readStreamResult = await eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+                var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
             }
@@ -66,15 +76,9 @@ public abstract class EventStoreTests
             [Test]
             public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
             {
-                await using var connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
+                await _eventStore.AppendAsync("stream-id");
 
-                await connection.OpenAsync();
-
-                var eventStore = new EventStore(connection);
-
-                await eventStore.AppendAsync("stream-id");
-
-                var readStreamResult = await eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.Ok));
             }
