@@ -161,6 +161,17 @@ public abstract class EventStoreTests
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
                 }
+
+                [Test]
+                public Task Allows_to_write_to_a_non_existing_stream_if_StreamState_NoStream_is_specified()
+                {
+                    Assert.DoesNotThrowAsync(async () =>
+                    {
+                        await _eventStore.AppendAsync("a-non-existing-id", AnEvent(), StreamState.NoStream);
+                    });
+
+                    return Task.CompletedTask;
+                }
             }
         }
 
