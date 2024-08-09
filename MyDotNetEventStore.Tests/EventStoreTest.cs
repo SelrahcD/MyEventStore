@@ -42,4 +42,46 @@ public class EventStoreTests
             }
         }
     }
+
+
+    public class Reading_a_stream
+    {
+
+        [Test]
+        public void returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound_when_stream_doesnt_exist()
+        {
+            var eventStore = new EventStore();
+
+            var readStreamResult = eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+
+            Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
+        }
+    }
+    
+}
+
+public enum ReadState
+{
+    StreamNotFound
+}
+
+public class EventStore
+{
+    public ReadStreamResult ReadStreamAsync(string streamId)
+    {
+        return ReadStreamResult.StreamNotFound(streamId);
+    }
+}
+
+public class ReadStreamResult
+{
+    public ReadState State()
+    {
+        return ReadState.StreamNotFound;
+    }
+
+    public static ReadStreamResult StreamNotFound(string streamId)
+    {
+        return new();
+    }
 }
