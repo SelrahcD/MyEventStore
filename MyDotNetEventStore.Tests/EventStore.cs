@@ -3,6 +3,19 @@ using Npgsql;
 
 namespace MyDotNetEventStore.Tests;
 
+public class ConcurrencyException: Exception
+{
+    public ConcurrencyException(string message) : base(message)
+    {
+    }
+}
+
+public enum StreamState
+{
+    NoStream,
+    Any
+}
+
 public class ReadStreamResult : IEnumerable<EventData>
 {
     private readonly ReadState _state;
@@ -98,8 +111,18 @@ public class EventStore
         return ReadStreamResult.StreamFound(streamId, events);
     }
 
-    public async Task AppendAsync(string streamId, EventData evt)
+    public async Task AppendAsync(string streamId, EventData evt, StreamState streamState =  StreamState.Any)
     {
+        var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;", _npgsqlConnection);
+        checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
+
+        var streamExists = await checkStreamCommand.ExecuteScalarAsync() != null;
+
+        if (streamExists && streamState == StreamState.NoStream)
+        {
+            throw new ConcurrencyException($"Stream '{streamId}' already exists.");
+        }
+
         var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type) VALUES (@stream_id, @event_type);",
             _npgsqlConnection);
         command.Parameters.AddWithValue("stream_id", streamId);

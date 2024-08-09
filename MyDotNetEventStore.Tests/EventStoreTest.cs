@@ -148,6 +148,20 @@ public abstract class EventStoreTests
                     evt1,
                 }));
             }
+
+            public class PerformsConcurrencyChecks : EventStoreTests
+            {
+                [Test]
+                public async Task Doesnt_allow_to_write_to_an_existing_stream_if_StreamState_NoStream_is_specified()
+                {
+                    await _eventStore.AppendAsync("stream-id", AnEvent());
+
+                    var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                        await _eventStore.AppendAsync("stream-id", AnEvent(), StreamState.NoStream));
+
+                    Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
+                }
+            }
         }
 
         public class AppendingMultipleEvents : EventStoreTests
