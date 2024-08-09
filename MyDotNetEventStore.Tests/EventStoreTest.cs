@@ -13,7 +13,21 @@ public abstract class EventStoreTests
     public async Task OneTimeSetup()
     {
         await _postgresContainer.StartAsync();
+
+        await using var connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
+
+        await connection.OpenAsync();
+
+        var command = new NpgsqlCommand($"""
+                                         CREATE TABLE IF NOT EXISTS streams (
+                                             id SERIAL PRIMARY KEY,
+                                             stream_id TEXT NOT NULL
+                                         );
+                                         """, connection);
+
+        await command.ExecuteNonQueryAsync();
     }
+
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
@@ -47,16 +61,39 @@ public abstract class EventStoreTests
     public class ReadingAStream : EventStoreTests
     {
 
-        public class WhenTheStreamDoesntExists
+        public class WhenTheStreamDoesntExists : EventStoreTests
         {
             [Test]
-            public void returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
+            public async Task returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
             {
-                var eventStore = new EventStore();
+                await using var connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
 
-                var readStreamResult = eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+                await connection.OpenAsync();
+
+                var eventStore = new EventStore(connection);
+
+                var readStreamResult = await eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
+            }
+        }
+
+        public class WhenTheStreamExists: EventStoreTests
+        {
+            [Test]
+            public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
+            {
+                await using var connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
+
+                await connection.OpenAsync();
+
+                var eventStore = new EventStore(connection);
+
+                await eventStore.AppendAsync("stream-id");
+
+                var readStreamResult = await eventStore.ReadStreamAsync("stream-id");
+
+                Assert.That(readStreamResult.State, Is.EqualTo(ReadState.Ok));
             }
         }
 
@@ -66,26 +103,60 @@ public abstract class EventStoreTests
 
 public enum ReadState
 {
-    StreamNotFound
+    StreamNotFound,
+    Ok
 }
 
 public class EventStore
 {
-    public ReadStreamResult ReadStreamAsync(string streamId)
+    private readonly NpgsqlConnection _npgsqlConnection;
+
+    public EventStore(NpgsqlConnection npgsqlConnection)
     {
-        return ReadStreamResult.StreamNotFound(streamId);
+        _npgsqlConnection = npgsqlConnection;
+    }
+
+    public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
+    {
+        var command = new NpgsqlCommand("SELECT 1 FROM streams WHERE stream_id = @stream_id;", _npgsqlConnection);
+        command.Parameters.AddWithValue("stream_id", streamId);
+
+        var result = await command.ExecuteScalarAsync();
+
+        // If result is not null, the stream exists
+        return result != null ? ReadStreamResult.StreamFound(streamId) : ReadStreamResult.StreamNotFound(streamId);
+    }
+
+    public async Task AppendAsync(string streamId)
+    {
+        var command = new NpgsqlCommand("INSERT INTO streams (stream_id) VALUES (@stream_id);", _npgsqlConnection);
+        command.Parameters.AddWithValue("stream_id", streamId);
+
+        await command.ExecuteNonQueryAsync();
     }
 }
 
 public class ReadStreamResult
 {
+    private readonly ReadState _state;
+
+    private ReadStreamResult(ReadState state)
+    {
+        _state = state;
+    }
+
     public ReadState State()
     {
-        return ReadState.StreamNotFound;
+        return _state;
     }
 
     public static ReadStreamResult StreamNotFound(string streamId)
     {
-        return new();
+        return new(ReadState.StreamNotFound);
+    }
+
+    public static ReadStreamResult StreamFound(string streamId)
+    {
+        return new(ReadState.Ok);
     }
 }
