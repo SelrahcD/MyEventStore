@@ -12,8 +12,6 @@ public class PostgresEventStoreSetup
 
     public static NpgsqlConnection Connection;
 
-    public static int Count = 0;
-
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
@@ -32,9 +30,6 @@ public class PostgresEventStoreSetup
                                          """, Connection);
 
         await command.ExecuteNonQueryAsync();
-
-        Count++;
-        Console.WriteLine($"OneTimeSetup {Count}");
     }
 
 
@@ -43,9 +38,6 @@ public class PostgresEventStoreSetup
     {
         await Connection.DisposeAsync();
         await _postgresContainer.DisposeAsync();
-
-        Console.WriteLine($"OneTimeTearDown {Count}");
-
     }
 }
 
@@ -57,8 +49,6 @@ public class EventStoreTest {
     public void Setup()
     {
         _eventStore = new EventStore(PostgresEventStoreSetup.Connection);
-
-        Console.WriteLine("SetUp");
     }
 
     [TearDown]
@@ -66,8 +56,6 @@ public class EventStoreTest {
     {
         var command = new NpgsqlCommand("DELETE FROM events", PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
-
-        Console.WriteLine("TearDown");
     }
 
     [TestFixture]
@@ -78,8 +66,6 @@ public class EventStoreTest {
             [Test]
             public async Task returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
             {
-                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
-
                 var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
@@ -91,9 +77,6 @@ public class EventStoreTest {
             [Test]
             public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
             {
-                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
-
-
                 await _eventStore.AppendAsync("stream-id", AnEvent());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
@@ -104,8 +87,6 @@ public class EventStoreTest {
             [Test]
             public async Task returns_all_events_appended_to_the_stream_in_order()
             {
-                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
-
                 var evt1 = AnEvent();
                 var evt2 = AnEvent();
                 var evt3 = AnEvent();
@@ -127,8 +108,6 @@ public class EventStoreTest {
             [Test]
             public async Task doesnt_return_events_appended_to_another_stream()
             {
-                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
-
                 var evtInStream = AnEvent();
                 var evtInAnotherStream = AnEvent();
 
