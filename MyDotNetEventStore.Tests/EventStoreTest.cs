@@ -4,23 +4,24 @@ using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
 
-public abstract class EventStoreTests
+[SetUpFixture]
+public class PostgresEventStoreSetup
 {
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
         .Build();
 
-    private EventStore _eventStore;
+    public static NpgsqlConnection Connection;
 
-    private NpgsqlConnection _connection;
+    public static int Count = 0;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
         await _postgresContainer.StartAsync();
 
-        await using var connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
+        Connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
 
-        await connection.OpenAsync();
+        await Connection.OpenAsync();
 
         var command = new NpgsqlCommand($"""
                                          CREATE TABLE IF NOT EXISTS events (
@@ -28,59 +29,71 @@ public abstract class EventStoreTests
                                              stream_id TEXT NOT NULL,
                                              event_type TEXT NOT NULL
                                          );
-                                         """, connection);
+                                         """, Connection);
 
         await command.ExecuteNonQueryAsync();
+
+        Count++;
+        Console.WriteLine($"OneTimeSetup {Count}");
     }
 
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
-        // Stop and dispose of the container
+        await Connection.DisposeAsync();
         await _postgresContainer.DisposeAsync();
+
+        Console.WriteLine($"OneTimeTearDown {Count}");
+
     }
+}
+
+public class EventStoreTest {
+
+    private EventStore _eventStore;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
-        _connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
+        _eventStore = new EventStore(PostgresEventStoreSetup.Connection);
 
-        await _connection.OpenAsync();
-
-        _eventStore = new EventStore(_connection);
+        Console.WriteLine("SetUp");
     }
 
     [TearDown]
     public async Task TearDown()
     {
-        var command = new NpgsqlCommand("DELETE FROM events", _connection);
+        var command = new NpgsqlCommand("DELETE FROM events", PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
 
-        await _connection.CloseAsync();
+        Console.WriteLine("TearDown");
     }
 
     [TestFixture]
-    public class ReadingAStream : EventStoreTests
+    public class ReadingStream : EventStoreTest
     {
-
-        public class WhenTheStreamDoesntExists : EventStoreTests
+        public class WhenTheStreamDoesntExists : ReadingStream
         {
-
             [Test]
             public async Task returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
             {
+                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
+
                 var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
             }
         }
 
-        public class WhenTheStreamExists: EventStoreTests
+        public class WhenTheStreamExists: ReadingStream
         {
             [Test]
             public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
             {
+                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
+
+
                 await _eventStore.AppendAsync("stream-id", AnEvent());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
@@ -91,6 +104,8 @@ public abstract class EventStoreTests
             [Test]
             public async Task returns_all_events_appended_to_the_stream_in_order()
             {
+                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
+
                 var evt1 = AnEvent();
                 var evt2 = AnEvent();
                 var evt3 = AnEvent();
@@ -112,6 +127,8 @@ public abstract class EventStoreTests
             [Test]
             public async Task doesnt_return_events_appended_to_another_stream()
             {
+                Console.WriteLine($"Count {PostgresEventStoreSetup.Count}");
+
                 var evtInStream = AnEvent();
                 var evtInAnotherStream = AnEvent();
 
@@ -128,14 +145,12 @@ public abstract class EventStoreTests
                 }));
             }
         }
-
     }
 
     [TestFixture]
-    public class AppendingEvents
+    public class AppendingEvents : EventStoreTest
     {
-        [TestFixture]
-        public class AppendingOneEvent : EventStoreTests
+        public class AppendingOneEvent : AppendingEvents
         {
             [Test]
             public async Task allows_to_read_the_stream()
@@ -151,12 +166,9 @@ public abstract class EventStoreTests
                 }));
             }
 
-            [TestFixture]
-            public class PerformsConcurrencyChecks
+            public class PerformsConcurrencyChecks: AppendingOneEvent
             {
-
-                [TestFixture]
-                public class WithStreamStateNoStream : EventStoreTests
+                public class WithStreamStateNoStream : PerformsConcurrencyChecks
                 {
                     [Test]
                     public async Task Doesnt_allow_to_write_to_an_existing_stream()
@@ -181,8 +193,7 @@ public abstract class EventStoreTests
                     }
                 }
 
-                [TestFixture]
-                public class WithStreamStateStreamExists : EventStoreTests
+                public class WithStreamStateStreamExists : PerformsConcurrencyChecks
                 {
                     [Test]
                     public async Task Doesnt_allow_to_write_to_an_non_existing_stream()
@@ -205,8 +216,7 @@ public abstract class EventStoreTests
                     }
                 }
 
-                [TestFixture]
-                public class WithStreamStateAny : EventStoreTests
+                public class WithStreamStateAny : PerformsConcurrencyChecks
                 {
                     [Test]
                     public async Task Allow_to_write_to_an_existing_stream()
@@ -234,8 +244,7 @@ public abstract class EventStoreTests
             }
         }
 
-        [TestFixture]
-        public class AppendingMultipleEvents : EventStoreTests
+        public class AppendingMultipleEvents : AppendingEvents
         {
             [Test]
             public async Task allows_to_read_the_stream()
@@ -249,12 +258,11 @@ public abstract class EventStoreTests
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(events));
             }
 
-            [TestFixture]
-            public class PerformsConcurrencyChecks
+            public class PerformsConcurrencyChecks: AppendingMultipleEvents
             {
 
                 [TestFixture]
-                public class WithStreamStateNoStream : EventStoreTests
+                public class WithStreamStateNoStream : PerformsConcurrencyChecks
                 {
                     [Test]
                     public async Task Doesnt_allow_to_write_to_an_existing_stream()
@@ -279,8 +287,7 @@ public abstract class EventStoreTests
                     }
                 }
 
-                [TestFixture]
-                public class WithStreamStateStreamExists : EventStoreTests
+                public class WithStreamStateStreamExists : PerformsConcurrencyChecks
                 {
                     [Test]
                     public async Task Doesnt_allow_to_write_to_an_non_existing_stream()
@@ -303,8 +310,7 @@ public abstract class EventStoreTests
                     }
                 }
 
-                [TestFixture]
-                public class WithStreamStateAny : EventStoreTests
+                public class WithStreamStateAny : PerformsConcurrencyChecks
                 {
                     [Test]
                     public async Task Allow_to_write_to_an_existing_stream()
@@ -334,15 +340,14 @@ public abstract class EventStoreTests
         }
     }
 
-
-    private EventData AnEvent()
+    private static EventData AnEvent()
     {
         var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
 
         return new EventData(SelectRandom(fakeEventTypes));
     }
 
-    private List<EventData> MultipleEvents()
+    private static List<EventData> MultipleEvents()
     {
         var evt1 = AnEvent();
         var evt2 = AnEvent();
