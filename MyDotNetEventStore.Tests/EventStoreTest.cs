@@ -219,14 +219,30 @@ public class EventStoreTest {
                 public class WithStreamStateNoStream : PerformsConcurrencyChecks
                 {
                     [Test]
-                    public async Task Doesnt_allow_to_write_to_an_existing_stream()
+                    public async Task Doesnt_allow_to_write_to_an_existing_stream(
+                        [Values("one", "multiple")] string countEvents)
                     {
-                        await _eventStore.AppendAsync("stream-id", MultipleEvents());
+                        var events = BuildEvents(countEvents);
+
+                        await _eventStore.AppendAsync("stream-id", (dynamic) events);
 
                         var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                            await _eventStore.AppendAsync("stream-id", MultipleEvents(), StreamState.NoStream));
+                            await _eventStore.AppendAsync("stream-id", (dynamic) events, StreamState.NoStream));
 
                         Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
+                    }
+
+                    private static object BuildEvents(string countEvents)
+                    {
+                        switch (countEvents)
+                        {
+                            case "one":
+                                return AnEvent();
+                            case "multiple":
+                                return MultipleEvents();
+                            default:
+                                throw new Exception("Must be one or multiple");
+                        }
                     }
 
                     [Test]
