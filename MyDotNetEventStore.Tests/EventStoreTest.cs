@@ -220,7 +220,7 @@ public class EventStoreTest {
                 {
                     [Test]
                     public async Task Doesnt_allow_to_write_to_an_existing_stream(
-                        [Values("one", "multiple")] string countEvents)
+                        [Values] CountOfEvents countEvents)
                     {
                         var events = BuildEvents(countEvents);
 
@@ -297,17 +297,21 @@ public class EventStoreTest {
         }
     }
 
+    private static object BuildEvents(CountOfEvents countEvents)
+    {
+        if (countEvents == CountOfEvents.One)
+            return AnEvent();
+
+        return MultipleEvents();
+
+    }
+
     private static object BuildEvents(string countEvents)
     {
-        switch (countEvents)
-        {
-            case "one":
-                return AnEvent();
-            case "multiple":
-                return MultipleEvents();
-            default:
-                throw new Exception("Must be one or multiple");
-        }
+        if (countEvents == "one")
+            return AnEvent();
+
+        return MultipleEvents();
     }
 
     private static EventData AnEvent()
@@ -326,6 +330,11 @@ public class EventStoreTest {
         return events;
     }
 
+    public enum CountOfEvents
+    {
+        One,
+        Multiple
+    }
 
     private static T SelectRandom<T>(List<T> elements)
     {
