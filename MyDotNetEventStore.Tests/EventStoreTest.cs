@@ -41,8 +41,8 @@ public class PostgresEventStoreSetup
     }
 }
 
-public class EventStoreTest {
-
+public class EventStoreTest
+{
     private EventStore _eventStore;
 
     [SetUp]
@@ -72,7 +72,7 @@ public class EventStoreTest {
             }
         }
 
-        public class WhenTheStreamExists: ReadingStream
+        public class WhenTheStreamExists : ReadingStream
         {
             [Test]
             public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
@@ -129,90 +129,94 @@ public class EventStoreTest {
     [TestFixture]
     public class AppendingEvents : EventStoreTest
     {
-            public class PerformsConcurrencyChecks: AppendingEvents
+        public class PerformsConcurrencyChecks : AppendingEvents
+        {
+            [TestFixture]
+            public class WithStreamStateNoStream : PerformsConcurrencyChecks
             {
-
-                [TestFixture]
-                public class WithStreamStateNoStream : PerformsConcurrencyChecks
+                [Test]
+                public async Task Doesnt_allow_to_write_to_an_existing_stream(
+                    [Values] CountOfEvents countEvents)
                 {
-                    [Test]
-                    public async Task Doesnt_allow_to_write_to_an_existing_stream(
-                        [Values] CountOfEvents countEvents)
-                    {
-                        var events = BuildEvents(countEvents);
+                    var events = BuildEvents(countEvents);
 
-                        await _eventStore.AppendAsync("stream-id", (dynamic) events);
+                    await _eventStore.AppendAsync("stream-id", (dynamic)events);
 
-                        var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                            await _eventStore.AppendAsync("stream-id", (dynamic) events, StreamState.NoStream));
+                    var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                        await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamState.NoStream));
 
-                        Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
-                    }
-
-                    [Test]
-                    public Task Allows_to_write_to_a_non_existing_stream(
-                        [Values] CountOfEvents countEvents)
-                    {
-                        Assert.DoesNotThrowAsync(async () =>
-                        {
-                            await _eventStore.AppendAsync("a-non-existing-id", (dynamic) BuildEvents(countEvents), StreamState.NoStream);
-                        });
-
-                        return Task.CompletedTask;
-                    }
+                    Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
                 }
 
-                public class WithStreamStateStreamExists : PerformsConcurrencyChecks
+                [Test]
+                public Task Allows_to_write_to_a_non_existing_stream(
+                    [Values] CountOfEvents countEvents)
                 {
-                    [Test]
-                    public async Task Doesnt_allow_to_write_to_an_non_existing_stream(
-                        [Values] CountOfEvents countEvents)
+                    Assert.DoesNotThrowAsync(async () =>
                     {
-                        var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                            await _eventStore.AppendAsync("a-non-existing-id", (dynamic) BuildEvents(countEvents), StreamState.StreamExists));
+                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
+                            StreamState.NoStream);
+                    });
 
-                        Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
-                    }
+                    return Task.CompletedTask;
+                }
+            }
 
-                    [Test]
-                    public async Task Allows_to_write_to_an_existing_stream(
-                        [Values] CountOfEvents countEvents)
-                    {
-                        await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents));
+            public class WithStreamStateStreamExists : PerformsConcurrencyChecks
+            {
+                [Test]
+                public async Task Doesnt_allow_to_write_to_an_non_existing_stream(
+                    [Values] CountOfEvents countEvents)
+                {
+                    var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
+                            StreamState.StreamExists));
 
-                        Assert.DoesNotThrowAsync(async () =>
-                        {
-                            await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents), StreamState.StreamExists);
-                        });
-                    }
+                    Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
                 }
 
-                public class WithStreamStateAny : PerformsConcurrencyChecks
+                [Test]
+                public async Task Allows_to_write_to_an_existing_stream(
+                    [Values] CountOfEvents countEvents)
                 {
-                    [Test]
-                    public async Task Allow_to_write_to_an_existing_stream(
-                        [Values] CountOfEvents countEvents)
+                    await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents));
+
+                    Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents));
-
-                        Assert.DoesNotThrowAsync(async () =>
-                        {
-                            await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents), StreamState.Any);
-                        });
-                    }
-
-                    [Test]
-                    public Task Allows_to_write_to_a_non_existing_stream(
-                        [Values] CountOfEvents countEvents)
-                    {
-                        Assert.DoesNotThrowAsync(async () =>
-                        {
-                            await _eventStore.AppendAsync("a-non-existing-id", (dynamic) BuildEvents(countEvents), StreamState.Any);
-                        });
-
-                        return Task.CompletedTask;
-                    }
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents),
+                            StreamState.StreamExists);
+                    });
                 }
+            }
+
+            public class WithStreamStateAny : PerformsConcurrencyChecks
+            {
+                [Test]
+                public async Task Allow_to_write_to_an_existing_stream(
+                    [Values] CountOfEvents countEvents)
+                {
+                    await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents));
+
+                    Assert.DoesNotThrowAsync(async () =>
+                    {
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents),
+                            StreamState.Any);
+                    });
+                }
+
+                [Test]
+                public Task Allows_to_write_to_a_non_existing_stream(
+                    [Values] CountOfEvents countEvents)
+                {
+                    Assert.DoesNotThrowAsync(async () =>
+                    {
+                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
+                            StreamState.Any);
+                    });
+
+                    return Task.CompletedTask;
+                }
+            }
         }
     }
 
@@ -222,7 +226,6 @@ public class EventStoreTest {
             return AnEvent();
 
         return MultipleEvents();
-
     }
 
     private static object BuildEvents(string countEvents)
@@ -235,7 +238,7 @@ public class EventStoreTest {
 
     private static EventData AnEvent()
     {
-        var fakeEventTypes = new List<string> {"event-type-1", "event-type-2", "event-type-3"};
+        var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
 
         return new EventData(SelectRandom(fakeEventTypes));
     }
@@ -245,7 +248,7 @@ public class EventStoreTest {
         var evt1 = AnEvent();
         var evt2 = AnEvent();
         var evt3 = AnEvent();
-        var events = new List<EventData>{evt1, evt2, evt3};
+        var events = new List<EventData> { evt1, evt2, evt3 };
         return events;
     }
 
