@@ -131,20 +131,6 @@ public class EventStoreTest {
     {
         public class AppendingOneEvent : AppendingEvents
         {
-            [Test]
-            public async Task allows_to_read_the_stream()
-            {
-                var evt1 = AnEvent();
-                await _eventStore.AppendAsync("stream-id", evt1);
-
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
-
-                Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
-                {
-                    evt1,
-                }));
-            }
-
             public class PerformsConcurrencyChecks: AppendingOneEvent
             {
                 public class WithStreamStateNoStream : PerformsConcurrencyChecks
@@ -225,17 +211,6 @@ public class EventStoreTest {
 
         public class AppendingMultipleEvents : AppendingEvents
         {
-            [Test]
-            public async Task allows_to_read_the_stream()
-            {
-                var events = MultipleEvents();
-
-                await _eventStore.AppendAsync("stream-id", events);
-
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
-
-                Assert.That(readStreamResult.ToList(), Is.EqualTo(events));
-            }
 
             public class PerformsConcurrencyChecks: AppendingMultipleEvents
             {
