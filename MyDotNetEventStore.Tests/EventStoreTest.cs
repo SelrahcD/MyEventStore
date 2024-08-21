@@ -233,11 +233,12 @@ public class EventStoreTest {
                     }
 
                     [Test]
-                    public Task Allows_to_write_to_a_non_existing_stream()
+                    public Task Allows_to_write_to_a_non_existing_stream(
+                        [Values] CountOfEvents countEvents)
                     {
                         Assert.DoesNotThrowAsync(async () =>
                         {
-                            await _eventStore.AppendAsync("a-non-existing-id", MultipleEvents(), StreamState.NoStream);
+                            await _eventStore.AppendAsync("a-non-existing-id", (dynamic) BuildEvents(countEvents), StreamState.NoStream);
                         });
 
                         return Task.CompletedTask;
@@ -247,22 +248,24 @@ public class EventStoreTest {
                 public class WithStreamStateStreamExists : PerformsConcurrencyChecks
                 {
                     [Test]
-                    public async Task Doesnt_allow_to_write_to_an_non_existing_stream()
+                    public async Task Doesnt_allow_to_write_to_an_non_existing_stream(
+                        [Values] CountOfEvents countEvents)
                     {
                         var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                            await _eventStore.AppendAsync("a-non-existing-id", MultipleEvents(), StreamState.StreamExists));
+                            await _eventStore.AppendAsync("a-non-existing-id", (dynamic) BuildEvents(countEvents), StreamState.StreamExists));
 
                         Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
                     }
 
                     [Test]
-                    public async Task Allows_to_write_to_an_existing_stream()
+                    public async Task Allows_to_write_to_an_existing_stream(
+                        [Values] CountOfEvents countEvents)
                     {
-                        await _eventStore.AppendAsync("stream-id", MultipleEvents());
+                        await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents));
 
                         Assert.DoesNotThrowAsync(async () =>
                         {
-                            await _eventStore.AppendAsync("stream-id", MultipleEvents(), StreamState.StreamExists);
+                            await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents), StreamState.StreamExists);
                         });
                     }
                 }
@@ -270,22 +273,24 @@ public class EventStoreTest {
                 public class WithStreamStateAny : PerformsConcurrencyChecks
                 {
                     [Test]
-                    public async Task Allow_to_write_to_an_existing_stream()
+                    public async Task Allow_to_write_to_an_existing_stream(
+                        [Values] CountOfEvents countEvents)
                     {
-                        await _eventStore.AppendAsync("stream-id", MultipleEvents());
+                        await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents));
 
                         Assert.DoesNotThrowAsync(async () =>
                         {
-                            await _eventStore.AppendAsync("stream-id", MultipleEvents(), StreamState.Any);
+                            await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents), StreamState.Any);
                         });
                     }
 
                     [Test]
-                    public Task Allows_to_write_to_a_non_existing_stream()
+                    public Task Allows_to_write_to_a_non_existing_stream(
+                        [Values] CountOfEvents countEvents)
                     {
                         Assert.DoesNotThrowAsync(async () =>
                         {
-                            await _eventStore.AppendAsync("a-non-existing-id", MultipleEvents(), StreamState.Any);
+                            await _eventStore.AppendAsync("a-non-existing-id", (dynamic) BuildEvents(countEvents), StreamState.Any);
                         });
 
                         return Task.CompletedTask;
