@@ -129,10 +129,7 @@ public class EventStoreTest {
     [TestFixture]
     public class AppendingEvents : EventStoreTest
     {
-        public class AppendingMultipleEvents : AppendingEvents
-        {
-
-            public class PerformsConcurrencyChecks: AppendingMultipleEvents
+            public class PerformsConcurrencyChecks: AppendingEvents
             {
 
                 [TestFixture]
@@ -216,9 +213,6 @@ public class EventStoreTest {
                         return Task.CompletedTask;
                     }
                 }
-
-            }
-
         }
     }
 
