@@ -232,19 +232,6 @@ public class EventStoreTest {
                         Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
                     }
 
-                    private static object BuildEvents(string countEvents)
-                    {
-                        switch (countEvents)
-                        {
-                            case "one":
-                                return AnEvent();
-                            case "multiple":
-                                return MultipleEvents();
-                            default:
-                                throw new Exception("Must be one or multiple");
-                        }
-                    }
-
                     [Test]
                     public Task Allows_to_write_to_a_non_existing_stream()
                     {
@@ -307,6 +294,19 @@ public class EventStoreTest {
 
             }
 
+        }
+    }
+
+    private static object BuildEvents(string countEvents)
+    {
+        switch (countEvents)
+        {
+            case "one":
+                return AnEvent();
+            case "multiple":
+                return MultipleEvents();
+            default:
+                throw new Exception("Must be one or multiple");
         }
     }
 
