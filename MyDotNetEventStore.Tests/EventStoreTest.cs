@@ -362,9 +362,4 @@ public class EventStoreTest
         var randomIndex = random.Next(elements.Count);
         return elements[randomIndex];
     }
-
-    private class ASimpleEvent
-    {
-
-    }
 }
