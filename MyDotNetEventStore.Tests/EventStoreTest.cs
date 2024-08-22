@@ -248,6 +248,21 @@ public class EventStoreTest
 
                     Assert.That(exception.Message, Is.EqualTo($"Stream 'stream-id' is at revision {alreadyAppendedEventCount}. You tried appending events at revision {triedRevision}."));
                 }
+
+                [Test]
+                public async Task Allows_to_write_to_a_stream_at_the_expected_revision(
+                    [Values] CountOfEvents countEvents,
+                    [Random(0, 1000, 1)] int alreadyAppendedEventCount)
+                {
+                    var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
+
+                    await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
+
+                    Assert.DoesNotThrowAsync(async () =>
+                    {
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents), StreamState.AtRevision(alreadyAppendedEventCount));
+                    });
+                }
             }
 
         }
