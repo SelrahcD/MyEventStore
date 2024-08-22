@@ -146,7 +146,7 @@ public class EventStoreTest
                     await _eventStore.AppendAsync("stream-id", (dynamic)events);
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamStateType.NoStream));
+                        await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamState.NoStream()));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
                 }
@@ -157,8 +157,7 @@ public class EventStoreTest
                 {
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                            StreamStateType.NoStream);
+                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents), StreamState.NoStream());
                     });
 
                     return Task.CompletedTask;
@@ -172,8 +171,7 @@ public class EventStoreTest
                     [Values] CountOfEvents countEvents)
                 {
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                            StreamStateType.StreamExists));
+                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents), StreamState.StreamExists()));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
                 }
@@ -186,8 +184,7 @@ public class EventStoreTest
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents),
-                            StreamStateType.StreamExists);
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents), StreamState.StreamExists());
                     });
                 }
             }
@@ -202,8 +199,7 @@ public class EventStoreTest
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents),
-                            StreamStateType.Any);
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents), StreamState.Any());
                     });
                 }
 
@@ -213,8 +209,7 @@ public class EventStoreTest
                 {
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                            StreamStateType.Any);
+                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents), StreamState.Any());
                     });
 
                     return Task.CompletedTask;

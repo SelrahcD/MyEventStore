@@ -149,14 +149,14 @@ public class EventStore
         return ReadStreamResult.StreamFound(streamId, events);
     }
 
-    public async Task AppendAsync(string streamId, EventData evt, StreamStateType streamStateType = StreamStateType.Any)
+    public async Task AppendAsync(string streamId, EventData evt, StreamState? streamState = null)
     {
-        await AppendAsync(streamId, [evt], streamStateType);
+        await AppendAsync(streamId, [evt], streamState ?? StreamState.Any());
     }
 
-    public async Task AppendAsync(string streamId, List<EventData> events, StreamStateType streamStateType = StreamStateType.Any)
+    public async Task AppendAsync(string streamId, List<EventData> events, StreamState? streamState = null)
     {
-        await DoAppendAsync(streamId, events, StreamState.FromType(streamStateType));
+        await DoAppendAsync(streamId, events, streamState ?? StreamState.Any());
     }
 
     private async Task DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
