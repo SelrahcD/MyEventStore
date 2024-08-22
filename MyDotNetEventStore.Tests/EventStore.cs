@@ -139,6 +139,11 @@ public class EventStore
 
     public async Task AppendAsync(string streamId, List<EventData> events, StreamState streamState = StreamState.Any)
     {
+        await DoAppendAsync(streamId, events, streamState);
+    }
+
+    private async Task DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
+    {
         if (streamState == StreamState.NoStream || streamState == StreamState.StreamExists)
         {
             var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
