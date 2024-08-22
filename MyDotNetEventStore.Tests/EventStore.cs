@@ -19,6 +19,11 @@ public class ConcurrencyException : Exception
     {
         return new ConcurrencyException($"Stream '{streamId}' already exists.");
     }
+
+    public static Exception StreamIsNotAtExpectedRevision(object expectedRevision, long lastRevision)
+    {
+        return new ConcurrencyException($"Stream 'stream-id' is at revision {lastRevision}. You tried appending events at revision {expectedRevision}.");
+    }
 }
 
 public record StreamState
@@ -187,6 +192,11 @@ public class EventStore
         lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
 
         var lastRevision = (long) (await lastRevisionCommand.ExecuteScalarAsync() ?? 0L);
+
+        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
+        {
+            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
+        }
 
         foreach (var evt in events)
         {
