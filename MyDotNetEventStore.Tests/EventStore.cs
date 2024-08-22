@@ -92,6 +92,18 @@ public class ReadStreamResult : IEnumerable<EventData>
     }
 }
 
+public record AppendResult
+{
+    private readonly long _position;
+    private readonly long _revision;
+
+    public AppendResult(long position, long revision)
+    {
+        _position = position;
+        _revision = revision;
+    }
+}
+
 public enum ReadState
 {
     StreamNotFound,
@@ -156,17 +168,17 @@ public class EventStore
         return ReadStreamResult.StreamFound(streamId, events);
     }
 
-    public async Task AppendAsync(string streamId, EventData evt, StreamState? streamState = null)
+    public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState? streamState = null)
     {
-        await AppendAsync(streamId, [evt], streamState ?? StreamState.Any());
+        return await AppendAsync(streamId, [evt], streamState ?? StreamState.Any());
     }
 
-    public async Task AppendAsync(string streamId, List<EventData> events, StreamState? streamState = null)
+    public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState? streamState = null)
     {
-        await DoAppendAsync(streamId, events, streamState ?? StreamState.Any());
+        return await DoAppendAsync(streamId, events, streamState ?? StreamState.Any());
     }
 
-    private async Task DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
+    private async Task<AppendResult> DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
         if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists || streamState.Type == StreamStateType.AtRevision)
         {
@@ -198,9 +210,11 @@ public class EventStore
             throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
         }
 
+        long position = 0;
+        long revision = 0;
         foreach (var evt in events)
         {
-            var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, event_type, data, metadata) VALUES (@stream_id, @revision, @event_type, @event_data, @event_metadata);",
+            var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, event_type, data, metadata) VALUES (@stream_id, @revision, @event_type, @event_data, @event_metadata) RETURNING position, revision;",
                 _npgsqlConnection);
             command.Parameters.AddWithValue("stream_id", streamId);
             command.Parameters.AddWithValue("revision", ++lastRevision);
@@ -208,7 +222,15 @@ public class EventStore
             command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
             command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);
 
-            await command.ExecuteNonQueryAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                 position = reader.GetInt64(0);
+                 revision = reader.GetInt64(1);
+            }
         }
+
+        return new AppendResult(position, revision);
     }
 }

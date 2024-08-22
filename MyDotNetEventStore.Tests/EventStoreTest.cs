@@ -59,6 +59,8 @@ public class EventStoreTest
     {
         var command = new NpgsqlCommand("DELETE FROM events", PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
+        command = new NpgsqlCommand("ALTER SEQUENCE events_position_seq RESTART WITH 1;", PostgresEventStoreSetup.Connection);
+        await command.ExecuteNonQueryAsync();
     }
 
     [TestFixture]
@@ -307,6 +309,20 @@ public class EventStoreTest
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.ToList().Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
+            }
+
+            [Test]
+            public async Task Returns_a_AppendResult_with_Position_and_Revision()
+            {
+                await _eventStore.AppendAsync("stream-1", ListOfNEvents(10));
+
+                await _eventStore.AppendAsync("stream-2", ListOfNEvents(10));
+
+                await _eventStore.AppendAsync("stream-3", ListOfNEvents(10));
+
+                var appendResult = await _eventStore.AppendAsync("stream-2", ListOfNEvents(10));
+
+                Assert.That(appendResult, Is.EqualTo(new AppendResult(40, 20)));
             }
 
         }
