@@ -228,14 +228,6 @@ public class EventStoreTest
         return MultipleEvents();
     }
 
-    private static object BuildEvents(string countEvents)
-    {
-        if (countEvents == "one")
-            return AnEvent();
-
-        return MultipleEvents();
-    }
-
     private static EventData AnEvent()
     {
         var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
