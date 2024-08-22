@@ -32,7 +32,6 @@ public record StreamState
         ExpectedRevision = expectedRevision;
     }
 
-    public static StreamState FromType(StreamStateType type) => new(type, 0L);
     public static StreamState NoStream() => new(StreamStateType.NoStream, 0L);
     public static StreamState Any() => new(StreamStateType.Any, 0L);
     public static StreamState StreamExists() => new(StreamStateType.StreamExists, 0L);
