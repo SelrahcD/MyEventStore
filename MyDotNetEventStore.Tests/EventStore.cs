@@ -37,7 +37,7 @@ public record StreamState
     public static StreamState Any() => new(StreamStateType.Any, null);
     public static StreamState StreamExists() => new(StreamStateType.StreamExists, null);
 
-    public static StreamState AtRevision(long revision) => new StreamState(StreamStateType.FromRevision, revision);
+    public static StreamState AtRevision(long revision) => new StreamState(StreamStateType.AtRevision, revision);
 }
 
 public enum StreamStateType
@@ -45,7 +45,7 @@ public enum StreamStateType
     NoStream,
     Any,
     StreamExists,
-    FromRevision
+    AtRevision
 }
 
 public class ReadStreamResult : IEnumerable<EventData>
@@ -164,7 +164,7 @@ public class EventStore
 
     private async Task DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
-        if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists || streamState.Type == StreamStateType.FromRevision)
+        if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists || streamState.Type == StreamStateType.AtRevision)
         {
             var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
                 _npgsqlConnection);
@@ -176,7 +176,7 @@ public class EventStore
             {
                 case true when streamState.Type == StreamStateType.NoStream:
                     throw ConcurrencyException.StreamAlreadyExists(streamId);
-                case false when streamState.Type == StreamStateType.FromRevision:
+                case false when streamState.Type == StreamStateType.AtRevision:
                     throw ConcurrencyException.StreamDoesntExist(streamId);
                 case false when streamState.Type == StreamStateType.StreamExists:
                     throw ConcurrencyException.StreamDoesntExist(streamId);
