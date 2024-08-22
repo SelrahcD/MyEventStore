@@ -217,35 +217,20 @@ public class EventStoreTest
             }
 
             [TestFixture]
-            [Ignore("")]
+
             public class WithARevisionNumber : PerformsConcurrencyChecks
             {
-                // [Test]
-                // public async Task Doesnt_allow_to_write_to_non_existing_stream(
-                //     [Values] CountOfEvents countEvents)
-                // {
-                //     var events = BuildEvents(countEvents);
-                //
-                //     await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events, 1);
-                //
-                //     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                //         await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamState.NoStream));
-                //
-                //     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-stream-id' doesn't exists."));
-                // }
-                //
-                // [Test]
-                // public Task Allows_to_write_to_a_non_existing_stream(
-                //     [Values] CountOfEvents countEvents)
-                // {
-                //     Assert.DoesNotThrowAsync(async () =>
-                //     {
-                //         await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                //             StreamState.NoStream);
-                //     });
-                //
-                //     return Task.CompletedTask;
-                // }
+                [Test]
+                public async Task Doesnt_allow_to_write_to_non_existing_stream(
+                    [Values] CountOfEvents countEvents)
+                {
+                    var events = BuildEvents(countEvents);
+
+                    var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                        await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events, StreamState.AtRevision(1)));
+
+                    Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-stream-id' doesn't exists."));
+                }
             }
 
         }
