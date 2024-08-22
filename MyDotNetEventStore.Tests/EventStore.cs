@@ -21,6 +21,23 @@ public class ConcurrencyException : Exception
     }
 }
 
+public record StreamState
+{
+    public StreamStateType Type { get; }
+    public int? ExpectedRevision { get; }
+
+    private StreamState(StreamStateType type, int? expectedRevision)
+    {
+        Type = type;
+        ExpectedRevision = expectedRevision;
+    }
+
+    public static StreamState FromType(StreamStateType type) => new(type, null);
+    public static StreamState NoStream() => new(StreamStateType.NoStream, null);
+    public static StreamState Any() => new(StreamStateType.Any, null);
+    public static StreamState StreamExists() => new(StreamStateType.StreamExists, null);
+}
+
 public enum StreamStateType
 {
     NoStream,
@@ -144,7 +161,8 @@ public class EventStore
 
     private async Task DoAppendAsync(string streamId, List<EventData> events, StreamStateType streamStateType)
     {
-        if (streamStateType == StreamStateType.NoStream || streamStateType == StreamStateType.StreamExists)
+        var streamState = StreamState.FromType(streamStateType);
+        if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists)
         {
             var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
                 _npgsqlConnection);
@@ -154,9 +172,9 @@ public class EventStore
 
             switch (streamExists)
             {
-                case true when streamStateType == StreamStateType.NoStream:
+                case true when streamState.Type == StreamStateType.NoStream:
                     throw ConcurrencyException.StreamAlreadyExists(streamId);
-                case false when streamStateType == StreamStateType.StreamExists:
+                case false when streamState.Type == StreamStateType.StreamExists:
                     throw ConcurrencyException.StreamDoesntExist(streamId);
             }
         }
