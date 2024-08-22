@@ -160,13 +160,7 @@ public class EventStore
             _npgsqlConnection);
         lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
 
-        long lastRevision = 0;
-
-        var executeScalarAsync = await lastRevisionCommand.ExecuteScalarAsync();
-        if (executeScalarAsync != null)
-        {
-            lastRevision = (long)executeScalarAsync;
-        }
+        var lastRevision = (long) (await lastRevisionCommand.ExecuteScalarAsync() ?? 0L);
 
         foreach (var evt in events)
         {
