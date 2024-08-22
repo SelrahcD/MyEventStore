@@ -24,7 +24,8 @@ public class PostgresEventStoreSetup
                                          CREATE TABLE IF NOT EXISTS events (
                                              position SERIAL PRIMARY KEY,
                                              stream_id TEXT NOT NULL,
-                                             event_type TEXT NOT NULL
+                                             event_type TEXT NOT NULL,
+                                             data JSONB
                                          );
                                          """, Connection);
 
@@ -238,8 +239,9 @@ public class EventStoreTest
     private static EventData AnEvent()
     {
         var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
+        var fakeEventData = new List<string> { "{}", "{\"id\": \"1234567\"}"};
 
-        return new EventData(SelectRandom(fakeEventTypes));
+        return new EventData(SelectRandom(fakeEventTypes), SelectRandom(fakeEventData));
     }
 
     private static List<EventData> MultipleEvents()
@@ -262,5 +264,10 @@ public class EventStoreTest
         var random = new Random();
         var randomIndex = random.Next(elements.Count);
         return elements[randomIndex];
+    }
+
+    private class ASimpleEvent
+    {
+
     }
 }

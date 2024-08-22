@@ -1,5 +1,6 @@
 using System.Collections;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace MyDotNetEventStore.Tests;
 
@@ -75,10 +76,12 @@ public enum ReadState
 
 public record EventData
 {
+    public string Data { get; }
     public string EventType { get; }
 
-    public EventData(string eventType)
+    public EventData(string eventType, string data)
     {
+        Data = data;
         EventType = eventType;
     }
 }
@@ -95,7 +98,8 @@ public class EventStore
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
         var command = new NpgsqlCommand("""
-                                        SELECT event_type FROM events
+                                        SELECT event_type, data
+                                        FROM events
                                         WHERE stream_id = @stream_id
                                         ORDER BY position ASC;
                                         """, _npgsqlConnection);
@@ -114,8 +118,9 @@ public class EventStore
         while (await reader.ReadAsync())
         {
             var eventType = reader.GetString(0);
+            var data = reader.GetString(1);
 
-            events.Add(new EventData(eventType));
+            events.Add(new EventData(eventType, data));
         }
 
         return ReadStreamResult.StreamFound(streamId, events);
@@ -147,10 +152,11 @@ public class EventStore
 
         foreach (var evt in events)
         {
-            var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type) VALUES (@stream_id, @event_type);",
+            var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type, data) VALUES (@stream_id, @event_type, @event_data);",
                 _npgsqlConnection);
             command.Parameters.AddWithValue("stream_id", streamId);
             command.Parameters.AddWithValue("event_type", evt.EventType);
+            command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
 
             await command.ExecuteNonQueryAsync();
         }
