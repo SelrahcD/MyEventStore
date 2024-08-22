@@ -25,7 +25,8 @@ public class PostgresEventStoreSetup
                                              position SERIAL PRIMARY KEY,
                                              stream_id TEXT NOT NULL,
                                              event_type TEXT NOT NULL,
-                                             data JSONB
+                                             data JSONB,
+                                             metadata JSONB
                                          );
                                          """, Connection);
 
@@ -232,8 +233,9 @@ public class EventStoreTest
     {
         var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
         var fakeEventData = new List<string> { "{}", "{\"id\": \"1234567\"}"};
+        var fakeEventMetaData = new List<string> { "{}", "{\"userId\": \"u-345678\", \"causationId\": \"98697678\", \"correlationId\": \"12345\"}"};
 
-        return new EventData(SelectRandom(fakeEventTypes), SelectRandom(fakeEventData));
+        return new EventData(SelectRandom(fakeEventTypes), SelectRandom(fakeEventData), SelectRandom(fakeEventMetaData));
     }
 
     private static List<EventData> MultipleEvents()

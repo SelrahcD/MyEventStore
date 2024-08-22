@@ -77,11 +77,13 @@ public enum ReadState
 public record EventData
 {
     public string Data { get; }
+    public string MetaData { get; }
     public string EventType { get; }
 
-    public EventData(string eventType, string data)
+    public EventData(string eventType, string data, string metaData)
     {
         Data = data;
+        MetaData = metaData;
         EventType = eventType;
     }
 }
@@ -98,7 +100,7 @@ public class EventStore
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
         var command = new NpgsqlCommand("""
-                                        SELECT event_type, data
+                                        SELECT event_type, data, metadata
                                         FROM events
                                         WHERE stream_id = @stream_id
                                         ORDER BY position ASC;
@@ -119,8 +121,9 @@ public class EventStore
         {
             var eventType = reader.GetString(0);
             var data = reader.GetString(1);
+            var metaData = reader.GetString(2);
 
-            events.Add(new EventData(eventType, data));
+            events.Add(new EventData(eventType, data, metaData));
         }
 
         return ReadStreamResult.StreamFound(streamId, events);
@@ -152,11 +155,12 @@ public class EventStore
 
         foreach (var evt in events)
         {
-            var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type, data) VALUES (@stream_id, @event_type, @event_data);",
+            var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type, data, metadata) VALUES (@stream_id, @event_type, @event_data, @event_metadata);",
                 _npgsqlConnection);
             command.Parameters.AddWithValue("stream_id", streamId);
             command.Parameters.AddWithValue("event_type", evt.EventType);
             command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
+            command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);
 
             await command.ExecuteNonQueryAsync();
         }
