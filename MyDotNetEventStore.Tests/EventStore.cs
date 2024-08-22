@@ -79,12 +79,14 @@ public record EventData
     public string Data { get; }
     public string MetaData { get; }
     public string EventType { get; }
+    public long? Revision { get; set; }
 
-    public EventData(string eventType, string data, string metaData)
+    public EventData(string eventType, string data, string metaData, long? revision = null)
     {
         Data = data;
         MetaData = metaData;
         EventType = eventType;
+        Revision = revision;
     }
 }
 
@@ -100,7 +102,7 @@ public class EventStore
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
         var command = new NpgsqlCommand("""
-                                        SELECT event_type, data, metadata
+                                        SELECT event_type, revision, data, metadata
                                         FROM events
                                         WHERE stream_id = @stream_id
                                         ORDER BY position ASC;
@@ -120,10 +122,11 @@ public class EventStore
         while (await reader.ReadAsync())
         {
             var eventType = reader.GetString(0);
-            var data = reader.GetString(1);
-            var metaData = reader.GetString(2);
+            var revision = reader.GetInt64(1);
+            var data = reader.GetString(2);
+            var metaData = reader.GetString(3);
 
-            events.Add(new EventData(eventType, data, metaData));
+            events.Add(new EventData(eventType, data, metaData, revision));
         }
 
         return ReadStreamResult.StreamFound(streamId, events);
@@ -153,11 +156,24 @@ public class EventStore
             }
         }
 
+        var lastRevisionCommand = new NpgsqlCommand("SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY revision DESC LIMIT 1;",
+            _npgsqlConnection);
+        lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
+
+        long lastRevision = 0;
+
+        var executeScalarAsync = await lastRevisionCommand.ExecuteScalarAsync();
+        if (executeScalarAsync != null)
+        {
+            lastRevision = (long)executeScalarAsync;
+        }
+
         foreach (var evt in events)
         {
-            var command = new NpgsqlCommand("INSERT INTO events (stream_id, event_type, data, metadata) VALUES (@stream_id, @event_type, @event_data, @event_metadata);",
+            var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, event_type, data, metadata) VALUES (@stream_id, @revision, @event_type, @event_data, @event_metadata);",
                 _npgsqlConnection);
             command.Parameters.AddWithValue("stream_id", streamId);
+            command.Parameters.AddWithValue("revision", ++lastRevision);
             command.Parameters.AddWithValue("event_type", evt.EventType);
             command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
             command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);

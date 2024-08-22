@@ -24,9 +24,11 @@ public class PostgresEventStoreSetup
                                          CREATE TABLE IF NOT EXISTS events (
                                              position SERIAL PRIMARY KEY,
                                              stream_id TEXT NOT NULL,
+                                             revision BIGINT NOT NULL,
                                              event_type TEXT NOT NULL,
                                              data JSONB,
-                                             metadata JSONB
+                                             metadata JSONB,
+                                             UNIQUE (stream_id, revision)
                                          );
                                          """, Connection);
 
@@ -100,9 +102,9 @@ public class EventStoreTest
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
                 {
-                    evt1,
-                    evt2,
-                    evt3
+                    evt1 with{Revision = 1},
+                    evt2 with{Revision = 2},
+                    evt3 with{Revision = 3}
                 }));
             }
 
@@ -121,7 +123,7 @@ public class EventStoreTest
 
                 Assert.That(readEvents, Is.EqualTo(new List<EventData>
                 {
-                    evtInStream,
+                    evtInStream with {Revision = 1},
                 }));
             }
         }
@@ -217,6 +219,21 @@ public class EventStoreTest
 
                     return Task.CompletedTask;
                 }
+            }
+        }
+
+        [TestFixture]
+        public class MaintainsStreamRevision : AppendingEvents
+        {
+            [Test]
+            public async Task Adds_first_event_in_stream_at_revision_1()
+            {
+                var appendedEvent = AnEvent();
+                await _eventStore.AppendAsync("stream-id", appendedEvent);
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                Assert.That(readStreamResult.ToList().First().Revision, Is.EqualTo(1));
             }
         }
     }
