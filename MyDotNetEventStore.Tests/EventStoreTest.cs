@@ -1,5 +1,4 @@
 using Npgsql;
-using NUnit.Framework.Internal;
 using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
