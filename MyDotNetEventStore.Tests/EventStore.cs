@@ -156,10 +156,10 @@ public class EventStore
 
     public async Task AppendAsync(string streamId, List<EventData> events, StreamStateType streamStateType = StreamStateType.Any)
     {
-        await DoAppendAsync(streamId, events, streamStateType, StreamState.FromType(streamStateType));
+        await DoAppendAsync(streamId, events, StreamState.FromType(streamStateType));
     }
 
-    private async Task DoAppendAsync(string streamId, List<EventData> events, StreamStateType streamStateType, StreamState streamState)
+    private async Task DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
         if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists)
         {
