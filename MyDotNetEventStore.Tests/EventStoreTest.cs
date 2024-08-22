@@ -237,7 +237,7 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events(
+            public async Task Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_at_once(
                 [Random(0, 1000, 5)] int eventCount)
             {
                 var appendedEvent = ListOfNEvents(eventCount);
@@ -247,6 +247,23 @@ public class EventStoreTest
 
                 Assert.That(readStreamResult.ToList().Last().Revision, Is.EqualTo(eventCount));
             }
+
+            [Test]
+            public async Task Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_events_are_in_multiple_times(
+                [Random(0, 100, 2)] int eventCount1,
+                [Random(0, 100, 1)] int eventCount2,
+                [Random(0, 100, 1)] int eventCount3
+                )
+            {
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount1));
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount2));
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount3));
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                Assert.That(readStreamResult.ToList().Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
+            }
+
         }
     }
 
