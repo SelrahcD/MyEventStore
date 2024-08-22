@@ -146,7 +146,7 @@ public class EventStoreTest
                     await _eventStore.AppendAsync("stream-id", (dynamic)events);
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamState.NoStream));
+                        await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamStateType.NoStream));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'stream-id' already exists."));
                 }
@@ -158,7 +158,7 @@ public class EventStoreTest
                     Assert.DoesNotThrowAsync(async () =>
                     {
                         await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                            StreamState.NoStream);
+                            StreamStateType.NoStream);
                     });
 
                     return Task.CompletedTask;
@@ -173,7 +173,7 @@ public class EventStoreTest
                 {
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                            StreamState.StreamExists));
+                            StreamStateType.StreamExists));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
                 }
@@ -187,7 +187,7 @@ public class EventStoreTest
                     Assert.DoesNotThrowAsync(async () =>
                     {
                         await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents),
-                            StreamState.StreamExists);
+                            StreamStateType.StreamExists);
                     });
                 }
             }
@@ -203,7 +203,7 @@ public class EventStoreTest
                     Assert.DoesNotThrowAsync(async () =>
                     {
                         await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents),
-                            StreamState.Any);
+                            StreamStateType.Any);
                     });
                 }
 
@@ -214,12 +214,45 @@ public class EventStoreTest
                     Assert.DoesNotThrowAsync(async () =>
                     {
                         await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
-                            StreamState.Any);
+                            StreamStateType.Any);
                     });
 
                     return Task.CompletedTask;
                 }
             }
+
+            [TestFixture]
+            [Ignore("")]
+            public class WithARevisionNumber : PerformsConcurrencyChecks
+            {
+                // [Test]
+                // public async Task Doesnt_allow_to_write_to_non_existing_stream(
+                //     [Values] CountOfEvents countEvents)
+                // {
+                //     var events = BuildEvents(countEvents);
+                //
+                //     await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events, 1);
+                //
+                //     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                //         await _eventStore.AppendAsync("stream-id", (dynamic)events, StreamState.NoStream));
+                //
+                //     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-stream-id' doesn't exists."));
+                // }
+                //
+                // [Test]
+                // public Task Allows_to_write_to_a_non_existing_stream(
+                //     [Values] CountOfEvents countEvents)
+                // {
+                //     Assert.DoesNotThrowAsync(async () =>
+                //     {
+                //         await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents),
+                //             StreamState.NoStream);
+                //     });
+                //
+                //     return Task.CompletedTask;
+                // }
+            }
+
         }
 
         [TestFixture]

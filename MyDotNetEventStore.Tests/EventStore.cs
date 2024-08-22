@@ -21,7 +21,7 @@ public class ConcurrencyException : Exception
     }
 }
 
-public enum StreamState
+public enum StreamStateType
 {
     NoStream,
     Any,
@@ -132,19 +132,19 @@ public class EventStore
         return ReadStreamResult.StreamFound(streamId, events);
     }
 
-    public async Task AppendAsync(string streamId, EventData evt, StreamState streamState = StreamState.Any)
+    public async Task AppendAsync(string streamId, EventData evt, StreamStateType streamStateType = StreamStateType.Any)
     {
-        await AppendAsync(streamId, [evt], streamState);
+        await AppendAsync(streamId, [evt], streamStateType);
     }
 
-    public async Task AppendAsync(string streamId, List<EventData> events, StreamState streamState = StreamState.Any)
+    public async Task AppendAsync(string streamId, List<EventData> events, StreamStateType streamStateType = StreamStateType.Any)
     {
-        await DoAppendAsync(streamId, events, streamState);
+        await DoAppendAsync(streamId, events, streamStateType);
     }
 
-    private async Task DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
+    private async Task DoAppendAsync(string streamId, List<EventData> events, StreamStateType streamStateType)
     {
-        if (streamState == StreamState.NoStream || streamState == StreamState.StreamExists)
+        if (streamStateType == StreamStateType.NoStream || streamStateType == StreamStateType.StreamExists)
         {
             var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
                 _npgsqlConnection);
@@ -154,9 +154,9 @@ public class EventStore
 
             switch (streamExists)
             {
-                case true when streamState == StreamState.NoStream:
+                case true when streamStateType == StreamStateType.NoStream:
                     throw ConcurrencyException.StreamAlreadyExists(streamId);
-                case false when streamState == StreamState.StreamExists:
+                case false when streamStateType == StreamStateType.StreamExists:
                     throw ConcurrencyException.StreamDoesntExist(streamId);
             }
         }
