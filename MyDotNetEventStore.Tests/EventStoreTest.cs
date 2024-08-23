@@ -335,16 +335,15 @@ public class EventStoreTest
         if (countEvents == CountOfEvents.One)
             return AnEvent().ToEventData();
 
-        return MultipleEvents();
+        return MultipleEvents().ToEventData();
     }
 
-    private static List<EventData> MultipleEvents()
+    private static List<EventBuilder> MultipleEvents()
     {
-        var evt1 = AnEvent().ToEventData();
-        var evt2 = AnEvent().ToEventData();
-        var evt3 = AnEvent().ToEventData();
-        var events = new List<EventData> { evt1, evt2, evt3 };
-        return events;
+        var evt1 = AnEvent();
+        var evt2 = AnEvent();
+        var evt3 = AnEvent();
+        return [evt1, evt2, evt3];
     }
 
     private static List<EventData> ListOfNEvents(int eventCount)
@@ -378,7 +377,7 @@ public class EventStoreTest
         return new EventBuilder();
     }
 
-    private class EventBuilder
+    public class EventBuilder
     {
         private readonly string _eventType;
         private readonly string _data;
@@ -399,5 +398,13 @@ public class EventStoreTest
         {
             return new EventData(_eventType, _data, _metadata);
         }
+    }
+}
+
+public static class EventBuilderExtensions
+{
+    public static List<EventData> ToEventData(this List<EventStoreTest.EventBuilder> eventBuilders)
+    {
+        return eventBuilders.Select(builder => builder.ToEventData()).ToList();
     }
 }
