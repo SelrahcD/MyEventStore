@@ -93,32 +93,31 @@ public class EventStoreTest
             [Test]
             public async Task returns_all_events_appended_to_the_stream_in_order()
             {
-                var evt1 = AnEvent().ToEventData();
-                var evt2 = AnEvent().ToEventData();
-                var evt3 = AnEvent().ToEventData();
+                var evt1 = AnEvent();
+                var evt2 = AnEvent();
+                var evt3 = AnEvent();
 
-                await _eventStore.AppendAsync("stream-id", evt1);
-                await _eventStore.AppendAsync("stream-id", evt2);
-                await _eventStore.AppendAsync("stream-id", evt3);
+                await _eventStore.AppendAsync("stream-id", evt1.ToEventData());
+                await _eventStore.AppendAsync("stream-id", evt2.ToEventData());
+                await _eventStore.AppendAsync("stream-id", evt3.ToEventData());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
                 {
-                    evt1 with{Revision = 1},
-                    evt2 with{Revision = 2},
-                    evt3 with{Revision = 3}
+                    evt1.ToEventData() with{Revision = 1},
+                    evt2.ToEventData() with{Revision = 2},
+                    evt3.ToEventData() with{Revision = 3}
                 }));
             }
 
             [Test]
             public async Task doesnt_return_events_appended_to_another_stream()
             {
-                var evtInStream = AnEvent().ToEventData();
-                var evtInAnotherStream = AnEvent().ToEventData();
+                var evtInStream = AnEvent();
 
-                await _eventStore.AppendAsync("stream-id", evtInStream);
-                await _eventStore.AppendAsync("another-stream-id", evtInAnotherStream);
+                await _eventStore.AppendAsync("stream-id", evtInStream.ToEventData());
+                await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
@@ -126,7 +125,7 @@ public class EventStoreTest
 
                 Assert.That(readEvents, Is.EqualTo(new List<EventData>
                 {
-                    evtInStream with {Revision = 1},
+                    evtInStream.ToEventData() with {Revision = 1},
                 }));
             }
         }
