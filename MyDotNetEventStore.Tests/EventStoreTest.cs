@@ -134,6 +134,9 @@ public class EventStoreTest
     [TestFixture]
     public class ReadingAllStream : EventStoreTest
     {
+        // Todo: Test memory usage
+        // Todo: Test cancellation token stops enumeration
+
         [Test]
         public async Task returns_all_events_appended_to_all_streams_in_order()
         {
