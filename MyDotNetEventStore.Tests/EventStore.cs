@@ -290,43 +290,52 @@ public class EventStore
 
         while (true)
         {
-            var command = new NpgsqlCommand($"""
-                                             SELECT position, event_type, revision, data, metadata
-                                             FROM events
-                                             WHERE position > @lastPosition
-                                             ORDER BY position ASC
-                                             LIMIT @batchSize;
-                                             """, _npgsqlConnection);
-
-            command.Parameters.AddWithValue("@lastPosition", lastPosition);
-            command.Parameters.AddWithValue("@batchSize", batchSize);
-
-            await using var reader = await command.ExecuteReaderAsync();
-
-            bool hasRows = false;
-
-            while (await reader.ReadAsync())
-            {
-                hasRows = true;
-                var position = reader.GetInt64(0);
-                var eventType = reader.GetString(1);
-                var revision = reader.GetInt64(2);
-                var data = reader.GetString(3);
-                var metaData = reader.GetString(4);
-
-                events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
-
-                lastPosition = position;
-            }
+            var (hasRows, lastSeenPosition) = await FetchBatchOfEvents(batchSize, events, lastPosition);
 
             // If no rows were fetched in this batch, we can break out of the loop
             if (!hasRows)
             {
                 break;
             }
+
+            lastPosition = lastSeenPosition;
         }
 
         return new ReadAllStreamResult(events);
 
+    }
+
+    private async Task<(bool, long)> FetchBatchOfEvents(int batchSize, List<ResolvedEvent> events, long lastPosition)
+    {
+        var command = new NpgsqlCommand($"""
+                                         SELECT position, event_type, revision, data, metadata
+                                         FROM events
+                                         WHERE position > @lastPosition
+                                         ORDER BY position ASC
+                                         LIMIT @batchSize;
+                                         """, _npgsqlConnection);
+
+        command.Parameters.AddWithValue("@lastPosition", lastPosition);
+        command.Parameters.AddWithValue("@batchSize", batchSize);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        bool hasRows = false;
+
+        while (await reader.ReadAsync())
+        {
+            hasRows = true;
+            var position = reader.GetInt64(0);
+            var eventType = reader.GetString(1);
+            var revision = reader.GetInt64(2);
+            var data = reader.GetString(3);
+            var metaData = reader.GetString(4);
+
+            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
+
+            lastPosition = position;
+        }
+
+        return (hasRows, lastPosition);
     }
 }
