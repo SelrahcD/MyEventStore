@@ -135,7 +135,7 @@ public class EventStoreTest
     public class ReadingAllStream : EventStoreTest
     {
         [Test]
-        public async Task returns_all_events_appended_to_the_stream_in_order()
+        public async Task returns_all_events_appended_to_all_streams_in_order()
         {
             var evt1 = AnEvent();
             var evt2 = AnEvent();
