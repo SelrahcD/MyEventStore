@@ -284,27 +284,49 @@ public class EventStore
 
     public async Task<ReadAllStreamResult> ReadAllAsync()
     {
-        var command = new NpgsqlCommand("""
-                                        SELECT position, event_type, revision, data, metadata
-                                        FROM events
-                                        ORDER BY position ASC;
-                                        """, _npgsqlConnection);
-
         var events = new List<ResolvedEvent>();
+        long lastPosition = 0;
+        const int batchSize = 100;
 
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        while (true)
         {
-            var position = reader.GetInt64(0);
-            var eventType = reader.GetString(1);
-            var revision = reader.GetInt64(2);
-            var data = reader.GetString(3);
-            var metaData = reader.GetString(4);
+            var command = new NpgsqlCommand($"""
+                                             SELECT position, event_type, revision, data, metadata
+                                             FROM events
+                                             WHERE position > @lastPosition
+                                             ORDER BY position ASC
+                                             LIMIT @batchSize;
+                                             """, _npgsqlConnection);
 
-            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
+            command.Parameters.AddWithValue("@lastPosition", lastPosition);
+            command.Parameters.AddWithValue("@batchSize", batchSize);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            bool hasRows = false;
+
+            while (await reader.ReadAsync())
+            {
+                hasRows = true;
+                var position = reader.GetInt64(0);
+                var eventType = reader.GetString(1);
+                var revision = reader.GetInt64(2);
+                var data = reader.GetString(3);
+                var metaData = reader.GetString(4);
+
+                events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
+
+                lastPosition = position;
+            }
+
+            // If no rows were fetched in this batch, we can break out of the loop
+            if (!hasRows)
+            {
+                break;
+            }
         }
 
         return new ReadAllStreamResult(events);
+
     }
 }
