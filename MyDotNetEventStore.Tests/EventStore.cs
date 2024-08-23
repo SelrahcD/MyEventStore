@@ -131,7 +131,7 @@ public record ResolvedEvent
     public string Data { get; }
     public string MetaData { get; }
     public string EventType { get; }
-    public long? Revision { get; }
+    public long Revision { get; }
 
     public ResolvedEvent(long revision, string eventType, string data, string metaData)
     {
