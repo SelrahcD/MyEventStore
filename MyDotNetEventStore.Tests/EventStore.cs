@@ -149,13 +149,15 @@ public record EventData
 
 public record ResolvedEvent
 {
+    public long Position { get; }
     public string Data { get; }
     public string MetaData { get; }
     public string EventType { get; }
     public long Revision { get; }
 
-    public ResolvedEvent(long revision, string eventType, string data, string metaData)
+    public ResolvedEvent(long position, long revision, string eventType, string data, string metaData)
     {
+        Position = position;
         Data = data;
         MetaData = metaData;
         EventType = eventType;
@@ -175,7 +177,7 @@ public class EventStore
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
         var command = new NpgsqlCommand("""
-                                        SELECT event_type, revision, data, metadata
+                                        SELECT position, event_type, revision, data, metadata
                                         FROM events
                                         WHERE stream_id = @stream_id
                                         ORDER BY position ASC;
@@ -194,12 +196,13 @@ public class EventStore
 
         while (await reader.ReadAsync())
         {
-            var eventType = reader.GetString(0);
-            var revision = reader.GetInt64(1);
-            var data = reader.GetString(2);
-            var metaData = reader.GetString(3);
+            var position = reader.GetInt64(0);
+            var eventType = reader.GetString(1);
+            var revision = reader.GetInt64(2);
+            var data = reader.GetString(3);
+            var metaData = reader.GetString(4);
 
-            events.Add(new ResolvedEvent(revision, eventType, data, metaData));
+            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
         }
 
         return ReadStreamResult.StreamFound(streamId, events);
@@ -284,7 +287,7 @@ public class EventStore
     public async Task<ReadAllStreamResult> ReadAllAsync()
     {
         var command = new NpgsqlCommand("""
-                                        SELECT event_type, revision, data, metadata
+                                        SELECT position, event_type, revision, data, metadata
                                         FROM events
                                         ORDER BY position ASC;
                                         """, _npgsqlConnection);
@@ -295,12 +298,13 @@ public class EventStore
 
         while (await reader.ReadAsync())
         {
-            var eventType = reader.GetString(0);
-            var revision = reader.GetInt64(1);
-            var data = reader.GetString(2);
-            var metaData = reader.GetString(3);
+            var position = reader.GetInt64(0);
+            var eventType = reader.GetString(1);
+            var revision = reader.GetInt64(2);
+            var data = reader.GetString(3);
+            var metaData = reader.GetString(4);
 
-            events.Add(new ResolvedEvent(revision, eventType, data, metaData));
+            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
         }
 
         return new ReadAllStreamResult(events);
