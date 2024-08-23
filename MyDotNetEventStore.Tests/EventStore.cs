@@ -94,21 +94,34 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>
 
 public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
-    private readonly List<ResolvedEvent> _events;
+    private readonly EventStore _eventStore;
 
-    public ReadAllStreamResult(List<ResolvedEvent> events)
+    public ReadAllStreamResult(EventStore eventStore)
     {
-        _events = events;
+        _eventStore = eventStore;
     }
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
-        foreach (var evt in _events)
-        {
-            // Simulate asynchronous operation
-            await Task.Yield();
+        long lastPosition = 0;
+        const int batchSize = 100;
 
-            yield return evt;
+        while (true)
+        {
+            var (hasRows, lastSeenPosition, events) = await _eventStore.FetchBatchOfEvents(batchSize, lastPosition);
+
+            foreach (var evt in events)
+            {
+                yield return evt;
+            }
+
+            // If no rows were fetched in this batch, we can break out of the loop
+            if (!hasRows)
+            {
+                break;
+            }
+
+            lastPosition = lastSeenPosition;
         }
     }
 }
@@ -284,35 +297,12 @@ public class EventStore
 
     public async Task<ReadAllStreamResult> ReadAllAsync()
     {
-        var events = await GetValue();
-
-        return new ReadAllStreamResult(events);
+        return new ReadAllStreamResult(this);
     }
 
-    private async Task<List<ResolvedEvent>> GetValue()
+    public async Task<(bool, long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
         var events = new List<ResolvedEvent>();
-        long lastPosition = 0;
-        const int batchSize = 100;
-
-        while (true)
-        {
-            var (hasRows, lastSeenPosition) = await FetchBatchOfEvents(batchSize, events, lastPosition);
-
-            // If no rows were fetched in this batch, we can break out of the loop
-            if (!hasRows)
-            {
-                break;
-            }
-
-            lastPosition = lastSeenPosition;
-        }
-
-        return events;
-    }
-
-    public async Task<(bool, long)> FetchBatchOfEvents(int batchSize, List<ResolvedEvent> events, long lastPosition)
-    {
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
                                          FROM events
@@ -342,6 +332,6 @@ public class EventStore
             lastPosition = position;
         }
 
-        return (hasRows, lastPosition);
+        return (hasRows, lastPosition, events);
     }
 }
