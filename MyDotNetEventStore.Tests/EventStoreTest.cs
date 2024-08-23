@@ -132,6 +132,34 @@ public class EventStoreTest
     }
 
     [TestFixture]
+    public class ReadingAllStream : EventStoreTest
+    {
+        [Test]
+        public async Task returns_all_events_appended_to_the_stream_in_order()
+        {
+            var evt1 = AnEvent();
+            var evt2 = AnEvent();
+            var evt3 = AnEvent();
+            var evt4 = AnEvent();
+
+            await _eventStore.AppendAsync("stream-id1", evt1.ToEventData());
+            await _eventStore.AppendAsync("stream-id2", evt2.ToEventData());
+            await _eventStore.AppendAsync("stream-id3", evt3.ToEventData());
+            await _eventStore.AppendAsync("stream-id1", evt4.ToEventData());
+
+            var readStreamResult = await _eventStore.ReadAllAsync();
+
+            Assert.That(readStreamResult, Is.EqualTo(new List<ResolvedEvent>
+            {
+                evt1.ToResolvedEvent(1),
+                evt2.ToResolvedEvent(1),
+                evt3.ToResolvedEvent(1),
+                evt4.ToResolvedEvent(2),
+            }));
+        }
+    }
+
+    [TestFixture]
     public class AppendingEvents : EventStoreTest
     {
         public class PerformsConcurrencyChecks : AppendingEvents

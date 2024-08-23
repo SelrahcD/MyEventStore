@@ -257,4 +257,29 @@ public class EventStore
 
         return new AppendResult(position, revision);
     }
+
+    public async Task<List<ResolvedEvent>> ReadAllAsync()
+    {
+        var command = new NpgsqlCommand("""
+                                        SELECT event_type, revision, data, metadata
+                                        FROM events
+                                        ORDER BY position ASC;
+                                        """, _npgsqlConnection);
+
+        var events = new List<ResolvedEvent>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var eventType = reader.GetString(0);
+            var revision = reader.GetInt64(1);
+            var data = reader.GetString(2);
+            var metaData = reader.GetString(3);
+
+            events.Add(new ResolvedEvent(revision, eventType, data, metaData));
+        }
+
+        return events;
+    }
 }
