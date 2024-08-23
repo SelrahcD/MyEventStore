@@ -105,9 +105,9 @@ public class EventStoreTest
 
                 Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
                 {
-                    evt1.ToEventData() with{Revision = 1},
-                    evt2.ToEventData() with{Revision = 2},
-                    evt3.ToEventData() with{Revision = 3}
+                    evt1.ToResolvedEvent(1),
+                    evt2.ToResolvedEvent(2),
+                    evt3.ToResolvedEvent(3)
                 }));
             }
 
@@ -125,7 +125,7 @@ public class EventStoreTest
 
                 Assert.That(readEvents, Is.EqualTo(new List<EventData>
                 {
-                    evtInStream.ToEventData() with {Revision = 1},
+                    evtInStream.ToResolvedEvent(1),
                 }));
             }
         }
@@ -397,6 +397,11 @@ public class EventStoreTest
         public EventData ToEventData()
         {
             return new EventData(_eventType, _data, _metadata);
+        }
+
+        public EventData ToResolvedEvent(int revision)
+        {
+            return ToEventData() with { Revision = revision };
         }
     }
 }
