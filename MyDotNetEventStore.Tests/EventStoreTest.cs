@@ -163,26 +163,38 @@ public class EventStoreTest
             }));
         }
 
-        // [Test]
-        // public async Task returns_all_events_appended_to_all_streams_in_order_even_with_a_looooot_of_events()
-        // {
-        //     await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-        //     await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
-        //     await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
-        //     await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-        //
-        //     var readAllStreamResult = await _eventStore.ReadAllAsync();
-        //
-        //     int count = 0;
-        //
-        //     await foreach (var item in readAllStreamResult)
-        //     {
-        //         count++;
-        //     }
-        //
-        //
-        //     Assert.That(readAllStreamResult.ToList().Count, Is.EqualTo(4000));
-        // }
+        [Test]
+        public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
+        {
+            await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+            await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
+            await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
+            await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+
+            long memoryBefore = GC.GetTotalMemory(true);
+
+            var readAllStreamResult = await _eventStore.ReadAllAsync();
+
+            var count = 0;
+
+            await foreach (var _ in readAllStreamResult)
+            {
+                count++;
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            var memoryAfter = GC.GetTotalMemory(true);
+
+            var memoryUsed = memoryAfter - memoryBefore;
+
+            var acceptableMemoryUsage = 1 * 1024 * 1024; // 1 MB
+
+            Assert.Less(memoryUsed, acceptableMemoryUsage, $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
+            Assert.That(count, Is.EqualTo(4000));
+        }
     }
 
     [TestFixture]
