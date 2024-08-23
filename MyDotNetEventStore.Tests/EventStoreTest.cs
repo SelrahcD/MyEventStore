@@ -149,7 +149,14 @@ public class EventStoreTest
 
             var readAllStreamResult = await _eventStore.ReadAllAsync();
 
-            Assert.That(readAllStreamResult.ToList(), Is.EqualTo(new List<ResolvedEvent>
+            var resolvedEventList = new List<ResolvedEvent>();
+
+            await foreach (var item in readAllStreamResult)
+            {
+                resolvedEventList.Add(item);
+            }
+
+            Assert.That(resolvedEventList, Is.EqualTo(new List<ResolvedEvent>
             {
                 evt1.ToResolvedEvent(1, 1),
                 evt2.ToResolvedEvent(2, 1),
@@ -157,6 +164,27 @@ public class EventStoreTest
                 evt4.ToResolvedEvent(4, 2),
             }));
         }
+
+        // [Test]
+        // public async Task returns_all_events_appended_to_all_streams_in_order_even_with_a_looooot_of_events()
+        // {
+        //     await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+        //     await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
+        //     await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
+        //     await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+        //
+        //     var readAllStreamResult = await _eventStore.ReadAllAsync();
+        //
+        //     int count = 0;
+        //
+        //     await foreach (var item in readAllStreamResult)
+        //     {
+        //         count++;
+        //     }
+        //
+        //
+        //     Assert.That(readAllStreamResult.ToList().Count, Is.EqualTo(4000));
+        // }
     }
 
     [TestFixture]

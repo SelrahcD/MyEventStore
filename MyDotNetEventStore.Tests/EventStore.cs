@@ -92,7 +92,7 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>
     }
 }
 
-public class ReadAllStreamResult : IEnumerable<ResolvedEvent>
+public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private readonly List<ResolvedEvent> _events;
 
@@ -101,17 +101,15 @@ public class ReadAllStreamResult : IEnumerable<ResolvedEvent>
         _events = events;
     }
 
-    public IEnumerator<ResolvedEvent> GetEnumerator()
+    public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
         foreach (var evt in _events)
         {
+            // Simulate asynchronous operation
+            await Task.Yield();
+
             yield return evt;
         }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 }
 
