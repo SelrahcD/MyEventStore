@@ -152,12 +152,7 @@ public class EventStoreTest
 
             var readAllStreamResult = await _eventStore.ReadAllAsync();
 
-            var resolvedEventList = new List<ResolvedEvent>();
-
-            await foreach (var item in readAllStreamResult)
-            {
-                resolvedEventList.Add(item);
-            }
+            var resolvedEventList = await ToListAsync<ResolvedEvent>(readAllStreamResult);
 
             Assert.That(resolvedEventList, Is.EqualTo(new List<ResolvedEvent>
             {
@@ -462,6 +457,18 @@ public class EventStoreTest
         {
             return new ResolvedEvent(position, revision, _eventType, _data, _metadata);
         }
+    }
+
+    private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> asyncEnumerable)
+    {
+        var list = new List<T>();
+
+        await foreach (var item in asyncEnumerable)
+        {
+            list.Add(item);
+        }
+
+        return list;
     }
 }
 
