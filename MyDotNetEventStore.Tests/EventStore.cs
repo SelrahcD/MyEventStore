@@ -284,6 +284,13 @@ public class EventStore
 
     public async Task<ReadAllStreamResult> ReadAllAsync()
     {
+        var events = await GetValue();
+
+        return new ReadAllStreamResult(events);
+    }
+
+    private async Task<List<ResolvedEvent>> GetValue()
+    {
         var events = new List<ResolvedEvent>();
         long lastPosition = 0;
         const int batchSize = 100;
@@ -301,8 +308,7 @@ public class EventStore
             lastPosition = lastSeenPosition;
         }
 
-        return new ReadAllStreamResult(events);
-
+        return events;
     }
 
     public async Task<(bool, long)> FetchBatchOfEvents(int batchSize, List<ResolvedEvent> events, long lastPosition)
