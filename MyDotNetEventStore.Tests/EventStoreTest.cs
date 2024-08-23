@@ -333,11 +333,7 @@ public class EventStoreTest
 
     private static object BuildEvents(CountOfEvents countEvents)
     {
-        var oneOf = BuildEvents2(countEvents);
-
-        return oneOf.Match<OneOf<EventData, List<EventData>>>(
-            e => e.ToEventData(),
-            e => e.ToEventData()).Value;
+        return BuildEvents2(countEvents).ToEventData();
     }
 
     private static OneOf<EventBuilder, List<EventBuilder>> BuildEvents2(CountOfEvents countEvents)
@@ -413,6 +409,13 @@ public class EventStoreTest
 
 public static class EventBuilderExtensions
 {
+    public static object ToEventData(this OneOf<EventStoreTest.EventBuilder, List<EventStoreTest.EventBuilder>> oneOf)
+    {
+        return oneOf.Match<OneOf<EventData, List<EventData>>>(
+            e => e.ToEventData(),
+            e => e.ToEventData()).Value;
+    }
+
     public static List<EventData> ToEventData(this List<EventStoreTest.EventBuilder> eventBuilders)
     {
         return eventBuilders.Select(builder => builder.ToEventData()).ToList();
