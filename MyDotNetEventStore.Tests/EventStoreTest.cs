@@ -169,13 +169,14 @@ public class EventStoreTest
             public class WithStreamStateStreamExists : PerformsConcurrencyChecks
             {
                 [Test]
-                public async Task Doesnt_allow_to_write_to_an_non_existing_stream(
+                public Task Doesnt_allow_to_write_to_an_non_existing_stream(
                     [Values] CountOfEvents countEvents)
                 {
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents), StreamState.StreamExists()));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
+                    return Task.CompletedTask;
                 }
 
                 [Test]
@@ -223,7 +224,7 @@ public class EventStoreTest
             public class WithARevisionNumber : PerformsConcurrencyChecks
             {
                 [Test]
-                public async Task Doesnt_allow_to_write_to_non_existing_stream(
+                public Task Doesnt_allow_to_write_to_non_existing_stream(
                     [Values] CountOfEvents countEvents)
                 {
                     var events = BuildEvents(countEvents);
@@ -232,6 +233,7 @@ public class EventStoreTest
                         await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events, StreamState.AtRevision(1)));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-stream-id' doesn't exists."));
+                    return Task.CompletedTask;
                 }
 
                 [Test]
