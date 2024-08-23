@@ -115,14 +115,12 @@ public record EventData
     public string Data { get; }
     public string MetaData { get; }
     public string EventType { get; }
-    public long? Revision { get; set; }
 
-    public EventData(string eventType, string data, string metaData, long? revision = null)
+    public EventData(string eventType, string data, string metaData)
     {
         Data = data;
         MetaData = metaData;
         EventType = eventType;
-        Revision = revision;
     }
 }
 
