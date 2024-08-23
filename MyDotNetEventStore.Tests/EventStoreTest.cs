@@ -147,9 +147,9 @@ public class EventStoreTest
             await _eventStore.AppendAsync("stream-id3", evt3.ToEventData());
             await _eventStore.AppendAsync("stream-id1", evt4.ToEventData());
 
-            var readStreamResult = await _eventStore.ReadAllAsync();
+            var readAllStreamResult = await _eventStore.ReadAllAsync();
 
-            Assert.That(readStreamResult, Is.EqualTo(new List<ResolvedEvent>
+            Assert.That(readAllStreamResult.ToList(), Is.EqualTo(new List<ResolvedEvent>
             {
                 evt1.ToResolvedEvent(1),
                 evt2.ToResolvedEvent(1),

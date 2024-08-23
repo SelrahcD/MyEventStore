@@ -92,6 +92,29 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>
     }
 }
 
+public class ReadAllStreamResult : IEnumerable<ResolvedEvent>
+{
+    private readonly List<ResolvedEvent> _events;
+
+    public ReadAllStreamResult(List<ResolvedEvent> events)
+    {
+        _events = events;
+    }
+
+    public IEnumerator<ResolvedEvent> GetEnumerator()
+    {
+        foreach (var evt in _events)
+        {
+            yield return evt;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}
+
 public record AppendResult
 {
     private readonly long _position;
@@ -258,7 +281,7 @@ public class EventStore
         return new AppendResult(position, revision);
     }
 
-    public async Task<List<ResolvedEvent>> ReadAllAsync()
+    public async Task<ReadAllStreamResult> ReadAllAsync()
     {
         var command = new NpgsqlCommand("""
                                         SELECT event_type, revision, data, metadata
@@ -280,6 +303,6 @@ public class EventStore
             events.Add(new ResolvedEvent(revision, eventType, data, metaData));
         }
 
-        return events;
+        return new ReadAllStreamResult(events);
     }
 }
