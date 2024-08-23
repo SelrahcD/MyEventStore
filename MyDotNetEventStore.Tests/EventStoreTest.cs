@@ -103,7 +103,7 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<EventData>
+                Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<ResolvedEvent>
                 {
                     evt1.ToResolvedEvent(1),
                     evt2.ToResolvedEvent(2),
@@ -123,7 +123,7 @@ public class EventStoreTest
 
                 var readEvents = readStreamResult.ToList();
 
-                Assert.That(readEvents, Is.EqualTo(new List<EventData>
+                Assert.That(readEvents, Is.EqualTo(new List<ResolvedEvent>
                 {
                     evtInStream.ToResolvedEvent(1),
                 }));
@@ -399,9 +399,9 @@ public class EventStoreTest
             return new EventData(_eventType, _data, _metadata);
         }
 
-        public EventData ToResolvedEvent(int revision)
+        public ResolvedEvent ToResolvedEvent(int revision)
         {
-            return ToEventData() with { Revision = revision };
+            return new ResolvedEvent(revision, _eventType, _data, _metadata);
         }
     }
 }

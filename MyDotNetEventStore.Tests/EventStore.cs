@@ -52,12 +52,12 @@ public enum StreamStateType
     AtRevision
 }
 
-public class ReadStreamResult : IEnumerable<EventData>
+public class ReadStreamResult : IEnumerable<ResolvedEvent>
 {
     private readonly ReadState _state;
-    private readonly List<EventData> _events;
+    private readonly List<ResolvedEvent> _events;
 
-    private ReadStreamResult(ReadState state, List<EventData> events)
+    private ReadStreamResult(ReadState state, List<ResolvedEvent> events)
     {
         _state = state;
         _events = events;
@@ -70,15 +70,15 @@ public class ReadStreamResult : IEnumerable<EventData>
 
     public static ReadStreamResult StreamNotFound(string streamId)
     {
-        return new(ReadState.StreamNotFound, new List<EventData>());
+        return new(ReadState.StreamNotFound, new List<ResolvedEvent>());
     }
 
-    public static ReadStreamResult StreamFound(string streamId, List<EventData> events)
+    public static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events)
     {
         return new(ReadState.Ok, events);
     }
 
-    public IEnumerator<EventData> GetEnumerator()
+    public IEnumerator<ResolvedEvent> GetEnumerator()
     {
         foreach (var evt in _events)
         {
@@ -126,6 +126,22 @@ public record EventData
     }
 }
 
+public record ResolvedEvent
+{
+    public string Data { get; }
+    public string MetaData { get; }
+    public string EventType { get; }
+    public long? Revision { get; }
+
+    public ResolvedEvent(long revision, string eventType, string data, string metaData)
+    {
+        Data = data;
+        MetaData = metaData;
+        EventType = eventType;
+        Revision = revision;
+    }
+}
+
 public class EventStore
 {
     private readonly NpgsqlConnection _npgsqlConnection;
@@ -146,7 +162,7 @@ public class EventStore
 
         command.Parameters.AddWithValue("stream_id", streamId);
 
-        var events = new List<EventData>();
+        var events = new List<ResolvedEvent>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -162,7 +178,7 @@ public class EventStore
             var data = reader.GetString(2);
             var metaData = reader.GetString(3);
 
-            events.Add(new EventData(eventType, data, metaData, revision));
+            events.Add(new ResolvedEvent(revision, eventType, data, metaData));
         }
 
         return ReadStreamResult.StreamFound(streamId, events);
