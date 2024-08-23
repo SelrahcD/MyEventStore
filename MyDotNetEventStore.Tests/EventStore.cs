@@ -305,7 +305,7 @@ public class EventStore
 
     }
 
-    private async Task<(bool, long)> FetchBatchOfEvents(int batchSize, List<ResolvedEvent> events, long lastPosition)
+    public async Task<(bool, long)> FetchBatchOfEvents(int batchSize, List<ResolvedEvent> events, long lastPosition)
     {
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
