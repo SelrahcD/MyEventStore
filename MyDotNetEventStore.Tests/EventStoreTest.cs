@@ -82,7 +82,7 @@ public class EventStoreTest
             [Test]
             public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
             {
-                await _eventStore.AppendAsync("stream-id", AnEvent2().toEventData());
+                await _eventStore.AppendAsync("stream-id", AnEvent2().ToEventData());
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
@@ -92,9 +92,9 @@ public class EventStoreTest
             [Test]
             public async Task returns_all_events_appended_to_the_stream_in_order()
             {
-                var evt1 = AnEvent2().toEventData();
-                var evt2 = AnEvent2().toEventData();
-                var evt3 = AnEvent2().toEventData();
+                var evt1 = AnEvent2().ToEventData();
+                var evt2 = AnEvent2().ToEventData();
+                var evt3 = AnEvent2().ToEventData();
 
                 await _eventStore.AppendAsync("stream-id", evt1);
                 await _eventStore.AppendAsync("stream-id", evt2);
@@ -113,8 +113,8 @@ public class EventStoreTest
             [Test]
             public async Task doesnt_return_events_appended_to_another_stream()
             {
-                var evtInStream = AnEvent2().toEventData();
-                var evtInAnotherStream = AnEvent2().toEventData();
+                var evtInStream = AnEvent2().ToEventData();
+                var evtInAnotherStream = AnEvent2().ToEventData();
 
                 await _eventStore.AppendAsync("stream-id", evtInStream);
                 await _eventStore.AppendAsync("another-stream-id", evtInAnotherStream);
@@ -277,7 +277,7 @@ public class EventStoreTest
             [Test]
             public async Task Adds_first_event_in_stream_at_revision_1()
             {
-                var appendedEvent = AnEvent2().toEventData();
+                var appendedEvent = AnEvent2().ToEventData();
                 await _eventStore.AppendAsync("stream-id", appendedEvent);
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
@@ -333,16 +333,16 @@ public class EventStoreTest
     private static object BuildEvents(CountOfEvents countEvents)
     {
         if (countEvents == CountOfEvents.One)
-            return AnEvent2().toEventData();
+            return AnEvent2().ToEventData();
 
         return MultipleEvents();
     }
 
     private static List<EventData> MultipleEvents()
     {
-        var evt1 = AnEvent2().toEventData();
-        var evt2 = AnEvent2().toEventData();
-        var evt3 = AnEvent2().toEventData();
+        var evt1 = AnEvent2().ToEventData();
+        var evt2 = AnEvent2().ToEventData();
+        var evt3 = AnEvent2().ToEventData();
         var events = new List<EventData> { evt1, evt2, evt3 };
         return events;
     }
@@ -353,7 +353,7 @@ public class EventStoreTest
 
         for (int i = 0; i < eventCount; i++)
         {
-            events.Add(AnEvent2().toEventData());
+            events.Add(AnEvent2().ToEventData());
         }
 
         return events;
@@ -395,7 +395,7 @@ public class EventStoreTest
             _metadata = SelectRandom(fakeEventMetaData);
         }
 
-        public EventData toEventData()
+        public EventData ToEventData()
         {
             return new EventData(_eventType, _data, _metadata);
         }
