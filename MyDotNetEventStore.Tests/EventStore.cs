@@ -108,15 +108,14 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 
         while (true)
         {
-            var (hasRows, lastSeenPosition, events) = await _eventStore.FetchBatchOfEvents(batchSize, lastPosition);
+            var (lastSeenPosition, events) = await _eventStore.FetchBatchOfEvents(batchSize, lastPosition);
 
             foreach (var evt in events)
             {
                 yield return evt;
             }
 
-            // If no rows were fetched in this batch, we can break out of the loop
-            if (!hasRows)
+            if (events.Count < batchSize)
             {
                 break;
             }
@@ -301,7 +300,7 @@ public class EventStore
     }
 
     // Todo: Remove from the public interface of the EventStore
-    public async Task<(bool, long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
+    public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
         var events = new List<ResolvedEvent>();
         var command = new NpgsqlCommand($"""
@@ -317,11 +316,8 @@ public class EventStore
 
         await using var reader = await command.ExecuteReaderAsync();
 
-        bool hasRows = false;
-
         while (await reader.ReadAsync())
         {
-            hasRows = true;
             var position = reader.GetInt64(0);
             var eventType = reader.GetString(1);
             var revision = reader.GetInt64(2);
@@ -333,6 +329,6 @@ public class EventStore
             lastPosition = position;
         }
 
-        return (hasRows, lastPosition, events);
+        return (lastPosition, events);
     }
 }
