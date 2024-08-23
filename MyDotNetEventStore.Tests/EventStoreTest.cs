@@ -164,6 +164,8 @@ public class EventStoreTest
         }
 
         [Test]
+        // This is probably not a good way to test memory consumption but at least that test forced me to
+        // fetch events by batch
         public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
         {
             await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
