@@ -1,4 +1,5 @@
 using Npgsql;
+using OneOf;
 using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
@@ -332,10 +333,19 @@ public class EventStoreTest
 
     private static object BuildEvents(CountOfEvents countEvents)
     {
-        if (countEvents == CountOfEvents.One)
-            return AnEvent().ToEventData();
+        var oneOf = BuildEvents2(countEvents);
 
-        return MultipleEvents().ToEventData();
+        return oneOf.Match<OneOf<EventData, List<EventData>>>(
+            e => e.ToEventData(),
+            e => e.ToEventData()).Value;
+    }
+
+    private static OneOf<EventBuilder, List<EventBuilder>> BuildEvents2(CountOfEvents countEvents)
+    {
+        if (countEvents == CountOfEvents.One)
+            return AnEvent();
+
+        return MultipleEvents();
     }
 
     private static List<EventBuilder> MultipleEvents()
