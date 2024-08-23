@@ -340,11 +340,7 @@ public class EventStoreTest
 
     private static EventData AnEvent()
     {
-        var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
-        var fakeEventData = new List<string> { "{}", "{\"id\": \"1234567\"}"};
-        var fakeEventMetaData = new List<string> { "{}", "{\"userId\": \"u-345678\", \"causationId\": \"98697678\", \"correlationId\": \"12345\"}"};
-
-        return new EventData(SelectRandom(fakeEventTypes), SelectRandom(fakeEventData), SelectRandom(fakeEventMetaData));
+        return AnEvent2().toEventData();
     }
 
     private static List<EventData> MultipleEvents()
@@ -379,5 +375,34 @@ public class EventStoreTest
         var random = new Random();
         var randomIndex = random.Next(elements.Count);
         return elements[randomIndex];
+    }
+
+
+    private static EventBuilder AnEvent2()
+    {
+        return new EventBuilder();
+    }
+
+    private class EventBuilder
+    {
+        private readonly string _eventType;
+        private readonly string _data;
+        private readonly string _metadata;
+
+        public EventBuilder()
+        {
+            var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
+            var fakeEventData = new List<string> { "{}", "{\"id\": \"1234567\"}"};
+            var fakeEventMetaData = new List<string> { "{}", "{\"userId\": \"u-345678\", \"causationId\": \"98697678\", \"correlationId\": \"12345\"}"};
+
+            _eventType = SelectRandom(fakeEventTypes);
+            _data = SelectRandom(fakeEventData);
+            _metadata = SelectRandom(fakeEventMetaData);
+        }
+
+        public EventData toEventData()
+        {
+            return new EventData(_eventType, _data, _metadata);
+        }
     }
 }
