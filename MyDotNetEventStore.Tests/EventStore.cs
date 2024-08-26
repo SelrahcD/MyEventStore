@@ -195,7 +195,6 @@ public class EventStore
 
         command.Parameters.AddWithValue("stream_id", streamId);
 
-        var events = new List<ResolvedEvent>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -204,16 +203,7 @@ public class EventStore
             return ReadStreamResult.StreamNotFound(streamId);
         }
 
-        while (await reader.ReadAsync())
-        {
-            var position = reader.GetInt64(0);
-            var eventType = reader.GetString(1);
-            var revision = reader.GetInt64(2);
-            var data = reader.GetString(3);
-            var metaData = reader.GetString(4);
-
-            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
-        }
+        var (_, events) = await BuildEvents(reader);
 
         return ReadStreamResult.StreamFound(streamId, events);
     }
