@@ -175,13 +175,41 @@ public record ResolvedEvent
     }
 }
 
+public class ReadingCommandBuilder
+{
+    private EventStore _eventStore;
+
+    public ReadingCommandBuilder(EventStore eventStore)
+    {
+        _eventStore = eventStore;
+    }
+
+    public NpgsqlCommand BuildReadingCommand(int batchSize, long lastPosition)
+    {
+        var command = new NpgsqlCommand($"""
+                                         SELECT position, event_type, revision, data, metadata
+                                         FROM events
+                                         WHERE position > @lastPosition
+                                         ORDER BY position ASC
+                                         LIMIT @batchSize;
+                                         """, _eventStore._npgsqlConnection);
+
+        command.Parameters.AddWithValue("@lastPosition", lastPosition);
+        command.Parameters.AddWithValue("@batchSize", batchSize);
+
+        return command;
+    }
+}
+
 public class EventStore
 {
-    private readonly NpgsqlConnection _npgsqlConnection;
+    public readonly NpgsqlConnection _npgsqlConnection;
+    private readonly ReadingCommandBuilder _readingCommandBuilder;
 
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
+        _readingCommandBuilder = new ReadingCommandBuilder(this);
     }
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
@@ -292,26 +320,11 @@ public class EventStore
     // Todo: Remove from the public interface of the EventStore
     public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
-        var command = BuildReadingCommand(batchSize, lastPosition);
+        var command = _readingCommandBuilder.BuildReadingCommand(batchSize, lastPosition);
 
         await using var reader = await command.ExecuteReaderAsync();
 
         return await BuildEvents(reader);
-    }
-
-    private NpgsqlCommand BuildReadingCommand(int batchSize, long lastPosition)
-    {
-        var command = new NpgsqlCommand($"""
-                                         SELECT position, event_type, revision, data, metadata
-                                         FROM events
-                                         WHERE position > @lastPosition
-                                         ORDER BY position ASC
-                                         LIMIT @batchSize;
-                                         """, _npgsqlConnection);
-
-        command.Parameters.AddWithValue("@lastPosition", lastPosition);
-        command.Parameters.AddWithValue("@batchSize", batchSize);
-        return command;
     }
 
     private static async Task<(long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
