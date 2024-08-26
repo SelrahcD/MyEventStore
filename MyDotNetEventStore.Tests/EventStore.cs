@@ -193,10 +193,8 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public NpgsqlCommand Build(int batchSize, long lastPosition)
+    public NpgsqlCommand Build(long lastPosition)
     {
-        BatchSize(batchSize);
-
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
                                          FROM events
@@ -330,7 +328,7 @@ public class EventStore
     public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
         var commandBuilder = new ReadingCommandBuilder(_npgsqlConnection).BatchSize(batchSize);
-        var command = commandBuilder.Build(batchSize, lastPosition);
+        var command = commandBuilder.Build(lastPosition);
 
         await using var reader = await command.ExecuteReaderAsync();
 
