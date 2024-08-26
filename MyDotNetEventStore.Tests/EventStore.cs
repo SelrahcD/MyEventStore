@@ -302,7 +302,6 @@ public class EventStore
     // Todo: Remove from the public interface of the EventStore
     public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
-        var events = new List<ResolvedEvent>();
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
                                          FROM events
@@ -316,6 +315,12 @@ public class EventStore
 
         await using var reader = await command.ExecuteReaderAsync();
 
+        return await BuildEvents(lastPosition, reader);
+    }
+
+    private static async Task<(long, List<ResolvedEvent>)> BuildEvents(long lastPosition, NpgsqlDataReader reader)
+    {
+        var events = new List<ResolvedEvent>();
         while (await reader.ReadAsync())
         {
             var position = reader.GetInt64(0);
