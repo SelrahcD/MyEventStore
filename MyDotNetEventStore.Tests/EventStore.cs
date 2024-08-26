@@ -184,7 +184,7 @@ public class ReadingCommandBuilder
         _npgsqlConnection = npgsqlConnection;
     }
 
-    public NpgsqlCommand BuildReadingCommand(int batchSize, long lastPosition)
+    public NpgsqlCommand Build(int batchSize, long lastPosition)
     {
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
@@ -320,7 +320,7 @@ public class EventStore
     // Todo: Remove from the public interface of the EventStore
     public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
-        var command = _readingCommandBuilder.BuildReadingCommand(batchSize, lastPosition);
+        var command = _readingCommandBuilder.Build(batchSize, lastPosition);
 
         await using var reader = await command.ExecuteReaderAsync();
 
