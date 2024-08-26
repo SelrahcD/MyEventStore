@@ -179,13 +179,24 @@ public class ReadingCommandBuilder
 {
     private NpgsqlConnection _npgsqlConnection;
 
+    private int _batchSize;
+
     public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
     }
+    
+    public ReadingCommandBuilder BatchSize(int batchSize)
+    {
+        _batchSize = batchSize;
+
+        return this;
+    }
 
     public NpgsqlCommand Build(int batchSize, long lastPosition)
     {
+        BatchSize(batchSize);
+
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
                                          FROM events
@@ -195,7 +206,7 @@ public class ReadingCommandBuilder
                                          """, _npgsqlConnection);
 
         command.Parameters.AddWithValue("@lastPosition", lastPosition);
-        command.Parameters.AddWithValue("@batchSize", batchSize);
+        command.Parameters.AddWithValue("@batchSize", _batchSize);
 
         return command;
     }
