@@ -177,12 +177,10 @@ public record ResolvedEvent
 
 public class ReadingCommandBuilder
 {
-    private EventStore _eventStore;
     private NpgsqlConnection _npgsqlConnection;
 
-    public ReadingCommandBuilder(EventStore eventStore, NpgsqlConnection npgsqlConnection)
+    public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
-        _eventStore = eventStore;
         _npgsqlConnection = npgsqlConnection;
     }
 
@@ -211,7 +209,7 @@ public class EventStore
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
-        _readingCommandBuilder = new ReadingCommandBuilder(this, npgsqlConnection);
+        _readingCommandBuilder = new ReadingCommandBuilder(npgsqlConnection);
     }
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
