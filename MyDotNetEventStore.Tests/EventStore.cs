@@ -180,10 +180,10 @@ public class ReadingCommandBuilder
     private EventStore _eventStore;
     private NpgsqlConnection _npgsqlConnection;
 
-    public ReadingCommandBuilder(EventStore eventStore)
+    public ReadingCommandBuilder(EventStore eventStore, NpgsqlConnection npgsqlConnection)
     {
         _eventStore = eventStore;
-        _npgsqlConnection = _eventStore._npgsqlConnection;
+        _npgsqlConnection = npgsqlConnection;
     }
 
     public NpgsqlCommand BuildReadingCommand(int batchSize, long lastPosition)
@@ -211,7 +211,7 @@ public class EventStore
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
-        _readingCommandBuilder = new ReadingCommandBuilder(this);
+        _readingCommandBuilder = new ReadingCommandBuilder(this, npgsqlConnection);
     }
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
