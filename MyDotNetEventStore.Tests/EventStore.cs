@@ -315,11 +315,12 @@ public class EventStore
 
         await using var reader = await command.ExecuteReaderAsync();
 
-        return await BuildEvents(lastPosition, reader);
+        return await BuildEvents(reader);
     }
 
-    private static async Task<(long, List<ResolvedEvent>)> BuildEvents(long lastPosition, NpgsqlDataReader reader)
+    private static async Task<(long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
     {
+        long lastPosition = 0;
         var events = new List<ResolvedEvent>();
         while (await reader.ReadAsync())
         {
