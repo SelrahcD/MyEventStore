@@ -178,10 +178,12 @@ public record ResolvedEvent
 public class ReadingCommandBuilder
 {
     private EventStore _eventStore;
+    private NpgsqlConnection _npgsqlConnection;
 
     public ReadingCommandBuilder(EventStore eventStore)
     {
         _eventStore = eventStore;
+        _npgsqlConnection = _eventStore._npgsqlConnection;
     }
 
     public NpgsqlCommand BuildReadingCommand(int batchSize, long lastPosition)
@@ -192,7 +194,7 @@ public class ReadingCommandBuilder
                                          WHERE position > @lastPosition
                                          ORDER BY position ASC
                                          LIMIT @batchSize;
-                                         """, _eventStore._npgsqlConnection);
+                                         """, _npgsqlConnection);
 
         command.Parameters.AddWithValue("@lastPosition", lastPosition);
         command.Parameters.AddWithValue("@batchSize", batchSize);
