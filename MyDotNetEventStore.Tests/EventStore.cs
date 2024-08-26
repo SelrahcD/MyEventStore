@@ -215,12 +215,10 @@ public class ReadingCommandBuilder
 public class EventStore
 {
     public readonly NpgsqlConnection _npgsqlConnection;
-    private readonly ReadingCommandBuilder _readingCommandBuilder;
 
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
-        _readingCommandBuilder = new ReadingCommandBuilder(npgsqlConnection);
     }
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
