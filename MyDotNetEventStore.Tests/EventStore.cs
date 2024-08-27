@@ -268,13 +268,9 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-
-
-        var commandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
-            .FromStream(streamId);
-
-        var command = commandBuilder.Build();
-
+        var command = new ReadingCommandBuilder(_npgsqlConnection)
+            .FromStream(streamId)
+            .Build();
 
         await using var reader = await command.ExecuteReaderAsync();
 
