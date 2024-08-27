@@ -179,8 +179,8 @@ public class ReadingCommandBuilder
 {
     private NpgsqlConnection _npgsqlConnection;
 
-    private int _batchSize;
-    private long _position;
+    private int? _batchSize = null;
+    private long? _position = null;
 
     public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
@@ -202,18 +202,31 @@ public class ReadingCommandBuilder
                        WHERE 1 = 1
                        """;
 
-        cmdText += " AND position > @lastPosition";
+        if (_position is not null)
+        {
+            cmdText += " AND position > @lastPosition";
+        }
 
         cmdText += " ORDER BY position ASC";
 
-        cmdText += " LIMIT @batchSize";
+        if (_batchSize is not null)
+        {
+            cmdText += " LIMIT @batchSize";
+        }
 
         cmdText += ";";
 
         var command = new NpgsqlCommand(cmdText, _npgsqlConnection);
 
-        command.Parameters.AddWithValue("@lastPosition", _position);
-        command.Parameters.AddWithValue("@batchSize", _batchSize);
+        if (_position is not null)
+        {
+            command.Parameters.AddWithValue("@lastPosition", _position);
+        }
+
+        if (_batchSize is not null)
+        {
+            command.Parameters.AddWithValue("@batchSize", _batchSize);
+        }
 
         return command;
     }
