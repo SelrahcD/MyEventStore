@@ -196,13 +196,19 @@ public class ReadingCommandBuilder
 
     public NpgsqlCommand Build()
     {
-        var command = new NpgsqlCommand($"""
-                                         SELECT position, event_type, revision, data, metadata
-                                         FROM events
-                                         WHERE position > @lastPosition
-                                         ORDER BY position ASC
-                                         LIMIT @batchSize;
-                                         """, _npgsqlConnection);
+        var cmdText = $"""
+                       SELECT position, event_type, revision, data, metadata
+                       FROM events
+                       """;
+
+        cmdText += $"""
+                   
+                   WHERE position > @lastPosition
+                   ORDER BY position ASC
+                   LIMIT @batchSize;
+                   """;
+
+        var command = new NpgsqlCommand(cmdText, _npgsqlConnection);
 
         command.Parameters.AddWithValue("@lastPosition", _position);
         command.Parameters.AddWithValue("@batchSize", _batchSize);
