@@ -202,12 +202,13 @@ public class ReadingCommandBuilder
                        WHERE 1 = 1
                        """;
 
-        cmdText += $"""
-                   
-                   AND position > @lastPosition
-                   ORDER BY position ASC
-                   LIMIT @batchSize;
-                   """;
+        cmdText += " AND position > @lastPosition";
+
+        cmdText += " ORDER BY position ASC";
+
+        cmdText += " LIMIT @batchSize";
+
+        cmdText += ";";
 
         var command = new NpgsqlCommand(cmdText, _npgsqlConnection);
 
