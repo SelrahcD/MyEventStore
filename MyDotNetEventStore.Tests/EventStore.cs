@@ -259,7 +259,7 @@ public class ReadingCommandBuilder
 
 public class EventStore
 {
-    public readonly NpgsqlConnection _npgsqlConnection;
+    private readonly NpgsqlConnection _npgsqlConnection;
 
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
