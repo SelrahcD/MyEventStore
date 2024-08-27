@@ -243,7 +243,7 @@ public class ReadingCommandBuilder
 
         if (_streamId is not null)
         {
-            command.Parameters.AddWithValue("stream_id", _streamId);
+            command.Parameters.AddWithValue("@streamId", _streamId);
         }
 
         return command;
@@ -268,14 +268,12 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-        var command = new NpgsqlCommand("""
-                                        SELECT position, event_type, revision, data, metadata
-                                        FROM events
-                                        WHERE stream_id = @stream_id
-                                        ORDER BY position ASC;
-                                        """, _npgsqlConnection);
 
-        command.Parameters.AddWithValue("stream_id", streamId);
+
+        var commandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
+            .FromStream(streamId);
+
+        var command = commandBuilder.Build();
 
 
         await using var reader = await command.ExecuteReaderAsync();
