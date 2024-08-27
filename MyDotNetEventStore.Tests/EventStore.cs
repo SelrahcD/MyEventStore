@@ -181,6 +181,7 @@ public class ReadingCommandBuilder
 
     private int? _batchSize = null;
     private long? _position = null;
+    private string? _streamId = null;
 
     public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
@@ -194,6 +195,13 @@ public class ReadingCommandBuilder
         return this;
     }
 
+    public ReadingCommandBuilder FromStream(string streamId)
+    {
+        _streamId = streamId;
+
+        return this;
+    }
+
     public NpgsqlCommand Build()
     {
         var cmdText = $"""
@@ -201,6 +209,11 @@ public class ReadingCommandBuilder
                        FROM events
                        WHERE 1 = 1
                        """;
+
+        if (_streamId is not null)
+        {
+            cmdText += " AND stream_id = @streamId";
+        }
 
         if (_position is not null)
         {
@@ -226,6 +239,11 @@ public class ReadingCommandBuilder
         if (_batchSize is not null)
         {
             command.Parameters.AddWithValue("@batchSize", _batchSize);
+        }
+
+        if (_streamId is not null)
+        {
+            command.Parameters.AddWithValue("stream_id", _streamId);
         }
 
         return command;
