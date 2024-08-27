@@ -348,13 +348,12 @@ public class EventStore
             command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
             command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);
 
-            using var reader = await command.ExecuteReaderAsync();
+            await using var reader = await command.ExecuteReaderAsync();
 
-            if (await reader.ReadAsync())
-            {
-                 position = reader.GetInt64(0);
-                 revision = reader.GetInt64(1);
-            }
+            if (!await reader.ReadAsync()) continue;
+
+            position = reader.GetInt64(0);
+            revision = reader.GetInt64(1);
         }
 
         return new AppendResult(position, revision);
