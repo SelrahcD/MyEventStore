@@ -255,6 +255,26 @@ public class ReadingCommandBuilder
 
         return this;
     }
+
+    public static async Task<(long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
+    {
+        long lastPosition = 0;
+        var events = new List<ResolvedEvent>();
+        while (await reader.ReadAsync())
+        {
+            var position = reader.GetInt64(0);
+            var eventType = reader.GetString(1);
+            var revision = reader.GetInt64(2);
+            var data = reader.GetString(3);
+            var metaData = reader.GetString(4);
+
+            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
+
+            lastPosition = position;
+        }
+
+        return (lastPosition, events);
+    }
 }
 
 public class EventStore
@@ -279,7 +299,7 @@ public class EventStore
             return ReadStreamResult.StreamNotFound(streamId);
         }
 
-        var (_, events) = await BuildEvents(reader);
+        var (_, events) = await ReadingCommandBuilder.BuildEvents(reader);
 
         return ReadStreamResult.StreamFound(streamId, events);
     }
@@ -374,26 +394,6 @@ public class EventStore
 
         await using var reader = await command.ExecuteReaderAsync();
 
-        return await BuildEvents(reader);
-    }
-
-    private static async Task<(long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
-    {
-        long lastPosition = 0;
-        var events = new List<ResolvedEvent>();
-        while (await reader.ReadAsync())
-        {
-            var position = reader.GetInt64(0);
-            var eventType = reader.GetString(1);
-            var revision = reader.GetInt64(2);
-            var data = reader.GetString(3);
-            var metaData = reader.GetString(4);
-
-            events.Add(new ResolvedEvent(position, revision, eventType, data, metaData));
-
-            lastPosition = position;
-        }
-
-        return (lastPosition, events);
+        return await ReadingCommandBuilder.BuildEvents(reader);
     }
 }
