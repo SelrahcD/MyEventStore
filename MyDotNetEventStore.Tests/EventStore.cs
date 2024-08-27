@@ -206,7 +206,7 @@ public class ReadingCommandBuilder
                                          LIMIT @batchSize;
                                          """, _npgsqlConnection);
 
-        command.Parameters.AddWithValue("@lastPosition", lastPosition);
+        command.Parameters.AddWithValue("@lastPosition", _position);
         command.Parameters.AddWithValue("@batchSize", _batchSize);
 
         return command;
