@@ -199,11 +199,12 @@ public class ReadingCommandBuilder
         var cmdText = $"""
                        SELECT position, event_type, revision, data, metadata
                        FROM events
+                       WHERE 1 = 1
                        """;
 
         cmdText += $"""
                    
-                   WHERE position > @lastPosition
+                   AND position > @lastPosition
                    ORDER BY position ASC
                    LIMIT @batchSize;
                    """;
