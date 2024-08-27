@@ -180,6 +180,7 @@ public class ReadingCommandBuilder
     private NpgsqlConnection _npgsqlConnection;
 
     private int _batchSize;
+    private long _position;
 
     public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
@@ -195,6 +196,8 @@ public class ReadingCommandBuilder
 
     public NpgsqlCommand Build(long lastPosition)
     {
+        StartingFromPosition(lastPosition);
+
         var command = new NpgsqlCommand($"""
                                          SELECT position, event_type, revision, data, metadata
                                          FROM events
@@ -207,6 +210,13 @@ public class ReadingCommandBuilder
         command.Parameters.AddWithValue("@batchSize", _batchSize);
 
         return command;
+    }
+
+    public ReadingCommandBuilder StartingFromPosition(long lastPosition)
+    {
+        _position = lastPosition;
+
+        return this;
     }
 }
 
