@@ -112,9 +112,9 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private readonly NpgsqlConnection _npgsqlConnection;
 
-    public ReadAllStreamResult(NpgsqlConnection _npgsqlConnection)
+    public ReadAllStreamResult(NpgsqlConnection npgsqlConnection)
     {
-        this._npgsqlConnection = _npgsqlConnection;
+        this._npgsqlConnection = npgsqlConnection;
     }
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
