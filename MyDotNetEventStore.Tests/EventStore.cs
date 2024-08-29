@@ -335,10 +335,16 @@ public class EventStore
     // Todo: Remove from the public interface of the EventStore
     public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
-        var command = new ReadingCommandBuilder(_npgsqlConnection)
+        var commandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
             .BatchSize(batchSize)
-            .StartingFromPosition(lastPosition)
-            .Build();
+            .StartingFromPosition(lastPosition);
+
+        return await FetchEvents(commandBuilder);
+    }
+
+    private static async Task<(long, List<ResolvedEvent>)> FetchEvents(ReadingCommandBuilder commandBuilder)
+    {
+        var command = commandBuilder.Build();
 
         await using var reader = await command.ExecuteReaderAsync();
 
