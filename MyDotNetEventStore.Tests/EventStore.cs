@@ -144,6 +144,7 @@ public class ReadingCommandBuilder
     private int? _batchSize = null;
     private long? _position = null;
     private string? _streamId = null;
+    private long? _revision = null;
 
     public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
@@ -171,6 +172,13 @@ public class ReadingCommandBuilder
         return this;
     }
 
+    public ReadingCommandBuilder StartingFromRevision(long lastRevision)
+    {
+        _revision = lastRevision;
+
+        return this;
+    }
+
     private NpgsqlCommand Build()
     {
         var cmdText = $"""
@@ -189,6 +197,11 @@ public class ReadingCommandBuilder
             cmdText += " AND position > @lastPosition";
         }
 
+        if (_revision is not null)
+        {
+            cmdText += " AND revision > @lastRevision";
+        }
+
         cmdText += " ORDER BY position ASC";
 
         if (_batchSize is not null)
@@ -203,6 +216,12 @@ public class ReadingCommandBuilder
         if (_position is not null)
         {
             command.Parameters.AddWithValue("@lastPosition", _position);
+        }
+
+        if (_revision is not null)
+        {
+            // Todo: fail if we are not fetching a stream
+            command.Parameters.AddWithValue("@lastRevision", _revision);
         }
 
         if (_batchSize is not null)
