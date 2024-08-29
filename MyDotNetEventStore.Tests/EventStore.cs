@@ -66,19 +66,30 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             // Do we really need to fetch events here ?
             // Can't we move the Async Enumerable one level down ?
-            var (hasEvents, lastSeenPosition, events) = await new ReadingCommandBuilder(_npgsqlConnection)
+            await using var reader = await  new ReadingCommandBuilder(_npgsqlConnection)
                 .FromStream(_streamId)
                 .StartingFromPosition(lastPosition)
                 .BatchSize(BatchSize)
-                .FetchEvents();
+                .Reader();
 
-            lastPosition = lastSeenPosition;
 
-            foreach (var evt in events)
+            while (await reader.ReadAsync())
             {
+                var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
+
                 eventCount++;
-                yield return evt;
+                lastPosition = position;
+
+                yield return resolvedEvent;
             }
+
+            // foreach (var evt in events)
+            // {
+            //     eventCount++;
+            //
+            //     lastPosition = lastSeenPosition;
+            //     yield return evt;
+            // }
 
             // Todo: Add test when batch size === count of fetched events
             if (eventCount < BatchSize)
