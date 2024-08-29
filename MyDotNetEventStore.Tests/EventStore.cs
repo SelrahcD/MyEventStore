@@ -83,14 +83,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 yield return resolvedEvent;
             }
 
-            // foreach (var evt in events)
-            // {
-            //     eventCount++;
-            //
-            //     lastPosition = lastSeenPosition;
-            //     yield return evt;
-            // }
-
             // Todo: Add test when batch size === count of fetched events
             if (eventCount < BatchSize)
             {
