@@ -51,6 +51,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
         while (true)
         {
+            // This is because we fetch a first batch directly while looking if the stream exists
             if (_events.Count > 0)
             {
                 foreach (var evt in _events)
@@ -61,6 +62,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             _events = new List<ResolvedEvent>();
 
+            // Do we really need to fetch events here ?
+            // Can't we move the Async Enumerable one level down ?
             var (hasEvents, lastSeenPosition, events) = await new ReadingCommandBuilder(_npgsqlConnection)
                 .FromStream(_streamId)
                 .StartingFromPosition(lastPosition)
