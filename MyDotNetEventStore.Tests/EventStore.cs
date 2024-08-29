@@ -81,7 +81,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             }
 
             // Todo: Add test when batch size === count of fetched events
-            if (eventCount < BatchSize || !hasEvents)
+            if (eventCount < BatchSize)
             {
                 break;
             }
