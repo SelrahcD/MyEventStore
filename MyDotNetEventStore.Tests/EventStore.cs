@@ -223,6 +223,15 @@ public class ReadingCommandBuilder
 
         return (lastPosition, events);
     }
+
+    public async Task<(long, List<ResolvedEvent>)> FetchEvents()
+    {
+        var command = Build();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await BuildEvents(reader);
+    }
 }
 
 public class EventStore
@@ -335,19 +344,9 @@ public class EventStore
     // Todo: Remove from the public interface of the EventStore
     public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
-        var commandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
+        return await new ReadingCommandBuilder(_npgsqlConnection)
             .BatchSize(batchSize)
-            .StartingFromPosition(lastPosition);
-
-        return await FetchEvents(commandBuilder);
-    }
-
-    private static async Task<(long, List<ResolvedEvent>)> FetchEvents(ReadingCommandBuilder commandBuilder)
-    {
-        var command = commandBuilder.Build();
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        return await ReadingCommandBuilder.BuildEvents(reader);
+            .StartingFromPosition(lastPosition)
+            .FetchEvents();
     }
 }
