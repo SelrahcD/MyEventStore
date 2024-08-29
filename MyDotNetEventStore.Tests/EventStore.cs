@@ -55,6 +55,7 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
     {
         var (hasEvents, _, events) = await new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
+            .StartingFromRevision(0)
             .FetchEvents();
 
         if (!hasEvents)
