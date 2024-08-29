@@ -128,6 +128,42 @@ public class EventStoreTest
                     evtInStream.ToResolvedEvent(1, 1),
                 }));
             }
+            
+            [Test]
+            [Ignore("Wait to use FetchBatchOfEvents to read a single stream first")]
+            // This is probably not a good way to test memory consumption but at least that test forced me to
+            // fetch events by batch
+            public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
+            {
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(1000));
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(1000));
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(1000));
+                await _eventStore.AppendAsync("stream-id", ListOfNEvents(1000));
+
+                long memoryBefore = GC.GetTotalMemory(true);
+
+                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+
+                var count = 0;
+
+                await foreach (var _ in readStreamResult)
+                {
+                    count++;
+                }
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                var memoryAfter = GC.GetTotalMemory(true);
+
+                var memoryUsed = memoryAfter - memoryBefore;
+
+                var acceptableMemoryUsage = 1 * 1024 * 1024; // 1 MB
+
+                Assert.Less(memoryUsed, acceptableMemoryUsage, $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
+                Assert.That(count, Is.EqualTo(4000));
+            }
         }
     }
 

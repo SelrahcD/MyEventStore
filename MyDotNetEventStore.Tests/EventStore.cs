@@ -4,7 +4,7 @@ using NpgsqlTypes;
 
 namespace MyDotNetEventStore.Tests;
 
-public class ReadStreamResult : IEnumerable<ResolvedEvent>
+public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<ResolvedEvent>
 {
     private readonly ReadState _state;
     private readonly List<ResolvedEvent> _events;
@@ -41,6 +41,14 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
+    {
+        foreach (var evt in _events)
+        {
+            yield return evt;
+        }
     }
 }
 
