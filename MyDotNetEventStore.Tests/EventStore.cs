@@ -6,8 +6,10 @@ namespace MyDotNetEventStore.Tests;
 
 public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<ResolvedEvent>
 {
+    private const int BatchSize = 100;
+
     private readonly ReadState _state;
-    private readonly List<ResolvedEvent> _events;
+    private List<ResolvedEvent> _events;
     private string? _streamId = null!;
     private NpgsqlConnection? _npgsqlConnection = null!;
     private long _lastPosition = 0;
@@ -59,26 +61,38 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
         long lastPosition = _lastPosition;
-        const int batchSize = 100;
 
         while (true)
         {
-            var (_, lastSeenPosition, events) = await new ReadingCommandBuilder(_npgsqlConnection)
+            if (_events.Count > 0)
+            {
+                foreach (var evt in _events)
+                {
+                    yield return evt;
+                }
+            }
+
+            _events = new List<ResolvedEvent>();
+
+            var (hasEvents, lastSeenPosition, events) = await new ReadingCommandBuilder(_npgsqlConnection)
                 .FromStream(_streamId)
                 .StartingFromPosition(lastPosition)
+                .BatchSize(BatchSize)
                 .FetchEvents();
+
+            lastPosition = lastSeenPosition;
 
             foreach (var evt in events)
             {
                 yield return evt;
             }
 
-            if (events.Count < batchSize)
+            // Todo: Add test when batch size === count of fetched events
+            if (events.Count < BatchSize || !hasEvents)
             {
                 break;
             }
 
-            lastPosition = lastSeenPosition;
         }
     }
 
@@ -87,6 +101,7 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
         var (hasEvents, lastPosition, events) = await new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
             .StartingFromRevision(0)
+            .BatchSize(BatchSize)
             .FetchEvents();
 
         if (!hasEvents)
