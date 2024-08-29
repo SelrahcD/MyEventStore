@@ -110,12 +110,10 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
 public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
-    private readonly EventStore _eventStore;
     private readonly NpgsqlConnection _npgsqlConnection;
 
-    public ReadAllStreamResult(EventStore eventStore, NpgsqlConnection _npgsqlConnection)
+    public ReadAllStreamResult(NpgsqlConnection _npgsqlConnection)
     {
-        _eventStore = eventStore;
         this._npgsqlConnection = _npgsqlConnection;
     }
 
@@ -428,6 +426,6 @@ public class EventStore
 
     public async Task<ReadAllStreamResult> ReadAllAsync()
     {
-        return new ReadAllStreamResult(this, _npgsqlConnection);
+        return new ReadAllStreamResult(_npgsqlConnection);
     }
 }
