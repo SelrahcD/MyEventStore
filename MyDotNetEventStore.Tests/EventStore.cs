@@ -150,7 +150,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public NpgsqlCommand Build()
+    private NpgsqlCommand Build()
     {
         var cmdText = $"""
                        SELECT position, event_type, revision, data, metadata
@@ -204,7 +204,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public static async Task<(bool, long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
+    private static async Task<(bool, long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
     {
         long lastPosition = 0;
         var events = new List<ResolvedEvent>();
