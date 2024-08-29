@@ -103,7 +103,6 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-
                 Assert.That((await ToListAsync(readStreamResult)), Is.EqualTo(new List<ResolvedEvent>
                 {
                     evt1.ToResolvedEvent(1,1),
@@ -519,7 +518,9 @@ public class EventStoreTest
 
         return list;
 
-    }private static async Task<List<ResolvedEvent>> ToListAsync(ReadStreamResult readStreamResult)
+    }
+
+    private static async Task<List<ResolvedEvent>> ToListAsync(ReadStreamResult readStreamResult)
     {
         var list = new List<ResolvedEvent>();
 
