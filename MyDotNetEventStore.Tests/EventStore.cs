@@ -50,6 +50,20 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
             yield return evt;
         }
     }
+
+    public static async Task<ReadStreamResult> FetchBatchOfEvent(NpgsqlConnection npgsqlConnection, string streamId)
+    {
+        var (hasEvents, _, events) = await new ReadingCommandBuilder(npgsqlConnection)
+            .FromStream(streamId)
+            .FetchEvents();
+
+        if (!hasEvents)
+        {
+            return ReadStreamResult.StreamNotFound(streamId);
+        }
+
+        return ReadStreamResult.StreamFound(streamId, events);
+    }
 }
 
 public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
@@ -250,21 +264,7 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-        return await FetchBatchOfEvent(_npgsqlConnection, streamId);
-    }
-
-    private static async Task<ReadStreamResult> FetchBatchOfEvent(NpgsqlConnection npgsqlConnection, string streamId)
-    {
-        var (hasEvents, _, events) = await new ReadingCommandBuilder(npgsqlConnection)
-            .FromStream(streamId)
-            .FetchEvents();
-
-        if (!hasEvents)
-        {
-            return ReadStreamResult.StreamNotFound(streamId);
-        }
-
-        return ReadStreamResult.StreamFound(streamId, events);
+        return await ReadStreamResult.FetchBatchOfEvent(_npgsqlConnection, streamId);
     }
 
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
