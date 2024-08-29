@@ -2,7 +2,7 @@ namespace MyDotNetEventStore.Tests;
 
 public class ConcurrencyException : Exception
 {
-    public ConcurrencyException(string message) : base(message)
+    private ConcurrencyException(string message) : base(message)
     {
     }
 
