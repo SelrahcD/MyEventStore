@@ -4,7 +4,7 @@ using NpgsqlTypes;
 
 namespace MyDotNetEventStore.Tests;
 
-public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<ResolvedEvent>
+public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private const int BatchSize = 100;
 
@@ -37,25 +37,12 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
 
     private static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events, long lastPosition, NpgsqlConnection npgsqlConnection)
     {
-        var  readStreamResult = StreamFound(streamId, events);
+        var readStreamResult = StreamFound(streamId, events);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
         readStreamResult._lastPosition = lastPosition;
 
         return readStreamResult;
-    }
-
-    public IEnumerator<ResolvedEvent> GetEnumerator()
-    {
-        foreach (var evt in _events)
-        {
-            yield return evt;
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())

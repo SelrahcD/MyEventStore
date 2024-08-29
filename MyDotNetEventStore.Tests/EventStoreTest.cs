@@ -103,7 +103,8 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That(readStreamResult.ToList(), Is.EqualTo(new List<ResolvedEvent>
+
+                Assert.That((await ToListAsync(readStreamResult)), Is.EqualTo(new List<ResolvedEvent>
                 {
                     evt1.ToResolvedEvent(1,1),
                     evt2.ToResolvedEvent(2, 2),
@@ -121,7 +122,7 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                var readEvents = readStreamResult.ToList();
+                var readEvents = await ToListAsync(readStreamResult);
 
                 Assert.That(readEvents, Is.EqualTo(new List<ResolvedEvent>
                 {
@@ -382,7 +383,9 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That(readStreamResult.ToList().First().Revision, Is.EqualTo(1));
+                var events = await ToListAsync(readStreamResult);
+
+                Assert.That(events.First().Revision, Is.EqualTo(1));
             }
 
             [Test]
@@ -394,7 +397,7 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That(readStreamResult.ToList().Last().Revision, Is.EqualTo(eventCount));
+                Assert.That((await ToListAsync(readStreamResult)).Last().Revision, Is.EqualTo(eventCount));
             }
 
             [Test]
@@ -410,7 +413,7 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That(readStreamResult.ToList().Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
+                Assert.That((await ToListAsync(readStreamResult)).Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
             }
 
             [Test]
@@ -510,6 +513,17 @@ public class EventStoreTest
         var list = new List<T>();
 
         await foreach (var item in asyncEnumerable)
+        {
+            list.Add(item);
+        }
+
+        return list;
+
+    }private static async Task<List<ResolvedEvent>> ToListAsync(ReadStreamResult readStreamResult)
+    {
+        var list = new List<ResolvedEvent>();
+
+        await foreach (var item in readStreamResult)
         {
             list.Add(item);
         }
