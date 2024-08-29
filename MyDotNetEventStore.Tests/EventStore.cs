@@ -64,8 +64,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             _events = new List<ResolvedEvent>();
 
-            // Do we really need to fetch events here ?
-            // Can't we move the Async Enumerable one level down ?
             await using var reader = await  new ReadingCommandBuilder(_npgsqlConnection)
                 .FromStream(_streamId)
                 .StartingFromPosition(lastPosition)
