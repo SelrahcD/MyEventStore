@@ -68,7 +68,7 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 
         while (true)
         {
-            var (lastSeenPosition, events) = await _eventStore.FetchBatchOfEvents(batchSize, lastPosition);
+            var (_, lastSeenPosition, events) = await _eventStore.FetchBatchOfEvents(batchSize, lastPosition);
 
             foreach (var evt in events)
             {
@@ -204,7 +204,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public static async Task<(long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
+    public static async Task<(bool, long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
     {
         long lastPosition = 0;
         var events = new List<ResolvedEvent>();
@@ -221,10 +221,10 @@ public class ReadingCommandBuilder
             lastPosition = position;
         }
 
-        return (lastPosition, events);
+        return (true, lastPosition, events);
     }
 
-    public async Task<(long, List<ResolvedEvent>)> FetchEvents()
+    public async Task<(bool, long, List<ResolvedEvent>)> FetchEvents()
     {
         var command = Build();
 
@@ -256,7 +256,7 @@ public class EventStore
             return ReadStreamResult.StreamNotFound(streamId);
         }
 
-        var (_, events) = await ReadingCommandBuilder.BuildEvents(reader);
+        var (_, _, events) = await ReadingCommandBuilder.BuildEvents(reader);
 
         return ReadStreamResult.StreamFound(streamId, events);
     }
@@ -342,7 +342,7 @@ public class EventStore
     }
 
     // Todo: Remove from the public interface of the EventStore
-    public async Task<(long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
+    public async Task<(bool, long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
     {
         return await new ReadingCommandBuilder(_npgsqlConnection)
             .BatchSize(batchSize)
