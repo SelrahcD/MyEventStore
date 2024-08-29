@@ -25,7 +25,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         return _state;
     }
 
-    public static ReadStreamResult StreamNotFound(string streamId)
+    private static ReadStreamResult StreamNotFound(string streamId)
     {
         return new(ReadState.StreamNotFound, new List<ResolvedEvent>());
     }
