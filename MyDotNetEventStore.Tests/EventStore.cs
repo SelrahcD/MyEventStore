@@ -310,9 +310,7 @@ public class ReadingCommandBuilder
 
     public async Task<(bool, long, List<ResolvedEvent>)> FetchEvents()
     {
-        var command = Build();
-
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await Reader();
 
         if (!reader.HasRows)
         {
