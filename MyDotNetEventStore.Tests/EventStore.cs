@@ -164,6 +164,13 @@ public class ReadingCommandBuilder
         return this;
     }
 
+    public ReadingCommandBuilder StartingFromPosition(long lastPosition)
+    {
+        _position = lastPosition;
+
+        return this;
+    }
+
     private NpgsqlCommand Build()
     {
         var cmdText = $"""
@@ -209,13 +216,6 @@ public class ReadingCommandBuilder
         }
 
         return command;
-    }
-
-    public ReadingCommandBuilder StartingFromPosition(long lastPosition)
-    {
-        _position = lastPosition;
-
-        return this;
     }
 
     private static async Task<(bool, long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
