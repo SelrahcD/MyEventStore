@@ -72,7 +72,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 .BatchSize(BatchSize)
                 .Reader();
 
-
             while (await reader.ReadAsync())
             {
                 var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
@@ -112,10 +111,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private readonly EventStore _eventStore;
+    private readonly NpgsqlConnection _npgsqlConnection;
 
-    public ReadAllStreamResult(EventStore eventStore)
+    public ReadAllStreamResult(EventStore eventStore, NpgsqlConnection _npgsqlConnection)
     {
         _eventStore = eventStore;
+        this._npgsqlConnection = _npgsqlConnection;
     }
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
@@ -125,19 +126,27 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 
         while (true)
         {
-            var (_, lastSeenPosition, events) = await _eventStore.FetchBatchOfEvents(batchSize, lastPosition);
+            var eventCount = 0;
 
-            foreach (var evt in events)
+            await using var reader = await  new ReadingCommandBuilder(_npgsqlConnection)
+                .StartingFromPosition(lastPosition)
+                .BatchSize(batchSize)
+                .Reader();
+
+            while (await reader.ReadAsync())
             {
-                yield return evt;
+                var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
+
+                eventCount++;
+                lastPosition = position;
+
+                yield return resolvedEvent;
             }
 
-            if (events.Count < batchSize)
+            if (eventCount < batchSize)
             {
                 break;
             }
-
-            lastPosition = lastSeenPosition;
         }
     }
 }
@@ -419,7 +428,7 @@ public class EventStore
 
     public async Task<ReadAllStreamResult> ReadAllAsync()
     {
-        return new ReadAllStreamResult(this);
+        return new ReadAllStreamResult(this, _npgsqlConnection);
     }
 
     // Todo: Remove from the public interface of the EventStore
