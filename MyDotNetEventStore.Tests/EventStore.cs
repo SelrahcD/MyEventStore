@@ -230,6 +230,11 @@ public class ReadingCommandBuilder
 
         await using var reader = await command.ExecuteReaderAsync();
 
+        if (!reader.HasRows)
+        {
+            return (false, 0, new List<ResolvedEvent>());
+        }
+
         return await BuildEvents(reader);
     }
 }
