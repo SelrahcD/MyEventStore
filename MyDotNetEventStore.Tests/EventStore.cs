@@ -8,8 +8,9 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
 {
     private readonly ReadState _state;
     private readonly List<ResolvedEvent> _events;
-    private string? _streamId;
-    private NpgsqlConnection? _npgsqlConnection;
+    private string? _streamId = null!;
+    private NpgsqlConnection? _npgsqlConnection = null!;
+    private long _lastPosition = 0;
 
     private ReadStreamResult(ReadState state, List<ResolvedEvent> events)
     {
@@ -37,6 +38,7 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
         var  readStreamResult = StreamFound(streamId, events);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
+        readStreamResult._lastPosition = lastPosition;
 
         return readStreamResult;
     }
@@ -56,9 +58,27 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
-        foreach (var evt in _events)
+        long lastPosition = _lastPosition;
+        const int batchSize = 100;
+
+        while (true)
         {
-            yield return evt;
+            var (_, lastSeenPosition, events) = await new ReadingCommandBuilder(_npgsqlConnection)
+                .FromStream(_streamId)
+                .StartingFromPosition(lastPosition)
+                .FetchEvents();
+
+            foreach (var evt in events)
+            {
+                yield return evt;
+            }
+
+            if (events.Count < batchSize)
+            {
+                break;
+            }
+
+            lastPosition = lastSeenPosition;
         }
     }
 
