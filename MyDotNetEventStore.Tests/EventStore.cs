@@ -250,12 +250,12 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-        return await FetchBatchOfEvent(streamId);
+        return await FetchBatchOfEvent(_npgsqlConnection, streamId);
     }
 
-    private async Task<ReadStreamResult> FetchBatchOfEvent(string streamId)
+    private static async Task<ReadStreamResult> FetchBatchOfEvent(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        var (hasEvents, _, events) = await new ReadingCommandBuilder(_npgsqlConnection)
+        var (hasEvents, _, events) = await new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
             .FetchEvents();
 
