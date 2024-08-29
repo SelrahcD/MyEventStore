@@ -8,6 +8,8 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
 {
     private readonly ReadState _state;
     private readonly List<ResolvedEvent> _events;
+    private string? _streamId;
+    private NpgsqlConnection? _npgsqlConnection;
 
     private ReadStreamResult(ReadState state, List<ResolvedEvent> events)
     {
@@ -28,6 +30,15 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
     public static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events)
     {
         return new(ReadState.Ok, events);
+    }
+
+    private static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events, long lastPosition, NpgsqlConnection npgsqlConnection)
+    {
+        var  readStreamResult = StreamFound(streamId, events);
+        readStreamResult._streamId = streamId;
+        readStreamResult._npgsqlConnection = npgsqlConnection;
+
+        return readStreamResult;
     }
 
     public IEnumerator<ResolvedEvent> GetEnumerator()
@@ -53,7 +64,7 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
 
     public static async Task<ReadStreamResult> FetchBatchOfEvent(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        var (hasEvents, _, events) = await new ReadingCommandBuilder(npgsqlConnection)
+        var (hasEvents, lastPosition, events) = await new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
             .StartingFromRevision(0)
             .FetchEvents();
@@ -63,7 +74,7 @@ public class ReadStreamResult : IEnumerable<ResolvedEvent>, IAsyncEnumerable<Res
             return ReadStreamResult.StreamNotFound(streamId);
         }
 
-        return ReadStreamResult.StreamFound(streamId, events);
+        return ReadStreamResult.StreamFound(streamId, events, lastPosition, npgsqlConnection);
     }
 }
 
