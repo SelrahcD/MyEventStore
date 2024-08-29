@@ -51,6 +51,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
         while (true)
         {
+            int eventCount = 0;
+
             // This is because we fetch a first batch directly while looking if the stream exists
             if (_events.Count > 0)
             {
@@ -74,11 +76,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             foreach (var evt in events)
             {
+                eventCount++;
                 yield return evt;
             }
 
             // Todo: Add test when batch size === count of fetched events
-            if (events.Count < BatchSize || !hasEvents)
+            if (eventCount < BatchSize || !hasEvents)
             {
                 break;
             }
