@@ -103,7 +103,9 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That((await ToListAsync(readStreamResult)), Is.EqualTo(new List<ResolvedEvent>
+                var resolvedEvents = await ToListAsync(readStreamResult);
+
+                Assert.That(resolvedEvents, Is.EqualTo(new List<ResolvedEvent>
                 {
                     evt1.ToResolvedEvent(1,1),
                     evt2.ToResolvedEvent(2, 2),
@@ -382,9 +384,9 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                var events = await ToListAsync(readStreamResult);
+                var resolvedEventList = await ToListAsync<ResolvedEvent>(readStreamResult);
 
-                Assert.That(events.First().Revision, Is.EqualTo(1));
+                Assert.That(resolvedEventList.First().Revision, Is.EqualTo(1));
             }
 
             [Test]
@@ -396,7 +398,9 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That((await ToListAsync(readStreamResult)).Last().Revision, Is.EqualTo(eventCount));
+                var resolvedEvents = await ToListAsync(readStreamResult);
+
+                Assert.That(resolvedEvents.Last().Revision, Is.EqualTo(eventCount));
             }
 
             [Test]
@@ -412,7 +416,9 @@ public class EventStoreTest
 
                 var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That((await ToListAsync(readStreamResult)).Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
+                var resolvedEvents = await ToListAsync(readStreamResult);
+
+                Assert.That(resolvedEvents.Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
             }
 
             [Test]
@@ -518,18 +524,6 @@ public class EventStoreTest
 
         return list;
 
-    }
-
-    private static async Task<List<ResolvedEvent>> ToListAsync(ReadStreamResult readStreamResult)
-    {
-        var list = new List<ResolvedEvent>();
-
-        await foreach (var item in readStreamResult)
-        {
-            list.Add(item);
-        }
-
-        return list;
     }
 }
 
