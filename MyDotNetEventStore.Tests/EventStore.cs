@@ -430,13 +430,4 @@ public class EventStore
     {
         return new ReadAllStreamResult(this, _npgsqlConnection);
     }
-
-    // Todo: Remove from the public interface of the EventStore
-    public async Task<(bool, long, List<ResolvedEvent>)> FetchBatchOfEvents(int batchSize, long lastPosition)
-    {
-        return await new ReadingCommandBuilder(_npgsqlConnection)
-            .BatchSize(batchSize)
-            .StartingFromPosition(lastPosition)
-            .FetchEvents();
-    }
 }
