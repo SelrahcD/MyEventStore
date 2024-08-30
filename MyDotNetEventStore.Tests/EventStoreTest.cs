@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using OneOf;
 using Testcontainers.PostgreSql;
@@ -16,6 +17,10 @@ public class PostgresEventStoreSetup
     public async Task OneTimeSetup()
     {
         await _postgresContainer.StartAsync();
+
+        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
+        NpgsqlLoggingConfiguration.InitializeLogging(loggerFactory);
+        NpgsqlLoggingConfiguration.InitializeLogging(loggerFactory, parameterLoggingEnabled: true);
 
         Connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
 
@@ -85,7 +90,10 @@ public class EventStoreTest
             {
                 await _eventStore.AppendAsync("stream-id", AnEvent().ToEventData());
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                // Need to close the reader when not iterating on it
+                // The interface is not the same as the one in EventStore where ReadStreamAsync is actually not async
+                // but returns an object that will get events and stream status
+                await using var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
                 Assert.That(readStreamResult.State, Is.EqualTo(ReadState.Ok));
             }

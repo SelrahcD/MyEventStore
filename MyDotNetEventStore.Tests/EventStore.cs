@@ -4,21 +4,18 @@ using NpgsqlTypes;
 
 namespace MyDotNetEventStore.Tests;
 
-public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
+public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposable, IDisposable
 {
     private const int BatchSize = 100;
 
     private readonly ReadState _state;
-    private List<ResolvedEvent> _events;
     private string? _streamId = null!;
     private NpgsqlConnection? _npgsqlConnection = null!;
-    private long _lastPosition = 0;
     private NpgsqlDataReader _reader = null!;
 
-    private ReadStreamResult(ReadState state, List<ResolvedEvent> events)
+    private ReadStreamResult(ReadState state)
     {
         _state = state;
-        _events = events;
     }
 
     public ReadState State()
@@ -28,28 +25,18 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     private static ReadStreamResult StreamNotFound(string streamId)
     {
-        return new(ReadState.StreamNotFound, new List<ResolvedEvent>());
+        return new(ReadState.StreamNotFound);
     }
 
     private static async Task<ReadStreamResult> StreamFound(string streamId,
         NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader)
     {
 
-        long lastPosition = 0;
-        var events = new List<ResolvedEvent>();
-        while (await reader.ReadAsync())
-        {
-            var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
 
-            events.Add(resolvedEvent);
 
-            lastPosition = position;
-        }
-
-        var readStreamResult = new ReadStreamResult(ReadState.Ok, events);
+        var readStreamResult = new ReadStreamResult(ReadState.Ok);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
-        readStreamResult._lastPosition = lastPosition;
         readStreamResult._reader = reader;
 
         return readStreamResult;
@@ -57,35 +44,30 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
-        long lastPosition = _lastPosition;
+        long lastPosition = 0;
+        while (await _reader.ReadAsync(cancellationToken))
+        {
+            var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(_reader);
+
+            yield return resolvedEvent;
+
+            lastPosition = position;
+        }
+
+        await _reader.DisposeAsync();
 
         while (true)
         {
             int eventCount = 0;
 
-            // This is because we fetch a first batch directly while looking if the stream exists
-            if (_events.Count > 0)
-            {
-                foreach (var evt in _events)
-                {
-                    yield return evt;
-                }
-            }
+            await using var command = new ReadingCommandBuilder(_npgsqlConnection)
+                .FromStream(_streamId)
+                .StartingFromPosition(lastPosition)
+                .BatchSize(BatchSize).Build();
 
-            _events = new List<ResolvedEvent>();
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-            NpgsqlDataReader ret;
-            await using (var command = new ReadingCommandBuilder(_npgsqlConnection)
-                             .FromStream(_streamId)
-                             .StartingFromPosition(lastPosition)
-                             .BatchSize(BatchSize).Build())
-            {
-                ret = await command.ExecuteReaderAsync();
-            }
-
-            await using var reader = ret;
-
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
 
@@ -106,18 +88,29 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        await using var command = new ReadingCommandBuilder(npgsqlConnection)
+        var command = new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
             .StartingFromRevision(0)
             .BatchSize(BatchSize).Build();
-        await using var reader =  await command.ExecuteReaderAsync();
+        var reader =  await command.ExecuteReaderAsync();
 
          if (!reader.HasRows)
         {
+            await reader.DisposeAsync();
             return ReadStreamResult.StreamNotFound(streamId);
         }
 
         return await ReadStreamResult.StreamFound(streamId, npgsqlConnection, reader);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _reader.DisposeAsync();
+    }
+
+    public void Dispose()
+    {
+        _reader.Dispose();
     }
 }
 
