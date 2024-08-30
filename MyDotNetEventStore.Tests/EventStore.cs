@@ -219,6 +219,8 @@ public class ReadingCommandBuilder
     private string? _streamId = null;
     private long? _revision = null;
 
+    // We should inject the connection in the build method to avoid storing it
+    // which could impeach closing it
     public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
