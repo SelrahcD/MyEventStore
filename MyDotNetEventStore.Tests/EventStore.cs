@@ -35,21 +35,21 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader)
     {
 
-        long lastPosition2 = 0;
-        var events2 = new List<ResolvedEvent>();
+        long lastPosition = 0;
+        var events = new List<ResolvedEvent>();
         while (await reader.ReadAsync())
         {
             var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
 
-            events2.Add(resolvedEvent);
+            events.Add(resolvedEvent);
 
-            lastPosition2 = position;
+            lastPosition = position;
         }
 
-        var readStreamResult = new ReadStreamResult(ReadState.Ok, events2);
+        var readStreamResult = new ReadStreamResult(ReadState.Ok, events);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
-        readStreamResult._lastPosition = lastPosition2;
+        readStreamResult._lastPosition = lastPosition;
         readStreamResult._reader = reader;
 
         return readStreamResult;
