@@ -13,6 +13,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
     private string? _streamId = null!;
     private NpgsqlConnection? _npgsqlConnection = null!;
     private long _lastPosition = 0;
+    private NpgsqlDataReader _reader = null!;
 
     private ReadStreamResult(ReadState state, List<ResolvedEvent> events)
     {
@@ -30,12 +31,14 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         return new(ReadState.StreamNotFound, new List<ResolvedEvent>());
     }
 
-    private static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events, long lastPosition, NpgsqlConnection npgsqlConnection)
+    private static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events, long lastPosition,
+        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader)
     {
         var readStreamResult = new ReadStreamResult(ReadState.Ok, events);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
         readStreamResult._lastPosition = lastPosition;
+        readStreamResult._reader = reader;
 
         return readStreamResult;
     }
@@ -110,7 +113,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             lastPosition = position;
         }
 
-        return ReadStreamResult.StreamFound(streamId, events, lastPosition, npgsqlConnection);
+        return ReadStreamResult.StreamFound(streamId, events, lastPosition, npgsqlConnection, reader);
     }
 }
 
