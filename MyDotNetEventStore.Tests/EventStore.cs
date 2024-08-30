@@ -43,13 +43,13 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             events2.Add(resolvedEvent);
 
-            lastPosition = position;
+            lastPosition2 = position;
         }
 
         var readStreamResult = new ReadStreamResult(ReadState.Ok, events2);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
-        readStreamResult._lastPosition = lastPosition;
+        readStreamResult._lastPosition = lastPosition2;
         readStreamResult._reader = reader;
 
         return readStreamResult;
