@@ -74,11 +74,16 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             _events = new List<ResolvedEvent>();
 
-            await using var reader = await  new ReadingCommandBuilder(_npgsqlConnection)
-                .FromStream(_streamId)
-                .StartingFromPosition(lastPosition)
-                .BatchSize(BatchSize)
-                .Reader();
+            NpgsqlDataReader ret;
+            await using (var command = new ReadingCommandBuilder(_npgsqlConnection)
+                             .FromStream(_streamId)
+                             .StartingFromPosition(lastPosition)
+                             .BatchSize(BatchSize).Build())
+            {
+                ret = await command.ExecuteReaderAsync();
+            }
+
+            await using var reader = ret;
 
             while (await reader.ReadAsync())
             {
@@ -101,11 +106,16 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
-         await using var reader = await new ReadingCommandBuilder(npgsqlConnection)
-            .FromStream(streamId)
-            .StartingFromRevision(0)
-            .BatchSize(BatchSize)
-            .Reader();
+        NpgsqlDataReader ret;
+        await using (var command = new ReadingCommandBuilder(npgsqlConnection)
+                         .FromStream(streamId)
+                         .StartingFromRevision(0)
+                         .BatchSize(BatchSize).Build())
+        {
+            ret = await command.ExecuteReaderAsync();
+        }
+
+        await using var reader = ret;
 
          if (!reader.HasRows)
         {
@@ -134,10 +144,15 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
         {
             var eventCount = 0;
 
-            await using var reader = await  new ReadingCommandBuilder(_npgsqlConnection)
-                .StartingFromPosition(lastPosition)
-                .BatchSize(batchSize)
-                .Reader();
+            NpgsqlDataReader ret;
+            await using (var command = new ReadingCommandBuilder(_npgsqlConnection)
+                             .StartingFromPosition(lastPosition)
+                             .BatchSize(batchSize).Build())
+            {
+                ret = await command.ExecuteReaderAsync();
+            }
+
+            await using var reader = ret;
 
             while (await reader.ReadAsync())
             {
@@ -321,13 +336,6 @@ public class ReadingCommandBuilder
 
         var resolvedEvent = new ResolvedEvent(position, revision, eventType, data, metaData);
         return (position, resolvedEvent);
-    }
-
-    public async Task<NpgsqlDataReader> Reader()
-    {
-        await using var command = Build();
-
-        return await command.ExecuteReaderAsync();
     }
 }
 
