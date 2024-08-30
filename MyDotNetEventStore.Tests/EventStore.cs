@@ -323,18 +323,6 @@ public class ReadingCommandBuilder
         return (position, resolvedEvent);
     }
 
-    public async Task<(bool, long, List<ResolvedEvent>)> FetchEvents()
-    {
-        await using var reader = await Reader();
-
-        if (!reader.HasRows)
-        {
-            return (false, 0, new List<ResolvedEvent>());
-        }
-
-        return await BuildEvents(reader);
-    }
-
     public async Task<NpgsqlDataReader> Reader()
     {
         var command = Build();
