@@ -414,7 +414,7 @@ public class EventStore
         return new AppendResult(position, revision);
     }
 
-    public async Task<ReadAllStreamResult> ReadAllAsync()
+    public ReadAllStreamResult ReadAllAsync()
     {
         return new ReadAllStreamResult(_npgsqlConnection);
     }

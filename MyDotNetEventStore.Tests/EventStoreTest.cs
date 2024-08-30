@@ -192,7 +192,7 @@ public class EventStoreTest
             await _eventStore.AppendAsync("stream-id3", evt3.ToEventData());
             await _eventStore.AppendAsync("stream-id1", evt4.ToEventData());
 
-            var readAllStreamResult = await _eventStore.ReadAllAsync();
+            var readAllStreamResult = _eventStore.ReadAllAsync();
 
             var resolvedEventList = await ToListAsync<ResolvedEvent>(readAllStreamResult);
 
@@ -217,7 +217,7 @@ public class EventStoreTest
 
             long memoryBefore = GC.GetTotalMemory(true);
 
-            var readAllStreamResult = await _eventStore.ReadAllAsync();
+            var readAllStreamResult =  _eventStore.ReadAllAsync();
 
             var count = 0;
 
