@@ -237,7 +237,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    private NpgsqlCommand Build()
+    public NpgsqlCommand Build()
     {
         var cmdText = $"""
                        SELECT position, event_type, revision, data, metadata
