@@ -86,15 +86,28 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        var (hasEvents, lastPosition, events) = await new ReadingCommandBuilder(npgsqlConnection)
+         await using var reader = await new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
             .StartingFromRevision(0)
             .BatchSize(BatchSize)
-            .FetchEvents();
+            .Reader();
 
-        if (!hasEvents)
+
+
+        if (!reader.HasRows)
         {
             return ReadStreamResult.StreamNotFound(streamId);
+        }
+
+        long lastPosition = 0;
+        var events = new List<ResolvedEvent>();
+        while (await reader.ReadAsync())
+        {
+            var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
+
+            events.Add(resolvedEvent);
+
+            lastPosition = position;
         }
 
         return ReadStreamResult.StreamFound(streamId, events, lastPosition, npgsqlConnection);
