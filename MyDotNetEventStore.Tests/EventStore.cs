@@ -30,14 +30,9 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         return new(ReadState.StreamNotFound, new List<ResolvedEvent>());
     }
 
-    private static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events)
-    {
-        return new(ReadState.Ok, events);
-    }
-
     private static ReadStreamResult StreamFound(string streamId, List<ResolvedEvent> events, long lastPosition, NpgsqlConnection npgsqlConnection)
     {
-        var readStreamResult = StreamFound(streamId, events);
+        var readStreamResult = new ReadStreamResult(ReadState.Ok, events);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
         readStreamResult._lastPosition = lastPosition;
