@@ -79,7 +79,7 @@ public class EventStoreTest
             {
                 var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
-                Assert.That(readStreamResult.State, Is.EqualTo(ReadState.StreamNotFound));
+                Assert.That(await readStreamResult.State(), Is.EqualTo(ReadState.StreamNotFound));
             }
         }
 
@@ -95,7 +95,7 @@ public class EventStoreTest
                 // but returns an object that will get events and stream status
                 await using var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
 
-                Assert.That(readStreamResult.State, Is.EqualTo(ReadState.Ok));
+                Assert.That(await readStreamResult.State(), Is.EqualTo(ReadState.Ok));
             }
 
             [Test]

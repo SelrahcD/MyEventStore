@@ -18,9 +18,9 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
         _state = state;
     }
 
-    public ReadState State()
+    public Task<ReadState> State()
     {
-        return _state;
+        return Task.FromResult(_state);
     }
 
     private static ReadStreamResult StreamNotFound(string streamId)
