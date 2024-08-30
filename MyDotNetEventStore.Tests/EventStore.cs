@@ -23,7 +23,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
         return Task.FromResult(_state);
     }
 
-    private static ReadStreamResult StreamNotFound(string streamId)
+    private static ReadStreamResult StreamNotFound()
     {
         return new(ReadState.StreamNotFound);
     }
@@ -97,7 +97,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
          if (!reader.HasRows)
         {
             await reader.DisposeAsync();
-            return ReadStreamResult.StreamNotFound(streamId);
+            return ReadStreamResult.StreamNotFound();
         }
 
         return await ReadStreamResult.StreamFound(streamId, npgsqlConnection, reader);
