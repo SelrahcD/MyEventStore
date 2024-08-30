@@ -325,7 +325,7 @@ public class ReadingCommandBuilder
 
     public async Task<NpgsqlDataReader> Reader()
     {
-        var command = Build();
+        await using var command = Build();
 
         return await command.ExecuteReaderAsync();
     }
