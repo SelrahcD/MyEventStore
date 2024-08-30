@@ -106,16 +106,11 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        NpgsqlDataReader ret;
-        await using (var command = new ReadingCommandBuilder(npgsqlConnection)
-                         .FromStream(streamId)
-                         .StartingFromRevision(0)
-                         .BatchSize(BatchSize).Build())
-        {
-            ret = await command.ExecuteReaderAsync();
-        }
-
-        await using var reader = ret;
+        await using var command = new ReadingCommandBuilder(npgsqlConnection)
+            .FromStream(streamId)
+            .StartingFromRevision(0)
+            .BatchSize(BatchSize).Build();
+        await using var reader =  await command.ExecuteReaderAsync();
 
          if (!reader.HasRows)
         {
