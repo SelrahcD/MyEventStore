@@ -107,9 +107,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             .BatchSize(BatchSize)
             .Reader();
 
-
-
-        if (!reader.HasRows)
+         if (!reader.HasRows)
         {
             return ReadStreamResult.StreamNotFound(streamId);
         }
