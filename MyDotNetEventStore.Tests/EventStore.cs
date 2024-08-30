@@ -84,7 +84,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         }
     }
 
-    public static async Task<ReadStreamResult> FetchBatchOfEvent(NpgsqlConnection npgsqlConnection, string streamId)
+    public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
         var (hasEvents, lastPosition, events) = await new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
@@ -339,7 +339,7 @@ public class EventStore
 
     public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
     {
-        return await ReadStreamResult.FetchBatchOfEvent(_npgsqlConnection, streamId);
+        return await ReadStreamResult.ForStream(_npgsqlConnection, streamId);
     }
 
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
