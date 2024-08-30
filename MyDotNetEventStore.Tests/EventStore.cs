@@ -144,15 +144,11 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
         {
             var eventCount = 0;
 
-            NpgsqlDataReader ret;
-            await using (var command = new ReadingCommandBuilder(_npgsqlConnection)
-                             .StartingFromPosition(lastPosition)
-                             .BatchSize(batchSize).Build())
-            {
-                ret = await command.ExecuteReaderAsync();
-            }
+            await using var command = new ReadingCommandBuilder(_npgsqlConnection)
+                .StartingFromPosition(lastPosition)
+                .BatchSize(batchSize).Build();
 
-            await using var reader = ret;
+            await using var reader =  await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
