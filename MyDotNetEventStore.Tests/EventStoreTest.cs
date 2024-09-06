@@ -84,6 +84,20 @@ public class EventStoreTest
                 Assert.That(streamExist, Is.False);
             }
         }
+
+        public class WhenTheStreamExists : KnowingIfAStreamExists
+        {
+
+            [Test]
+            public async Task returns_false()
+            {
+                await _eventStore.AppendAsync("a-stream", AnEvent().ToEventData());
+
+                var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
+
+                Assert.That(streamExist, Is.True);
+            }
+        }
         
     }
 
