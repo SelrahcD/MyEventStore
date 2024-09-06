@@ -24,7 +24,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         var readingCommandBuilder = _commandBuilder;
 
         long lastPosition = 0;
-        while (true)
+        while (cancellationToken.IsCancellationRequested == false)
         {
             int eventCount = 0;
 
