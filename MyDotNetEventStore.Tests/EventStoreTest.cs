@@ -149,6 +149,20 @@ public class EventStoreTest
             }
 
             [Test]
+            public async Task returns_all_events_appended_to_the_stream_in_order_PARAMETRIZABLE()
+            {
+                var eventBuilders = ListOfNBuilders(400);
+
+                await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
+
+                var resolvedEvents = await ToListAsync(readStreamResult);
+
+                Assert.That(resolvedEvents, Is.EqualTo(eventBuilders.ToResolvedEventsOfSameStream()));
+            }
+
+            [Test]
             public async Task doesnt_return_events_appended_to_another_stream()
             {
                 var evtInStream = AnEvent();
@@ -499,6 +513,18 @@ public class EventStoreTest
         return events;
     }
 
+    private static List<EventBuilder> ListOfNBuilders(int eventCount)
+    {
+        var events = new List<EventBuilder>();
+
+        for (int i = 0; i < eventCount; i++)
+        {
+            events.Add(new EventBuilder());
+        }
+
+        return events;
+    }
+
     public enum CountOfEvents
     {
         One,
@@ -517,6 +543,7 @@ public class EventStoreTest
     {
         return new EventBuilder();
     }
+
 
     public class EventBuilder
     {
@@ -578,5 +605,15 @@ public static class EventBuilderExtensions
     public static List<EventData> ToEventData(this List<EventStoreTest.EventBuilder> eventBuilders)
     {
         return eventBuilders.Select(builder => builder.ToEventData()).ToList();
+    }
+
+    public static List<ResolvedEvent> ToResolvedEventsOfSameStream(this List<EventStoreTest.EventBuilder> eventBuilders)
+    {
+        var i = 0;
+        return eventBuilders.Select(builder =>
+        {
+            i++;
+            return builder.ToResolvedEvent(i, i);
+        }).ToList();
     }
 }
