@@ -77,7 +77,7 @@ public class EventStoreTest
         {
 
             [Test]
-            public async Task returns_false()
+            public async Task returns_StreamExistence_NotFound()
             {
                 var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
 
@@ -89,7 +89,7 @@ public class EventStoreTest
         {
 
             [Test]
-            public async Task returns_false()
+            public async Task returns_StreamExistence_Exists()
             {
                 await _eventStore.AppendAsync("a-stream", AnEvent().ToEventData());
 
