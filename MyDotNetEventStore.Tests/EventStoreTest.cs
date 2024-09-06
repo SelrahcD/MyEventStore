@@ -237,7 +237,7 @@ public class EventStoreTest
 
             var resolvedEvents = await ToListAsync(readStreamResult);
 
-            var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEventsOfMultiplesStreams();
+            var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEvents();
             Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
         }
 
@@ -621,7 +621,7 @@ public static class EventBuilderExtensions
         }).ToList();
     }
 
-    public static List<ResolvedEvent> ToResolvedEventsOfMultiplesStreams(this List<EventStoreTest.EventBuilder> eventBuilders)
+    public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders)
     {
         var position = 0;
         var versions = new Dictionary<string, int>();
