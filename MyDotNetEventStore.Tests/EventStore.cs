@@ -74,10 +74,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        var command = new ReadingCommandBuilder(npgsqlConnection)
+        var readingCommandBuilder = new ReadingCommandBuilder(npgsqlConnection)
             .FromStream(streamId)
             .StartingFromRevision(0)
-            .BatchSize(BatchSize).Build();
+            .BatchSize(BatchSize);
+
+        var command = readingCommandBuilder.Build();
         var reader =  await command.ExecuteReaderAsync();
 
 
