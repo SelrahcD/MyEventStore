@@ -223,6 +223,26 @@ public class EventStoreTest
         }
 
         [Test]
+        public async Task returns_all_events_appended__to_all_streams_in_order_PARA(
+            [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
+        {
+            var eventBuilders = ListOfNBuilders(eventCount);
+
+            foreach (var eventBuilder in eventBuilders)
+            {
+                await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+            }
+
+            var readStreamResult = _eventStore.ReadAllAsync();
+
+            var resolvedEvents = await ToListAsync(readStreamResult);
+
+            var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEventsOfMultiplesStreams();
+            Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
+        }
+
+
+        [Test]
         // This is probably not a good way to test memory consumption but at least that test forced me to
         // fetch events by batch
         public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
@@ -527,6 +547,7 @@ public class EventStoreTest
         private readonly string _eventType;
         private readonly string _data;
         private readonly string _metadata;
+        private readonly string _streamId;
 
         public EventBuilder()
         {
@@ -537,6 +558,7 @@ public class EventStoreTest
             _eventType = SelectRandom(fakeEventTypes);
             _data = SelectRandom(fakeEventData);
             _metadata = SelectRandom(fakeEventMetaData);
+            _streamId = "stream-&" + new Random().Next(1, 100);
         }
 
         public EventData ToEventData()
@@ -547,6 +569,11 @@ public class EventStoreTest
         public ResolvedEvent ToResolvedEvent(int position, int revision)
         {
             return new ResolvedEvent(position, revision, _eventType, _data, _metadata);
+        }
+
+        public string StreamId()
+        {
+            return _streamId;
         }
     }
 
@@ -591,6 +618,26 @@ public static class EventBuilderExtensions
         {
             i++;
             return builder.ToResolvedEvent(i, i);
+        }).ToList();
+    }
+
+    public static List<ResolvedEvent> ToResolvedEventsOfMultiplesStreams(this List<EventStoreTest.EventBuilder> eventBuilders)
+    {
+        var position = 0;
+        var versions = new Dictionary<string, int>();
+        
+        return eventBuilders.Select(builder =>
+        {
+            position++;
+            var streamId = builder.StreamId();
+            if (!versions.ContainsKey(streamId))
+            {
+                versions[streamId] = 0;
+            }
+
+            versions[streamId]++;
+
+            return builder.ToResolvedEvent(position,  versions[streamId]);
         }).ToList();
     }
 }
