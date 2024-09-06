@@ -49,10 +49,11 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
         {
             int eventCount = 0;
 
-            await using var command = new ReadingCommandBuilder(_npgsqlConnection)
+            var readingCommandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
                 .FromStream(_streamId)
                 .StartingFromPosition(lastPosition)
-                .BatchSize(BatchSize).Build();
+                .BatchSize(BatchSize);
+            await using var command = readingCommandBuilder.Build();
 
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
