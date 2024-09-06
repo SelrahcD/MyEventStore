@@ -80,10 +80,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
             .BatchSize(BatchSize).Build();
         var reader =  await command.ExecuteReaderAsync();
 
-         if (!reader.HasRows)
-        {
-            return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader);
-        }
 
         return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader);
     }
