@@ -18,8 +18,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     }
 
     private static async Task<ReadStreamResult> PrepareForReading(string streamId,
-        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader, ReadingCommandBuilder readingCommandBuilder)
+        NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
     {
+
+        var command = readingCommandBuilder.Build();
+        var reader =  await command.ExecuteReaderAsync();
+
         var readStreamResult = new ReadStreamResult();
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
@@ -79,11 +83,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
             .StartingFromRevision(0)
             .BatchSize(BatchSize);
 
-        var command = readingCommandBuilder.Build();
-        var reader =  await command.ExecuteReaderAsync();
 
-
-        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader, readingCommandBuilder);
+        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, readingCommandBuilder);
     }
 
     public async ValueTask DisposeAsync()
