@@ -149,9 +149,10 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_all_events_appended_to_the_stream_in_order_PARAMETRIZABLE()
+            public async Task returns_all_events_appended_to_the_stream_in_order_PARAMETRIZABLE(
+                [Values(3, 200, 600)] int eventCount)
             {
-                var eventBuilders = ListOfNBuilders(400);
+                var eventBuilders = ListOfNBuilders(eventCount);
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
