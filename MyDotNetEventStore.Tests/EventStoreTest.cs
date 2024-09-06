@@ -494,11 +494,6 @@ public class EventStoreTest
 
     private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        return EventBuilders(eventCount, eventBuilderConfiguratorConfigurator);
-    }
-
-    private static IEnumerable<EventBuilder> EventBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
-    {
         for (int i = 0; i <eventCount; i++)
         {
             yield return eventBuilderConfiguratorConfigurator(new EventBuilder());
