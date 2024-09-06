@@ -281,9 +281,13 @@ public class EventStore
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
-    public ReadAllStreamResult ReadAllAsync()
+    public ReadStreamResult ReadAllAsync()
     {
-        return new ReadAllStreamResult(_npgsqlConnection);
+        var readingCommandBuilder = new ReadingCommandBuilder()
+            .StartingFromPosition(0)
+            .BatchSize(100);
+
+        return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
