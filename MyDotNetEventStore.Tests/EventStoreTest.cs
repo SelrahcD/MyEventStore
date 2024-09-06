@@ -128,7 +128,8 @@ public class EventStoreTest
             public async Task returns_all_events_appended_to_the_stream_in_order(
                 [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
             {
-                var eventBuilders = ListOfNBuilders(eventCount, (e) => e.InStream("stream-id"));
+                var eventBuilders = ListOfNBuilders(eventCount, (e) => e.InStream("stream-id"))
+                    .ToList();
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -488,12 +489,13 @@ public class EventStoreTest
 
     private static List<EventBuilder> ListOfNBuilders(int eventCount)
     {
-        return ListOfNBuilders(eventCount, (e) => e);
+        return ListOfNBuilders(eventCount, (e) => e)
+            .ToList();
     }
 
-    private static List<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
+    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        return EventBuilders(eventCount, eventBuilderConfiguratorConfigurator).ToList();
+        return EventBuilders(eventCount, eventBuilderConfiguratorConfigurator);
     }
 
     private static IEnumerable<EventBuilder> EventBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
