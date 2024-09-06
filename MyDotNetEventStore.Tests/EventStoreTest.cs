@@ -114,7 +114,7 @@ public class EventStoreTest
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events()
             {
-                var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+                var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
                 var resolvedEvents = await ToListAsync(readStreamResult);
 
@@ -136,7 +136,7 @@ public class EventStoreTest
                 await _eventStore.AppendAsync("stream-id", evt2.ToEventData());
                 await _eventStore.AppendAsync("stream-id", evt3.ToEventData());
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
                 var resolvedEvents = await ToListAsync(readStreamResult);
 
@@ -156,7 +156,7 @@ public class EventStoreTest
                 await _eventStore.AppendAsync("stream-id", evtInStream.ToEventData());
                 await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
                 var readEvents = await ToListAsync(readStreamResult);
 
@@ -176,7 +176,7 @@ public class EventStoreTest
 
                 long memoryBefore = GC.GetTotalMemory(true);
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
                 var count = 0;
                 await foreach (var _ in readStreamResult)
@@ -415,7 +415,7 @@ public class EventStoreTest
                 var appendedEvent = AnEvent().ToEventData();
                 await _eventStore.AppendAsync("stream-id", appendedEvent);
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
                 var resolvedEventList = await ToListAsync<ResolvedEvent>(readStreamResult);
 
@@ -429,7 +429,7 @@ public class EventStoreTest
                 var appendedEvent = ListOfNEvents(eventCount);
                 await _eventStore.AppendAsync("stream-id", appendedEvent);
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
                 var resolvedEvents = await ToListAsync(readStreamResult);
 
@@ -447,7 +447,7 @@ public class EventStoreTest
                 await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount2));
                 await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount3));
 
-                var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
                 var resolvedEvents = await ToListAsync(readStreamResult);
 

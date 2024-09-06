@@ -16,7 +16,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         _npgsqlConnection = npgsqlConnection;
     }
 
-    private static async Task<ReadStreamResult> PrepareForReading(NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
+    private static ReadStreamResult PrepareForReading(NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
     {
         return new ReadStreamResult(readingCommandBuilder, npgsqlConnection);
     }
@@ -55,7 +55,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         }
     }
 
-    public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
+    public static ReadStreamResult ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
@@ -63,7 +63,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             .BatchSize(BatchSize);
 
 
-        return await PrepareForReading(npgsqlConnection, readingCommandBuilder);
+        return PrepareForReading(npgsqlConnection, readingCommandBuilder);
     }
 }
 
@@ -279,9 +279,9 @@ public class EventStore
         _npgsqlConnection = npgsqlConnection;
     }
 
-    public async Task<ReadStreamResult> ReadStreamAsync(string streamId)
+    public ReadStreamResult ReadStreamAsync(string streamId)
     {
-        return await ReadStreamResult.ForStream(_npgsqlConnection, streamId);
+        return ReadStreamResult.ForStream(_npgsqlConnection, streamId);
     }
 
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
