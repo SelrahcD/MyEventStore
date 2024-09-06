@@ -61,7 +61,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             }
 
             readingCommandBuilder = _commandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
-
         }
     }
 
@@ -272,11 +271,11 @@ public class ReadingCommandBuilder
         return (position, resolvedEvent);
     }
 
-    public ReadingCommandBuilder NextReadingCommandBuilderStartingAtPosition(long lastPosition)
+    public ReadingCommandBuilder NextReadingCommandBuilderStartingAtPosition(long position)
     {
         var nextReadingCommandBuilder = (ReadingCommandBuilder)MemberwiseClone();
 
-        return nextReadingCommandBuilder.StartingFromPosition(lastPosition);
+        return nextReadingCommandBuilder.StartingFromPosition(position);
     }
 }
 
