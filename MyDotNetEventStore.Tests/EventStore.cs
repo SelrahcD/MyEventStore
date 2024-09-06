@@ -32,23 +32,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
         long lastPosition = 0;
-        var command1 = _commandBuilder.Build();
-        var _reader =  await command1.ExecuteReaderAsync();
-        while (await _reader.ReadAsync(cancellationToken))
-        {
-            var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(_reader);
 
-            yield return resolvedEvent;
-
-            lastPosition = position;
-        }
-
-        await _reader.DisposeAsync();
-
-        var readingCommandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
-            .FromStream(_streamId)
-            .StartingFromPosition(lastPosition)
-            .BatchSize(BatchSize);
+        var readingCommandBuilder = _commandBuilder;
 
         while (true)
         {
