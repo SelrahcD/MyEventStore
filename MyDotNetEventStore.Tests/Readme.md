@@ -3,24 +3,22 @@
 
 ## Todo
 ## Events
-- [ ] Define events as fine-grained data units in the database.
-- [ ] Ensure each event has the following attributes:
-    - [ ] **Type**: A string defined by the application.
+- [x] Ensure each event has the following attributes:
+    - [x] **Type**: A string defined by the application.
     - [ ] **Stream**: The stream the event belongs to, controlled by the application.
     - [ ] **Id**: A unique string over the store (UUID).
-    - [ ] **Revision**: A number representing the position in the stream.
-    - [ ] **Positions**: Numbers representing the global position of the event in the stream structure.
-    - [ ] **Data**: The payload of the event (JSON, byte arrays, XML, etc.).
-    - [ ] **Metadata**:
+    - [x] **Revision**: A number representing the position in the stream.
+    - [x] **Positions**: Numbers representing the global position of the event in the stream structure.
+    - [x] **Data**: The payload of the event as JSON
+    - [x] **Metadata**: The metadata of the event as JSON
         - [ ] System Metadata:
             - [ ] **Timestamp**: Date and time when the event was appended.
             - [ ] **CorrelationId**: Supplied by the application.
             - [ ] **CausationId**: Supplied by the application.
-        - [ ] Application Metadata: Application-level metadata (format-agnostic).
+        - [x] Application Metadata: Application-level metadata in JSON
 - [ ] Use event Id for deduplication when appending data to the store.
-- [ ] Use Revision for optimistic locking.
-- [ ] Ensure Timestamp is not used for application-level purposes.
-- [ ] Manage Revision & Positions as strictly increasing values.
+- [x] Use Revision for optimistic locking.
+- [x] Manage Revision & Positions as strictly increasing values.
 
 ## Storage Requirements
 - [ ] Enforce storage requirements under high load conditions.
@@ -46,11 +44,11 @@
 ### Appending Events
 - [ ] Implement append operation: `Append(Stream, ExpectedRevision, Event[]) -> Result`.
 - [ ] Support ACID transactional behavior for appends.
-- [ ] Use ExpectedRevision for optimistic locking:
-    - [ ] **Any**: No concurrency check.
-    - [ ] **NoStream**: Stream should not exist.
-    - [ ] **StreamExists**: Stream exists, may be empty.
-    - [ ] **Some number**: Match specific stream revision.
+- [x] Use ExpectedRevision for optimistic locking:
+    - [x] **Any**: No concurrency check.
+    - [x] **NoStream**: Stream should not exist.
+    - [x] **StreamExists**: Stream exists, may be empty.
+    - [x] **Some number**: Match specific stream revision.
 - [ ] Return new Revision and Positions after appending.
 
 ### Idempotency
