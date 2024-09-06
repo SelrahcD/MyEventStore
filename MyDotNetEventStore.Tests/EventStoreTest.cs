@@ -514,21 +514,14 @@ public class EventStoreTest
 
     private static List<EventBuilder> ListOfNBuilders(int eventCount)
     {
-        var events = new List<EventBuilder>();
-
-        for (int i = 0; i < eventCount; i++)
-        {
-            events.Add(new EventBuilder());
-        }
-
-        return events;
+        return ListOfNBuilders(eventCount, (e) => e);
     }
 
     private static List<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
         var events = new List<EventBuilder>();
 
-        for (int i = 0; i < eventCount; i++)
+        for (int i = 0; i <eventCount; i++)
         {
             events.Add(eventBuilderConfiguratorConfigurator(new EventBuilder()));
         }
