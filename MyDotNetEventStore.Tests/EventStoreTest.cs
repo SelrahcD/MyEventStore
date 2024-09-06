@@ -1,9 +1,13 @@
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using NUnit.Framework.Internal;
 using OneOf;
 using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
+
+// TODO:
+// - Test that we are properly releasing connections
 
 [SetUpFixture]
 public class PostgresEventStoreSetup
