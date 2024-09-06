@@ -5,7 +5,7 @@ namespace MyDotNetEventStore.Tests;
 
 public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
-    private const int BatchSize = 100;
+    public const int BatchSize = 100;
 
     private string _streamId;
     private NpgsqlConnection _npgsqlConnection;
@@ -16,6 +16,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         _commandBuilder = commandBuilder;
         _npgsqlConnection = npgsqlConnection;
         _streamId = streamId;
+    }
+
+    public string StreamId
+    {
+        set { _streamId = value; }
+        get { return _streamId; }
     }
 
     private static async Task<ReadStreamResult> PrepareForReading(string streamId,
@@ -54,17 +60,9 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 break;
             }
 
-            readingCommandBuilder = nextReadingCommandStartingAt(lastPosition);
+            readingCommandBuilder = _commandBuilder.nextReadingCommandStartingAt(lastPosition, this);
 
         }
-    }
-
-    private ReadingCommandBuilder nextReadingCommandStartingAt(long lastPosition)
-    {
-        return new ReadingCommandBuilder()
-            .FromStream(_streamId)
-            .StartingFromPosition(lastPosition)
-            .BatchSize(BatchSize);
     }
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
@@ -272,6 +270,14 @@ public class ReadingCommandBuilder
 
         var resolvedEvent = new ResolvedEvent(position, revision, eventType, data, metaData);
         return (position, resolvedEvent);
+    }
+
+    public ReadingCommandBuilder nextReadingCommandStartingAt(long lastPosition, ReadStreamResult readStreamResult)
+    {
+        return new ReadingCommandBuilder()
+            .FromStream(readStreamResult.StreamId)
+            .StartingFromPosition(lastPosition)
+            .BatchSize(ReadStreamResult.BatchSize);
     }
 }
 
