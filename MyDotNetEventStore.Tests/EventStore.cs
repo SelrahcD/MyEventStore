@@ -12,6 +12,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     private string? _streamId = null!;
     private NpgsqlConnection? _npgsqlConnection = null!;
     private NpgsqlDataReader _reader = null!;
+    private ReadingCommandBuilder _commandBuilder;
 
     private ReadStreamResult()
     {
@@ -20,14 +21,10 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     private static async Task<ReadStreamResult> PrepareForReading(string streamId,
         NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
     {
-
-        var command = readingCommandBuilder.Build();
-        var reader =  await command.ExecuteReaderAsync();
-
         var readStreamResult = new ReadStreamResult();
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
-        readStreamResult._reader = reader;
+        readStreamResult._commandBuilder = readingCommandBuilder;
 
         return readStreamResult;
     }
@@ -35,6 +32,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
         long lastPosition = 0;
+        var command1 = _commandBuilder.Build();
+        var _reader =  await command1.ExecuteReaderAsync();
         while (await _reader.ReadAsync(cancellationToken))
         {
             var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(_reader);
