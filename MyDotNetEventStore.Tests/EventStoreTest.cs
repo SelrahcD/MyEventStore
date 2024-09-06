@@ -522,16 +522,12 @@ public class EventStoreTest
         return EventBuilders(eventCount, eventBuilderConfiguratorConfigurator).ToList();
     }
 
-    private static List<EventBuilder> EventBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
+    private static IEnumerable<EventBuilder> EventBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        var events = new List<EventBuilder>();
-
         for (int i = 0; i <eventCount; i++)
         {
-            events.Add(eventBuilderConfiguratorConfigurator(new EventBuilder()));
+            yield return eventBuilderConfiguratorConfigurator(new EventBuilder());
         }
-
-        return events;
     }
 
     public enum CountOfEvents
