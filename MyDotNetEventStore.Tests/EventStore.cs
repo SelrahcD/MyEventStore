@@ -18,7 +18,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     }
 
     private static async Task<ReadStreamResult> PrepareForReading(string streamId,
-        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader)
+        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader, ReadingCommandBuilder readingCommandBuilder)
     {
         var readStreamResult = new ReadStreamResult();
         readStreamResult._streamId = streamId;
@@ -83,7 +83,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
         var reader =  await command.ExecuteReaderAsync();
 
 
-        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader);
+        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader, readingCommandBuilder);
     }
 
     public async ValueTask DisposeAsync()
