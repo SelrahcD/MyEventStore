@@ -5,7 +5,7 @@ namespace MyDotNetEventStore.Tests;
 
 public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
-    private const int BatchSize = 100;
+    public const int BatchSize = 100;
 
     private NpgsqlConnection _npgsqlConnection;
     private ReadingCommandBuilder _commandBuilder;
@@ -16,7 +16,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         _npgsqlConnection = npgsqlConnection;
     }
 
-    private static ReadStreamResult PrepareForReading(NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
+    public static ReadStreamResult PrepareForReading(NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
     {
         return new ReadStreamResult(readingCommandBuilder, npgsqlConnection);
     }
@@ -53,22 +53,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             readingCommandBuilder = readingCommandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
         }
     }
-
-    public static ReadStreamResult ForStream(NpgsqlConnection npgsqlConnection, string streamId)
-    {
-        var readingCommandBuilder = new ReadingCommandBuilder()
-            .FromStream(streamId)
-            .StartingFromRevision(0)
-            .BatchSize(BatchSize);
-
-
-        return PrepareForReading(npgsqlConnection, readingCommandBuilder);
-    }
 }
 
 public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private readonly NpgsqlConnection _npgsqlConnection;
+    private const int BatchSize = 100;
 
     public ReadAllStreamResult(NpgsqlConnection npgsqlConnection)
     {
@@ -78,11 +68,10 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
         long lastPosition = 0;
-        const int batchSize = 100;
 
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(lastPosition)
-            .BatchSize(batchSize);
+            .BatchSize(BatchSize);
 
         while (true)
         {
@@ -102,7 +91,7 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
                 yield return resolvedEvent;
             }
 
-            if (eventCount < batchSize)
+            if (eventCount < BatchSize)
             {
                 break;
             }
@@ -284,7 +273,12 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(string streamId)
     {
-        return ReadStreamResult.ForStream(_npgsqlConnection, streamId);
+        var readingCommandBuilder = new ReadingCommandBuilder()
+            .FromStream(streamId)
+            .StartingFromRevision(0)
+            .BatchSize(ReadStreamResult.BatchSize);
+
+        return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
