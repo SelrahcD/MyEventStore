@@ -201,7 +201,7 @@ public class EventStoreTest
         public async Task returns_all_events_appended__to_all_streams_in_order(
             [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
         {
-            var eventBuilders = ListOfNBuilders(eventCount);
+            var eventBuilders = ListOfNBuilders(eventCount).ToList();
 
             foreach (var eventBuilder in eventBuilders)
             {
@@ -487,10 +487,9 @@ public class EventStoreTest
 
     delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
 
-    private static List<EventBuilder> ListOfNBuilders(int eventCount)
+    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount)
     {
-        return ListOfNBuilders(eventCount, (e) => e)
-            .ToList();
+        return ListOfNBuilders(eventCount, (e) => e);
     }
 
     private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
