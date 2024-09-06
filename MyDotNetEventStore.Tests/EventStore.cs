@@ -45,14 +45,15 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
 
         await _reader.DisposeAsync();
 
+        var readingCommandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
+            .FromStream(_streamId)
+            .StartingFromPosition(lastPosition)
+            .BatchSize(BatchSize);
+
         while (true)
         {
             int eventCount = 0;
 
-            var readingCommandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
-                .FromStream(_streamId)
-                .StartingFromPosition(lastPosition)
-                .BatchSize(BatchSize);
             await using var command = readingCommandBuilder.Build();
 
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -72,6 +73,11 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
             {
                 break;
             }
+
+            readingCommandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
+                .FromStream(_streamId)
+                .StartingFromPosition(lastPosition)
+                .BatchSize(BatchSize);
 
         }
     }
