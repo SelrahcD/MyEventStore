@@ -5,8 +5,6 @@ namespace MyDotNetEventStore.Tests;
 
 public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
-    public const int BatchSize = 100;
-
     private NpgsqlConnection _npgsqlConnection;
     private ReadingCommandBuilder _commandBuilder;
 
@@ -45,7 +43,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
             }
 
             // Todo: Add test when batch size === count of fetched events
-            if (eventCount < BatchSize)
+            if (eventCount < readingCommandBuilder.BatchSize())
             {
                 break;
             }
@@ -71,7 +69,7 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(lastPosition)
-            .BatchSize(BatchSize);
+            .WithBatchSize(BatchSize);
 
         while (true)
         {
@@ -140,11 +138,16 @@ public class ReadingCommandBuilder
     private string? _streamId;
     private long? _revision;
 
-    public ReadingCommandBuilder BatchSize(int batchSize)
+    public ReadingCommandBuilder WithBatchSize(int batchSize)
     {
         _batchSize = batchSize;
 
         return this;
+    }
+
+    public int BatchSize()
+    {
+        return _batchSize ?? 0;
     }
 
     public ReadingCommandBuilder FromStream(string streamId)
@@ -278,7 +281,7 @@ public class EventStore
         var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
             .StartingFromRevision(0)
-            .BatchSize(BatchSize);
+            .WithBatchSize(BatchSize);
 
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
@@ -287,7 +290,7 @@ public class EventStore
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(0)
-            .BatchSize(BatchSize);
+            .WithBatchSize(BatchSize);
 
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
