@@ -24,11 +24,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
         return Task.FromResult(_state);
     }
 
-    private static ReadStreamResult StreamNotFound()
-    {
-        return new(ReadState.StreamNotFound);
-    }
-
     private static async Task<ReadStreamResult> StreamFound(string streamId,
         NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader, ReadState readState)
     {
