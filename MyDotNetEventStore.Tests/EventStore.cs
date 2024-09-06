@@ -9,23 +9,21 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private const int BatchSize = 100;
 
-    private string? _streamId = null!;
-    private NpgsqlConnection? _npgsqlConnection = null!;
+    private string _streamId;
+    private NpgsqlConnection _npgsqlConnection;
     private ReadingCommandBuilder _commandBuilder;
 
-    private ReadStreamResult()
+    private ReadStreamResult(ReadingCommandBuilder commandBuilder, NpgsqlConnection npgsqlConnection, string streamId)
     {
+        _commandBuilder = commandBuilder;
+        _npgsqlConnection = npgsqlConnection;
+        _streamId = streamId;
     }
 
     private static async Task<ReadStreamResult> PrepareForReading(string streamId,
         NpgsqlConnection npgsqlConnection, ReadingCommandBuilder readingCommandBuilder)
     {
-        var readStreamResult = new ReadStreamResult();
-        readStreamResult._streamId = streamId;
-        readStreamResult._npgsqlConnection = npgsqlConnection;
-        readStreamResult._commandBuilder = readingCommandBuilder;
-
-        return readStreamResult;
+        return new ReadStreamResult(readingCommandBuilder, npgsqlConnection, streamId);
     }
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
