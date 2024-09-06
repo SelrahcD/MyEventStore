@@ -264,6 +264,8 @@ public class ReadingCommandBuilder
 
 public class EventStore
 {
+    private const int BatchSize = 100;
+
     private readonly NpgsqlConnection _npgsqlConnection;
 
     public EventStore(NpgsqlConnection npgsqlConnection)
@@ -276,7 +278,7 @@ public class EventStore
         var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
             .StartingFromRevision(0)
-            .BatchSize(ReadStreamResult.BatchSize);
+            .BatchSize(BatchSize);
 
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
@@ -285,7 +287,7 @@ public class EventStore
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(0)
-            .BatchSize(100);
+            .BatchSize(BatchSize);
 
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
