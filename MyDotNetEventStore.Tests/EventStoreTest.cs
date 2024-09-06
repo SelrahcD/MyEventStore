@@ -197,33 +197,7 @@ public class EventStoreTest
         // Todo: Test cancellation token stops enumeration
 
         [Test]
-        public async Task returns_all_events_appended_to_all_streams_in_order()
-        {
-            var evt1 = AnEvent();
-            var evt2 = AnEvent();
-            var evt3 = AnEvent();
-            var evt4 = AnEvent();
-
-            await _eventStore.AppendAsync("stream-id1", evt1.ToEventData());
-            await _eventStore.AppendAsync("stream-id2", evt2.ToEventData());
-            await _eventStore.AppendAsync("stream-id3", evt3.ToEventData());
-            await _eventStore.AppendAsync("stream-id1", evt4.ToEventData());
-
-            var readAllStreamResult = _eventStore.ReadAllAsync();
-
-            var resolvedEventList = await ToListAsync<ResolvedEvent>(readAllStreamResult);
-
-            Assert.That(resolvedEventList, Is.EqualTo(new List<ResolvedEvent>
-            {
-                evt1.ToResolvedEvent(1, 1),
-                evt2.ToResolvedEvent(2, 1),
-                evt3.ToResolvedEvent(3, 1),
-                evt4.ToResolvedEvent(4, 2),
-            }));
-        }
-
-        [Test]
-        public async Task returns_all_events_appended__to_all_streams_in_order_PARA(
+        public async Task returns_all_events_appended__to_all_streams_in_order(
             [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
         {
             var eventBuilders = ListOfNBuilders(eventCount);
