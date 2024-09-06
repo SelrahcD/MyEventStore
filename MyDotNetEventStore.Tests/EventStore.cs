@@ -53,52 +53,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
     }
 }
 
-public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
-{
-    private readonly NpgsqlConnection _npgsqlConnection;
-    private const int BatchSize = 100;
-
-    public ReadAllStreamResult(NpgsqlConnection npgsqlConnection)
-    {
-        _npgsqlConnection = npgsqlConnection;
-    }
-
-    public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
-    {
-        long lastPosition = 0;
-
-        var readingCommandBuilder = new ReadingCommandBuilder()
-            .StartingFromPosition(lastPosition)
-            .WithBatchSize(BatchSize);
-
-        while (true)
-        {
-            var eventCount = 0;
-
-            await using var command = readingCommandBuilder.Build(_npgsqlConnection);
-
-            await using var reader =  await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                var (position, resolvedEvent) = ReadingCommandBuilder.BuildOneEvent(reader);
-
-                eventCount++;
-                lastPosition = position;
-
-                yield return resolvedEvent;
-            }
-
-            if (eventCount < BatchSize)
-            {
-                break;
-            }
-
-            readingCommandBuilder = readingCommandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
-        }
-    }
-}
-
 public record EventData
 {
     public string Data { get; }
