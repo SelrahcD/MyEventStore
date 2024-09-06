@@ -54,12 +54,17 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 break;
             }
 
-            readingCommandBuilder = new ReadingCommandBuilder()
-                .FromStream(_streamId)
-                .StartingFromPosition(lastPosition)
-                .BatchSize(BatchSize);
+            readingCommandBuilder = nextReadingCommandStartingAt(lastPosition);
 
         }
+    }
+
+    private ReadingCommandBuilder nextReadingCommandStartingAt(long lastPosition)
+    {
+        return new ReadingCommandBuilder()
+            .FromStream(_streamId)
+            .StartingFromPosition(lastPosition)
+            .BatchSize(BatchSize);
     }
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
