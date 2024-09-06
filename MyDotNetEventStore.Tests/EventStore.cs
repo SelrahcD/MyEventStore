@@ -366,7 +366,7 @@ public class EventStore
         {
             var streamExists = await StreamExist(streamId);
 
-            switch (streamExists)
+            switch (streamExists == StreamExistence.Exists)
             {
                 case true when streamState.Type == StreamStateType.NoStream:
                     throw ConcurrencyException.StreamAlreadyExists(streamId);
@@ -411,13 +411,13 @@ public class EventStore
         return new AppendResult(position, revision);
     }
 
-    public async Task<bool> StreamExist(string streamId)
+    public async Task<StreamExistence> StreamExist(string streamId)
     {
         var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
             _npgsqlConnection);
         checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
 
-        return await checkStreamCommand.ExecuteScalarAsync() != null;
+        return await checkStreamCommand.ExecuteScalarAsync() != null ? StreamExistence.Exists : StreamExistence.NotFound;
     }
 
     public ReadAllStreamResult ReadAllAsync()

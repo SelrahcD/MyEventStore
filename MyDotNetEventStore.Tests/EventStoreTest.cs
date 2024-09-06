@@ -81,7 +81,7 @@ public class EventStoreTest
             {
                 var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
 
-                Assert.That(streamExist, Is.False);
+                Assert.That(streamExist, Is.EqualTo(StreamExistence.NotFound));
             }
         }
 
@@ -95,7 +95,7 @@ public class EventStoreTest
 
                 var streamExist = await _eventStore.StreamExist("a-stream");
 
-                Assert.That(streamExist, Is.True);
+                Assert.That(streamExist, Is.EqualTo(StreamExistence.Exists));
             }
         }
         
@@ -564,6 +564,12 @@ public class EventStoreTest
         return list;
 
     }
+}
+
+public enum StreamExistence
+{
+    Exists,
+    NotFound
 }
 
 public static class EventBuilderExtensions
