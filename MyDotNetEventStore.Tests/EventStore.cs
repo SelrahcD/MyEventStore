@@ -23,10 +23,9 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
-        long lastPosition = 0;
-
         var readingCommandBuilder = _commandBuilder;
 
+        long lastPosition = 0;
         while (true)
         {
             int eventCount = 0;
