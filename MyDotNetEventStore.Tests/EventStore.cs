@@ -81,13 +81,13 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
         long lastPosition = 0;
         const int batchSize = 100;
 
+        var readingCommandBuilder = new ReadingCommandBuilder()
+            .StartingFromPosition(lastPosition)
+            .BatchSize(batchSize);
+
         while (true)
         {
             var eventCount = 0;
-
-            var readingCommandBuilder = new ReadingCommandBuilder()
-                .StartingFromPosition(lastPosition)
-                .BatchSize(batchSize);
 
             await using var command = readingCommandBuilder.Build(_npgsqlConnection);
 
@@ -107,6 +107,8 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
             {
                 break;
             }
+
+            readingCommandBuilder = readingCommandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
         }
     }
 }
