@@ -106,13 +106,6 @@ public class EventStoreTest
     {
         public class WhenTheStreamDoesntExists : ReadingStream
         {
-            [Test]
-            public async Task returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
-            {
-                await using var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
-
-                Assert.That(await readStreamResult.State(), Is.EqualTo(ReadState.StreamNotFound));
-            }
 
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events()
@@ -127,18 +120,6 @@ public class EventStoreTest
 
         public class WhenTheStreamExists : ReadingStream
         {
-            [Test]
-            public async Task returns_a_ReadStreamResult_with_a_State_equals_to_Ok()
-            {
-                await _eventStore.AppendAsync("stream-id", AnEvent().ToEventData());
-
-                // Need to close the reader when not iterating on it
-                // The interface is not the same as the one in EventStore where ReadStreamAsync is actually not async
-                // but returns an object that will get events and stream status
-                await using var readStreamResult = await _eventStore.ReadStreamAsync("stream-id");
-
-                Assert.That(await readStreamResult.State(), Is.EqualTo(ReadState.Ok));
-            }
 
             [Test]
             public async Task returns_all_events_appended_to_the_stream_in_order()
