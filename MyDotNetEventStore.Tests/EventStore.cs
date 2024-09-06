@@ -9,28 +9,18 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
 {
     private const int BatchSize = 100;
 
-    private readonly ReadState _state;
     private string? _streamId = null!;
     private NpgsqlConnection? _npgsqlConnection = null!;
     private NpgsqlDataReader _reader = null!;
 
-    private ReadStreamResult(ReadState state)
+    private ReadStreamResult()
     {
-        _state = state;
-    }
-
-    public Task<ReadState> State()
-    {
-        return Task.FromResult(_state);
     }
 
     private static async Task<ReadStreamResult> PrepareForReading(string streamId,
-        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader, ReadState readState)
+        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader)
     {
-
-
-
-        var readStreamResult = new ReadStreamResult(readState);
+        var readStreamResult = new ReadStreamResult();
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
         readStreamResult._reader = reader;
@@ -92,10 +82,10 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
 
          if (!reader.HasRows)
         {
-            return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader, ReadState.StreamNotFound);
+            return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader);
         }
 
-        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader, ReadState.Ok);
+        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, reader);
     }
 
     public async ValueTask DisposeAsync()
@@ -149,12 +139,6 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
             }
         }
     }
-}
-
-public enum ReadState
-{
-    StreamNotFound,
-    Ok
 }
 
 public record EventData
