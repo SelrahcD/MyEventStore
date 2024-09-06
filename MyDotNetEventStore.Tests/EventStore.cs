@@ -274,10 +274,9 @@ public class ReadingCommandBuilder
 
     public ReadingCommandBuilder nextReadingCommandStartingAt(long lastPosition, ReadStreamResult readStreamResult)
     {
-        return new ReadingCommandBuilder()
-            .FromStream(readStreamResult.StreamId)
-            .StartingFromPosition(lastPosition)
-            .BatchSize(_batchSize!.Value);
+        var nextReadingCommandBuilder = (ReadingCommandBuilder)MemberwiseClone();
+
+        return nextReadingCommandBuilder.StartingFromPosition(lastPosition);
     }
 }
 
