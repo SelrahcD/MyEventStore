@@ -124,33 +124,9 @@ public class EventStoreTest
 
         public class WhenTheStreamExists : ReadingStream
         {
-
             [Test]
-            public async Task returns_all_events_appended_to_the_stream_in_order()
-            {
-                var evt1 = AnEvent();
-                var evt2 = AnEvent();
-                var evt3 = AnEvent();
-
-                await _eventStore.AppendAsync("stream-id", evt1.ToEventData());
-                await _eventStore.AppendAsync("stream-id", evt2.ToEventData());
-                await _eventStore.AppendAsync("stream-id", evt3.ToEventData());
-
-                var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
-
-                var resolvedEvents = await ToListAsync(readStreamResult);
-
-                Assert.That(resolvedEvents, Is.EqualTo(new List<ResolvedEvent>
-                {
-                    evt1.ToResolvedEvent(1,1),
-                    evt2.ToResolvedEvent(2, 2),
-                    evt3.ToResolvedEvent(3, 3)
-                }));
-            }
-
-            [Test]
-            public async Task returns_all_events_appended_to_the_stream_in_order_PARAMETRIZABLE(
-                [Values(3, 200, 600)] int eventCount)
+            public async Task returns_all_events_appended_to_the_stream_in_order(
+                [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
             {
                 var eventBuilders = ListOfNBuilders(eventCount);
 
