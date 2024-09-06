@@ -5,13 +5,12 @@ using NUnit.Framework.Constraints;
 
 namespace MyDotNetEventStore.Tests;
 
-public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposable, IDisposable
+public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
     private const int BatchSize = 100;
 
     private string? _streamId = null!;
     private NpgsqlConnection? _npgsqlConnection = null!;
-    private NpgsqlDataReader _reader = null!;
     private ReadingCommandBuilder _commandBuilder;
 
     private ReadStreamResult()
@@ -76,16 +75,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
 
 
         return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, readingCommandBuilder);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _reader.DisposeAsync();
-    }
-
-    public void Dispose()
-    {
-        _reader.Dispose();
     }
 }
 
