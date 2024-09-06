@@ -417,8 +417,7 @@ public class EventStore
             _npgsqlConnection);
         checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
 
-        var streamExists = await checkStreamCommand.ExecuteScalarAsync() != null;
-        return streamExists;
+        return await checkStreamCommand.ExecuteScalarAsync() != null;
     }
 
     public ReadAllStreamResult ReadAllAsync()
