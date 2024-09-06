@@ -82,7 +82,7 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public ReadAllStreamResult(NpgsqlConnection npgsqlConnection)
     {
-        this._npgsqlConnection = npgsqlConnection;
+        _npgsqlConnection = npgsqlConnection;
     }
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
