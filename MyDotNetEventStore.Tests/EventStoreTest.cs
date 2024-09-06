@@ -109,9 +109,19 @@ public class EventStoreTest
             [Test]
             public async Task returns_a_ReadStreamResult_with_State_equals_to_StreamNotFound()
             {
-                var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+                await using var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
                 Assert.That(await readStreamResult.State(), Is.EqualTo(ReadState.StreamNotFound));
+            }
+
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_any_events()
+            {
+                var readStreamResult = await _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
+
+                var resolvedEvents = await ToListAsync(readStreamResult);
+
+                Assert.That(resolvedEvents.Count(),  Is.EqualTo(0));
             }
         }
 

@@ -30,12 +30,12 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
     }
 
     private static async Task<ReadStreamResult> StreamFound(string streamId,
-        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader)
+        NpgsqlConnection npgsqlConnection, NpgsqlDataReader reader, ReadState readState)
     {
 
 
 
-        var readStreamResult = new ReadStreamResult(ReadState.Ok);
+        var readStreamResult = new ReadStreamResult(readState);
         readStreamResult._streamId = streamId;
         readStreamResult._npgsqlConnection = npgsqlConnection;
         readStreamResult._reader = reader;
@@ -97,11 +97,10 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>, IAsyncDisposabl
 
          if (!reader.HasRows)
         {
-            await reader.DisposeAsync();
-            return ReadStreamResult.StreamNotFound();
+            return await ReadStreamResult.StreamFound(streamId, npgsqlConnection, reader, ReadState.StreamNotFound);
         }
 
-        return await ReadStreamResult.StreamFound(streamId, npgsqlConnection, reader);
+        return await ReadStreamResult.StreamFound(streamId, npgsqlConnection, reader, ReadState.Ok);
     }
 
     public async ValueTask DisposeAsync()
