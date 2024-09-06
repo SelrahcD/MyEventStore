@@ -36,7 +36,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         {
             int eventCount = 0;
 
-            await using var command = readingCommandBuilder.Build();
+            await using var command = readingCommandBuilder.Build(_npgsqlConnection);
 
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -96,7 +96,7 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             await using var command = new ReadingCommandBuilder(_npgsqlConnection)
                 .StartingFromPosition(lastPosition)
-                .BatchSize(batchSize).Build();
+                .BatchSize(batchSize).Build(_npgsqlConnection);
 
             await using var reader =  await command.ExecuteReaderAsync();
 
@@ -194,7 +194,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public NpgsqlCommand Build()
+    public NpgsqlCommand Build(NpgsqlConnection npgsqlConnection)
     {
         var cmdText = $"""
                        SELECT position, event_type, revision, data, metadata
@@ -226,7 +226,7 @@ public class ReadingCommandBuilder
 
         cmdText += ";";
 
-        var command = new NpgsqlCommand(cmdText, _npgsqlConnection);
+        var command = new NpgsqlCommand(cmdText, npgsqlConnection);
 
         if (_position is not null)
         {
