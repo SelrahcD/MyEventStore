@@ -1,7 +1,5 @@
-using System.Collections;
 using Npgsql;
 using NpgsqlTypes;
-using NUnit.Framework.Constraints;
 
 namespace MyDotNetEventStore.Tests;
 
@@ -56,7 +54,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 break;
             }
 
-            readingCommandBuilder = new ReadingCommandBuilder(_npgsqlConnection)
+            readingCommandBuilder = new ReadingCommandBuilder()
                 .FromStream(_streamId)
                 .StartingFromPosition(lastPosition)
                 .BatchSize(BatchSize);
@@ -66,13 +64,13 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public static async Task<ReadStreamResult> ForStream(NpgsqlConnection npgsqlConnection, string streamId)
     {
-        var readingCommandBuilder = new ReadingCommandBuilder(npgsqlConnection)
+        var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
             .StartingFromRevision(0)
             .BatchSize(BatchSize);
 
 
-        return await ReadStreamResult.PrepareForReading(streamId, npgsqlConnection, readingCommandBuilder);
+        return await PrepareForReading(streamId, npgsqlConnection, readingCommandBuilder);
     }
 }
 
@@ -94,7 +92,7 @@ public class ReadAllStreamResult : IAsyncEnumerable<ResolvedEvent>
         {
             var eventCount = 0;
 
-            await using var command = new ReadingCommandBuilder(_npgsqlConnection)
+            await using var command = new ReadingCommandBuilder()
                 .StartingFromPosition(lastPosition)
                 .BatchSize(batchSize).Build(_npgsqlConnection);
 
@@ -152,20 +150,11 @@ public record ResolvedEvent
 
 public class ReadingCommandBuilder
 {
-    private NpgsqlConnection _npgsqlConnection;
+    private int? _batchSize;
+    private long? _position;
+    private string? _streamId;
+    private long? _revision;
 
-    private int? _batchSize = null;
-    private long? _position = null;
-    private string? _streamId = null;
-    private long? _revision = null;
-
-    // We should inject the connection in the build method to avoid storing it
-    // which could impeach closing it
-    public ReadingCommandBuilder(NpgsqlConnection npgsqlConnection)
-    {
-        _npgsqlConnection = npgsqlConnection;
-    }
-    
     public ReadingCommandBuilder BatchSize(int batchSize)
     {
         _batchSize = batchSize;
@@ -196,11 +185,11 @@ public class ReadingCommandBuilder
 
     public NpgsqlCommand Build(NpgsqlConnection npgsqlConnection)
     {
-        var cmdText = $"""
-                       SELECT position, event_type, revision, data, metadata
-                       FROM events
-                       WHERE 1 = 1
-                       """;
+        var cmdText = """
+                      SELECT position, event_type, revision, data, metadata
+                      FROM events
+                      WHERE 1 = 1
+                      """;
 
         if (_streamId is not null)
         {
