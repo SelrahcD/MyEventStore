@@ -281,6 +281,11 @@ public class EventStore
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
+    public ReadAllStreamResult ReadAllAsync()
+    {
+        return new ReadAllStreamResult(_npgsqlConnection);
+    }
+
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
     {
         return await AppendAsync(streamId, [evt], streamState);
@@ -360,10 +365,4 @@ public class EventStore
 
         return await checkStreamCommand.ExecuteScalarAsync() != null ? StreamExistence.Exists : StreamExistence.NotFound;
     }
-
-    public ReadAllStreamResult ReadAllAsync()
-    {
-        return new ReadAllStreamResult(_npgsqlConnection);
-    }
-
 }
