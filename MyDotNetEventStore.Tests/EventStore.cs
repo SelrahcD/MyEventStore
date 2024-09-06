@@ -5,7 +5,7 @@ namespace MyDotNetEventStore.Tests;
 
 public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
-    public const int BatchSize = 100;
+    private const int BatchSize = 100;
 
     private string _streamId;
     private NpgsqlConnection _npgsqlConnection;
