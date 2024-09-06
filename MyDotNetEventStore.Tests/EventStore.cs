@@ -277,7 +277,7 @@ public class ReadingCommandBuilder
         return new ReadingCommandBuilder()
             .FromStream(readStreamResult.StreamId)
             .StartingFromPosition(lastPosition)
-            .BatchSize(ReadStreamResult.BatchSize);
+            .BatchSize(_batchSize!.Value);
     }
 }
 
