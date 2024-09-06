@@ -93,7 +93,7 @@ public class EventStoreTest
             {
                 await _eventStore.AppendAsync("a-stream", AnEvent().ToEventData());
 
-                var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
+                var streamExist = await _eventStore.StreamExist("a-stream");
 
                 Assert.That(streamExist, Is.True);
             }

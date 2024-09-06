@@ -428,6 +428,6 @@ public class EventStore
 
     public async Task<bool> StreamExist(string aStreamThatDoesntExists)
     {
-        return false;
+        return await StreamExists(aStreamThatDoesntExists);
     }
 }
