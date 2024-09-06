@@ -194,7 +194,7 @@ public class EventStoreTest
 
                 var acceptableMemoryUsage = 1 * 1024 * 1024; // 1 MB
 
-                // Assert.Less(memoryUsed, acceptableMemoryUsage, $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
+                Assert.Less(memoryUsed, acceptableMemoryUsage, $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
                 Assert.That(count, Is.EqualTo(eventCount));
             }
         }
