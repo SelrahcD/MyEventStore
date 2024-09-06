@@ -70,6 +70,24 @@ public class EventStoreTest
     }
 
     [TestFixture]
+    public class KnowingIfAStreamExists : EventStoreTest
+    {
+        
+        public class WhenTheStreamDoesntExist : KnowingIfAStreamExists
+        {
+
+            [Test]
+            public async Task returns_false()
+            {
+                var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
+
+                Assert.That(streamExist, Is.False);
+            }
+        }
+        
+    }
+
+    [TestFixture]
     public class ReadingStream : EventStoreTest
     {
         public class WhenTheStreamDoesntExists : ReadingStream

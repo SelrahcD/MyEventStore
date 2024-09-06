@@ -1,6 +1,7 @@
 using System.Collections;
 using Npgsql;
 using NpgsqlTypes;
+using NUnit.Framework.Constraints;
 
 namespace MyDotNetEventStore.Tests;
 
@@ -417,5 +418,11 @@ public class EventStore
     public ReadAllStreamResult ReadAllAsync()
     {
         return new ReadAllStreamResult(_npgsqlConnection);
+    }
+
+
+    public async Task<bool> StreamExist(string aStreamThatDoesntExists)
+    {
+        return false;
     }
 }
