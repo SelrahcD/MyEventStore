@@ -348,7 +348,6 @@ public class EventStoreTest
             }
 
             [TestFixture]
-
             public class WithARevisionNumber : PerformsConcurrencyChecks
             {
                 [Test]
