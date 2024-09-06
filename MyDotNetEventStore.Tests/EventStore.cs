@@ -50,7 +50,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 break;
             }
 
-            readingCommandBuilder = _commandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
+            readingCommandBuilder = readingCommandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
         }
     }
 
