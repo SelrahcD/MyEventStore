@@ -74,6 +74,8 @@
       - [ ] Backward
           - [ ] Without position
           - [ ] With position
+  - [ ] Read events by correlationId
+  - [ ] Read events by causationId
   
 - [ ] Support reading from:
     - [ ] Schema level.
