@@ -74,14 +74,16 @@ public record ResolvedEvent
     public string MetaData { get; }
     public string EventType { get; }
     public long Revision { get; }
+    public string StreamId { get; }
 
-    public ResolvedEvent(long position, long revision, string eventType, string data, string metaData)
+    public ResolvedEvent(long position, long revision, string eventType, string data, string metaData, string streamId)
     {
         Position = position;
         Data = data;
         MetaData = metaData;
         EventType = eventType;
         Revision = revision;
+        StreamId = streamId;
     }
 }
 
@@ -128,7 +130,7 @@ public class ReadingCommandBuilder
     public NpgsqlCommand Build(NpgsqlConnection npgsqlConnection)
     {
         var cmdText = """
-                      SELECT position, event_type, revision, data, metadata
+                      SELECT position, event_type, revision, data, metadata, stream_id
                       FROM events
                       WHERE 1 = 1
                       """;
@@ -200,8 +202,9 @@ public class ReadingCommandBuilder
         var revision = reader.GetInt64(2);
         var data = reader.GetString(3);
         var metaData = reader.GetString(4);
+        var streamId = reader.GetString(5);
 
-        var resolvedEvent = new ResolvedEvent(position, revision, eventType, data, metaData);
+        var resolvedEvent = new ResolvedEvent(position, revision, eventType, data, metaData, streamId);
         return (position, resolvedEvent);
     }
 

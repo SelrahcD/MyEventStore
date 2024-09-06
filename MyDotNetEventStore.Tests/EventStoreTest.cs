@@ -143,7 +143,7 @@ public class EventStoreTest
             [Test]
             public async Task doesnt_return_events_appended_to_another_stream()
             {
-                var evtInStream = AnEvent();
+                var evtInStream = AnEvent().InStream("stream-id");
 
                 await _eventStore.AppendAsync("stream-id", evtInStream.ToEventData());
                 await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
@@ -546,7 +546,7 @@ public class EventStoreTest
 
         public ResolvedEvent ToResolvedEvent(int position, int revision)
         {
-            return new ResolvedEvent(position, revision, _eventType, _data, _metadata);
+            return new ResolvedEvent(position, revision, _eventType, _data, _metadata, _streamId);
         }
 
         public string StreamId()
