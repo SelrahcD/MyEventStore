@@ -16,7 +16,6 @@
             - [ ] **CorrelationId**: Supplied by the application.
             - [ ] **CausationId**: Supplied by the application.
         - [x] Application Metadata: Application-level metadata in JSON
-- [ ] Use event Id for deduplication when appending data to the store.
 - [x] Use Revision for optimistic locking.
 - [x] Manage Revision & Positions as strictly increasing values.
 
@@ -42,8 +41,8 @@
 
 ## Operations
 ### Appending Events
-- [ ] Implement append operation: `Append(Stream, ExpectedRevision, Event[]) -> Result`.
-- [ ] Support ACID transactional behavior for appends.
+- [x] Implement append operation: `Append(Stream, ExpectedRevision, Event[]) -> Result`.
+- [x] Implement append operation: `Append(Stream, ExpectedRevision, Event) -> Result`.
 - [x] Use ExpectedRevision for optimistic locking:
     - [x] **Any**: No concurrency check.
     - [x] **NoStream**: Stream should not exist.
@@ -52,7 +51,7 @@
 - [ ] Return new Revision and Positions after appending.
 
 ### Idempotency
-- [ ] Implement idempotency checks for append operations.
+- [x] Implement idempotency checks for append operations.
 - [ ] Use ExpectedRevision and EventId for idempotency behavior.
 
 ### Appending Metadata
@@ -61,9 +60,21 @@
 
 ### Reading Data and Metadata
 - [ ] Implement read operations with forward or backward directions:
-    - [ ] `Read(Stream, Direction, Revision) -> Results`
-    - [ ] `Read(Stream, Direction, Position) -> Results`
-    - [ ] `Read(Direction, Position) -> Results`
+    - [ ] Read Stream
+      - [ ] Forward
+        - [x] Without position
+        - [ ] With position
+      - [ ] Backward
+        - [ ] Without position
+        - [ ] With position
+  - [ ] Read All Streams
+      - [ ] Forward
+          - [x] Without position
+          - [ ] With position
+      - [ ] Backward
+          - [ ] Without position
+          - [ ] With position
+  
 - [ ] Support reading from:
     - [ ] Schema level.
     - [ ] Category level.
@@ -79,13 +90,16 @@
 
 ### Other Operations
 - [ ] Check if a stream exists: `StreamExist(Stream) -> Result`.
+  - [x] with an existing stream
+  - [x] with an unknown stream
+  - [ ] with a deleted stream
 - [ ] Get the last revision and position: `StreamHead(Stream) -> Result`.
 - [ ] Get the last known position in the store: `HeadPosition() -> Position`.
 - [ ] Retrieve schemas, categories, IDs, and event types: `Streams(Filter) -> string[]`.
 - [ ] Count events between revisions/positions: `Count(Stream, Revision, Revision) -> Number`.
 
 
-## To add later
+## To keep in mind
 
 ### EventStore should ask for a connection when needed from the pool
 
