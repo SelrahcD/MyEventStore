@@ -167,7 +167,6 @@ public class EventStoreTest
             }
             
             [Test]
-            // [Ignore("Wait to use FetchBatchOfEvents to read a single stream first")]
             // This is probably not a good way to test memory consumption but at least that test forced me to
             // fetch events by batch
             public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
