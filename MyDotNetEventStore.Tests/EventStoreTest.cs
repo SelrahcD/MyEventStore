@@ -128,7 +128,7 @@ public class EventStoreTest
             public async Task returns_all_events_appended_to_the_stream_in_order(
                 [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
             {
-                var eventBuilders = ListOfNBuilders(eventCount);
+                var eventBuilders = ListOfNBuilders(eventCount, "stream-id");
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -136,7 +136,7 @@ public class EventStoreTest
 
                 var resolvedEvents = await ToListAsync(readStreamResult);
 
-                Assert.That(resolvedEvents, Is.EqualTo(eventBuilders.ToResolvedEventsOfSameStream()));
+                Assert.That(resolvedEvents, Is.EqualTo(eventBuilders.ToResolvedEvents()));
             }
 
             [Test]
@@ -522,6 +522,18 @@ public class EventStoreTest
         return events;
     }
 
+    private static List<EventBuilder> ListOfNBuilders(int eventCount, string streamId)
+    {
+        var events = new List<EventBuilder>();
+
+        for (int i = 0; i < eventCount; i++)
+        {
+            events.Add(new EventBuilder().InStream(streamId));
+        }
+
+        return events;
+    }
+
     public enum CountOfEvents
     {
         One,
@@ -547,7 +559,7 @@ public class EventStoreTest
         private readonly string _eventType;
         private readonly string _data;
         private readonly string _metadata;
-        private readonly string _streamId;
+        private string _streamId;
 
         public EventBuilder()
         {
@@ -574,6 +586,13 @@ public class EventStoreTest
         public string StreamId()
         {
             return _streamId;
+        }
+
+        public EventBuilder InStream(string streamId)
+        {
+            _streamId = streamId;
+            
+            return this;
         }
     }
 
@@ -609,16 +628,6 @@ public static class EventBuilderExtensions
     public static List<EventData> ToEventData(this List<EventStoreTest.EventBuilder> eventBuilders)
     {
         return eventBuilders.Select(builder => builder.ToEventData()).ToList();
-    }
-
-    public static List<ResolvedEvent> ToResolvedEventsOfSameStream(this List<EventStoreTest.EventBuilder> eventBuilders)
-    {
-        var i = 0;
-        return eventBuilders.Select(builder =>
-        {
-            i++;
-            return builder.ToResolvedEvent(i, i);
-        }).ToList();
     }
 
     public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders)
