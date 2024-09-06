@@ -133,7 +133,7 @@ public record ResolvedEvent
 
 public class ReadingCommandBuilder
 {
-    private int? _batchSize;
+    private int _batchSize = 100;
     private long? _position;
     private string? _streamId;
     private long? _revision;
@@ -147,7 +147,7 @@ public class ReadingCommandBuilder
 
     public int BatchSize()
     {
-        return _batchSize ?? 0;
+        return _batchSize;
     }
 
     public ReadingCommandBuilder FromStream(string streamId)
@@ -196,10 +196,7 @@ public class ReadingCommandBuilder
 
         cmdText += " ORDER BY position ASC";
 
-        if (_batchSize is not null)
-        {
-            cmdText += " LIMIT @batchSize";
-        }
+        cmdText += " LIMIT @batchSize";
 
         cmdText += ";";
 
@@ -216,10 +213,7 @@ public class ReadingCommandBuilder
             command.Parameters.AddWithValue("@lastRevision", _revision);
         }
 
-        if (_batchSize is not null)
-        {
-            command.Parameters.AddWithValue("@batchSize", _batchSize);
-        }
+        command.Parameters.AddWithValue("@batchSize", _batchSize);
 
         if (_streamId is not null)
         {
