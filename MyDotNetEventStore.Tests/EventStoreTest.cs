@@ -519,6 +519,11 @@ public class EventStoreTest
 
     private static List<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
+        return EventBuilders(eventCount, eventBuilderConfiguratorConfigurator).ToList();
+    }
+
+    private static List<EventBuilder> EventBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
+    {
         var events = new List<EventBuilder>();
 
         for (int i = 0; i <eventCount; i++)
