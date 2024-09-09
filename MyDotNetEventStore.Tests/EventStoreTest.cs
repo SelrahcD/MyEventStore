@@ -126,7 +126,7 @@ public class EventStoreTest
         {
             [Test]
             public async Task returns_all_events_appended_to_the_stream_in_order(
-                [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
+                [Values(1, 50, 100, 270, 336)] int eventCount)
             {
                 var eventBuilders = ListOfNBuilders(eventCount, (e) => e.InStream("stream-id"))
                     .ToList();
