@@ -116,7 +116,7 @@ public class EventStoreTest
             {
                 var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
-                var resolvedEvents = await CountAsync(readStreamResult);
+                var resolvedEvents = await readStreamResult.CountAsync();
 
                 Assert.That(resolvedEvents,  Is.EqualTo(0));
             }
@@ -170,7 +170,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
-                var count = await CountAsync(readStreamResult);
+                var count = await readStreamResult.CountAsync();
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -227,7 +227,7 @@ public class EventStoreTest
 
             var readAllStreamResult =  _eventStore.ReadAllAsync();
 
-            var count = await CountAsync(readAllStreamResult);
+            var count = await readAllStreamResult.CountAsync();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -617,5 +617,20 @@ public static class EventBuilderExtensions
 
             return builder.ToResolvedEvent(position,  versions[streamId]);
         }).ToList();
+    }
+}
+
+public static class EnumerableExtensions
+{
+    public static async Task<int> CountAsync<T>(this IAsyncEnumerable<T> asyncEnumerable)
+    {
+        var count = 0;
+
+        await foreach (var item in asyncEnumerable)
+        {
+            count++;
+        }
+
+        return count;
     }
 }
