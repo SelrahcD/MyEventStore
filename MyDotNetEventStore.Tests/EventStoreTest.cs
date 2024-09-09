@@ -135,7 +135,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
-                var resolvedEvents = await ToListAsync(readStreamResult);
+                var resolvedEvents = await readStreamResult.ToListAsync();
 
                 Assert.That(resolvedEvents, Is.EqualTo(eventBuilders.ToResolvedEvents()));
             }
@@ -150,7 +150,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
-                var readEvents = await ToListAsync(readStreamResult);
+                var readEvents = await readStreamResult.ToListAsync();
 
                 Assert.That(readEvents, Is.EqualTo(new List<ResolvedEvent>
                 {
@@ -206,7 +206,7 @@ public class EventStoreTest
 
             var readStreamResult = _eventStore.ReadAllAsync();
 
-            var resolvedEvents = await ToListAsync(readStreamResult);
+            var resolvedEvents = await readStreamResult.ToListAsync();
 
             var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEvents();
             Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
@@ -408,7 +408,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
-                var resolvedEvents = await ToListAsync(readStreamResult);
+                var resolvedEvents = await readStreamResult.ToListAsync();
 
                 Assert.That(resolvedEvents.Last().Revision, Is.EqualTo(eventCount));
             }
@@ -426,7 +426,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
-                var resolvedEvents = await ToListAsync(readStreamResult);
+                var resolvedEvents = await readStreamResult.ToListAsync();
 
                 Assert.That(resolvedEvents.Last().Revision, Is.EqualTo(eventCount1 + eventCount2 + eventCount3));
             }
@@ -620,7 +620,7 @@ public static class EventBuilderExtensions
     }
 }
 
-public static class EnumerableExtensions
+public static class AsyncEnumerableExtensions
 {
     public static async Task<int> CountAsync<T>(this IAsyncEnumerable<T> asyncEnumerable)
     {
@@ -633,4 +633,17 @@ public static class EnumerableExtensions
 
         return count;
     }
+
+    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> asyncEnumerable)
+    {
+        var list = new List<T>();
+
+        await foreach (var item in asyncEnumerable)
+        {
+            list.Add(item);
+        }
+
+        return list;
+    }
+
 }
