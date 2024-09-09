@@ -170,11 +170,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id");
 
-                var count = 0;
-                await foreach (var _ in readStreamResult)
-                {
-                    count++;
-                }
+                var count = await CountAsync(readStreamResult);
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -231,12 +227,7 @@ public class EventStoreTest
 
             var readAllStreamResult =  _eventStore.ReadAllAsync();
 
-            var count = 0;
-
-            await foreach (var _ in readAllStreamResult)
-            {
-                count++;
-            }
+            var count = await CountAsync(readAllStreamResult);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
