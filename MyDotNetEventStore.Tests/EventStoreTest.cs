@@ -116,9 +116,9 @@ public class EventStoreTest
             {
                 var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
-                var resolvedEvents = await ToListAsync(readStreamResult);
+                var resolvedEvents = await CountAsync(readStreamResult);
 
-                Assert.That(resolvedEvents.Count(),  Is.EqualTo(0));
+                Assert.That(resolvedEvents,  Is.EqualTo(0));
             }
         }
 
@@ -573,6 +573,18 @@ public class EventStoreTest
 
         return list;
 
+    }
+
+    private static async Task<int> CountAsync<T>(IAsyncEnumerable<T> asyncEnumerable)
+    {
+        var count = 0;
+
+        await foreach (var item in asyncEnumerable)
+        {
+            count++;
+        }
+
+        return count;
     }
 }
 
