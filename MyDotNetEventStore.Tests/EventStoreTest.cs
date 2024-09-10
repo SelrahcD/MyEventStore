@@ -76,7 +76,7 @@ public class EventStoreTest
     [TestFixture]
     public class KnowingIfAStreamExists : EventStoreTest
     {
-        
+
         public class WhenTheStreamDoesntExist : KnowingIfAStreamExists
         {
 
@@ -102,7 +102,7 @@ public class EventStoreTest
                 Assert.That(streamExist, Is.EqualTo(StreamExistence.Exists));
             }
         }
-        
+
     }
 
     [TestFixture]
@@ -157,7 +157,10 @@ public class EventStoreTest
                     evtInStream.ToResolvedEvent(1, 1),
                 }));
             }
-            
+        }
+
+        public class TakesCareOfResources : ReadingStream
+        {
             [Test]
             // This is probably not a good way to test memory consumption but at least that test forced me to
             // fetch events by batch
@@ -213,35 +216,40 @@ public class EventStoreTest
         }
 
 
-        [Test]
-        // This is probably not a good way to test memory consumption but at least that test forced me to
-        // fetch events by batch
-        public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
+        public class TakesCareOfResources : ReadingAllStream
         {
-            await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-            await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
-            await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
-            await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+            [Test]
+            // This is probably not a good way to test memory consumption but at least that test forced me to
+            // fetch events by batch
+            public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
+            {
+                await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+                await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
+                await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
+                await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
 
-            long memoryBefore = GC.GetTotalMemory(true);
+                long memoryBefore = GC.GetTotalMemory(true);
 
-            var readAllStreamResult =  _eventStore.ReadAllAsync();
+                var readAllStreamResult = _eventStore.ReadAllAsync();
 
-            var count = await readAllStreamResult.CountAsync();
+                var count = await readAllStreamResult.CountAsync();
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
 
-            var memoryAfter = GC.GetTotalMemory(true);
+                var memoryAfter = GC.GetTotalMemory(true);
 
-            var memoryUsed = memoryAfter - memoryBefore;
+                var memoryUsed = memoryAfter - memoryBefore;
 
-            var acceptableMemoryUsage = 2 * 1024 * 1024; // 1 MB
+                var acceptableMemoryUsage = 2 * 1024 * 1024; // 1 MB
 
-            Assert.Less(memoryUsed, acceptableMemoryUsage, $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
-            Assert.That(count, Is.EqualTo(4000));
+                Assert.Less(memoryUsed, acceptableMemoryUsage,
+                    $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
+                Assert.That(count, Is.EqualTo(4000));
+            }
         }
+
     }
 
     [TestFixture]
@@ -548,7 +556,7 @@ public class EventStoreTest
         public EventBuilder InStream(string streamId)
         {
             _streamId = streamId;
-            
+
             return this;
         }
     }
@@ -603,7 +611,7 @@ public static class EventBuilderExtensions
     {
         var position = 0;
         var versions = new Dictionary<string, int>();
-        
+
         return eventBuilders.Select(builder =>
         {
             position++;
