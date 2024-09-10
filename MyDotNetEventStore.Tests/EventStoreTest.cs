@@ -69,17 +69,16 @@ public class EventStoreTest
     {
         var command = new NpgsqlCommand("DELETE FROM events", PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
-        command = new NpgsqlCommand("ALTER SEQUENCE events_position_seq RESTART WITH 1;", PostgresEventStoreSetup.Connection);
+        command = new NpgsqlCommand("ALTER SEQUENCE events_position_seq RESTART WITH 1;",
+            PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
     }
 
     [TestFixture]
     public class KnowingIfAStreamExists : EventStoreTest
     {
-
         public class WhenTheStreamDoesntExist : KnowingIfAStreamExists
         {
-
             [Test]
             public async Task returns_StreamExistence_NotFound()
             {
@@ -91,7 +90,6 @@ public class EventStoreTest
 
         public class WhenTheStreamExists : KnowingIfAStreamExists
         {
-
             [Test]
             public async Task returns_StreamExistence_Exists()
             {
@@ -102,7 +100,6 @@ public class EventStoreTest
                 Assert.That(streamExist, Is.EqualTo(StreamExistence.Exists));
             }
         }
-
     }
 
     [TestFixture]
@@ -110,7 +107,6 @@ public class EventStoreTest
     {
         public class WhenTheStreamDoesntExists : ReadingStream
         {
-
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events()
             {
@@ -118,7 +114,7 @@ public class EventStoreTest
 
                 var resolvedEvents = await readStreamResult.CountAsync();
 
-                Assert.That(resolvedEvents,  Is.EqualTo(0));
+                Assert.That(resolvedEvents, Is.EqualTo(0));
             }
         }
 
@@ -185,7 +181,8 @@ public class EventStoreTest
 
                 var acceptableMemoryUsage = 1 * 1024 * 1024; // 1 MB
 
-                Assert.Less(memoryUsed, acceptableMemoryUsage, $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
+                Assert.Less(memoryUsed, acceptableMemoryUsage,
+                    $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
                 Assert.That(count, Is.EqualTo(eventCount));
             }
         }
@@ -198,7 +195,8 @@ public class EventStoreTest
 
         [Test]
         public async Task returns_all_events_appended__to_all_streams_in_order(
-            [Values(1, 3, 50, 100, 187, 200, 270, 600)] int eventCount)
+            [Values(1, 3, 50, 100, 187, 200, 270, 600)]
+            int eventCount)
         {
             var eventBuilders = ListOfNBuilders(eventCount).ToList();
 
@@ -249,7 +247,6 @@ public class EventStoreTest
                 Assert.That(count, Is.EqualTo(4000));
             }
         }
-
     }
 
     [TestFixture]
@@ -280,7 +277,8 @@ public class EventStoreTest
                 {
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.NoStream());
+                        await _eventStore.AppendAsync("a-non-existing-id",
+                            (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.NoStream());
                     });
 
                     return Task.CompletedTask;
@@ -294,7 +292,8 @@ public class EventStoreTest
                     [Values] CountOfEvents countEvents)
                 {
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.StreamExists()));
+                        await _eventStore.AppendAsync("a-non-existing-id",
+                            (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.StreamExists()));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
                     return Task.CompletedTask;
@@ -308,7 +307,8 @@ public class EventStoreTest
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.StreamExists());
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
+                            StreamState.StreamExists());
                     });
                 }
             }
@@ -323,7 +323,8 @@ public class EventStoreTest
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.Any());
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
+                            StreamState.Any());
                     });
                 }
 
@@ -333,7 +334,8 @@ public class EventStoreTest
                 {
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("a-non-existing-id", (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.Any());
+                        await _eventStore.AppendAsync("a-non-existing-id",
+                            (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.Any());
                     });
 
                     return Task.CompletedTask;
@@ -350,7 +352,8 @@ public class EventStoreTest
                     var events = BuildEvents(countEvents).ToEventData();
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events, StreamState.AtRevision(1)));
+                        await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events,
+                            StreamState.AtRevision(1)));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-stream-id' doesn't exists."));
                     return Task.CompletedTask;
@@ -368,9 +371,12 @@ public class EventStoreTest
                     await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("stream-id", (dynamic) BuildEvents(countEvents).ToEventData(), StreamState.AtRevision(triedRevision)));
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
+                            StreamState.AtRevision(triedRevision)));
 
-                    Assert.That(exception.Message, Is.EqualTo($"Stream 'stream-id' is at revision {alreadyAppendedEventCount}. You tried appending events at revision {triedRevision}."));
+                    Assert.That(exception.Message,
+                        Is.EqualTo(
+                            $"Stream 'stream-id' is at revision {alreadyAppendedEventCount}. You tried appending events at revision {triedRevision}."));
                 }
 
                 [Test]
@@ -384,11 +390,11 @@ public class EventStoreTest
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(), StreamState.AtRevision(alreadyAppendedEventCount));
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
+                            StreamState.AtRevision(alreadyAppendedEventCount));
                     });
                 }
             }
-
         }
 
         [TestFixture]
@@ -408,8 +414,9 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_at_once(
-                [Random(0, 1000, 5)] int eventCount)
+            public async Task
+                Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_at_once(
+                    [Random(0, 1000, 5)] int eventCount)
             {
                 var appendedEvent = ListOfNEvents(eventCount);
                 await _eventStore.AppendAsync("stream-id", appendedEvent);
@@ -422,10 +429,11 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_events_are_in_multiple_times(
-                [Random(0, 100, 2)] int eventCount1,
-                [Random(0, 100, 1)] int eventCount2,
-                [Random(0, 100, 1)] int eventCount3
+            public async Task
+                Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_events_are_in_multiple_times(
+                    [Random(0, 100, 2)] int eventCount1,
+                    [Random(0, 100, 1)] int eventCount2,
+                    [Random(0, 100, 1)] int eventCount3
                 )
             {
                 await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount1));
@@ -452,7 +460,6 @@ public class EventStoreTest
 
                 Assert.That(appendResult, Is.EqualTo(new AppendResult(40, 20)));
             }
-
         }
     }
 
@@ -491,9 +498,10 @@ public class EventStoreTest
         return ListOfNBuilders(eventCount, (e) => e);
     }
 
-    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount, EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
+    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
+        EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        for (int i = 0; i <eventCount; i++)
+        for (int i = 0; i < eventCount; i++)
         {
             yield return eventBuilderConfiguratorConfigurator(new EventBuilder());
         }
@@ -529,8 +537,9 @@ public class EventStoreTest
         public EventBuilder()
         {
             var fakeEventTypes = new List<string> { "event-type-1", "event-type-2", "event-type-3" };
-            var fakeEventData = new List<string> { "{}", "{\"id\": \"1234567\"}"};
-            var fakeEventMetaData = new List<string> { "{}", "{\"userId\": \"u-345678\", \"causationId\": \"98697678\", \"correlationId\": \"12345\"}"};
+            var fakeEventData = new List<string> { "{}", "{\"id\": \"1234567\"}" };
+            var fakeEventMetaData = new List<string>
+                { "{}", "{\"userId\": \"u-345678\", \"causationId\": \"98697678\", \"correlationId\": \"12345\"}" };
 
             _eventType = SelectRandom(fakeEventTypes);
             _data = SelectRandom(fakeEventData);
@@ -571,7 +580,6 @@ public class EventStoreTest
         }
 
         return list;
-
     }
 
     private static async Task<int> CountAsync<T>(IAsyncEnumerable<T> asyncEnumerable)
@@ -623,7 +631,7 @@ public static class EventBuilderExtensions
 
             versions[streamId]++;
 
-            return builder.ToResolvedEvent(position,  versions[streamId]);
+            return builder.ToResolvedEvent(position, versions[streamId]);
         }).ToList();
     }
 }
@@ -653,5 +661,4 @@ public static class AsyncEnumerableExtensions
 
         return list;
     }
-
 }
