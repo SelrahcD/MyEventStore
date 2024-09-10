@@ -48,7 +48,7 @@
     - [x] **NoStream**: Stream should not exist.
     - [x] **StreamExists**: Stream exists, may be empty.
     - [x] **Some number**: Match specific stream revision.
-- [ ] Return new Revision and Positions after appending.
+- [x] Return new Revision and Positions after appending.
 
 ### Idempotency
 - [x] Implement idempotency checks for append operations.
