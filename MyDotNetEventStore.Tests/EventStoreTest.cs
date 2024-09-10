@@ -430,12 +430,14 @@ public class EventStoreTest
 
             [Test]
             public async Task
-                Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_one_by_one()
+                Event_revision_is_the_position_of_the_event_in_the_stream()
             {
                 var event1 = AnEvent();
                 await _eventStore.AppendAsync("stream-id", event1.ToEventData());
+                await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
                 var event2 = AnEvent();
                 await _eventStore.AppendAsync("stream-id", event2.ToEventData());
+                await _eventStore.AppendAsync("yet-another-stream-id", AnEvent().ToEventData());
                 var event3 = AnEvent();
                 await _eventStore.AppendAsync("stream-id", event3.ToEventData());
 
@@ -443,10 +445,11 @@ public class EventStoreTest
 
                 var resolvedEvents = await readStreamResult.ToListAsync();
 
-                Assert.That(resolvedEvents[0].Revision, Is.EqualTo(1));
-                Assert.That(resolvedEvents[1].Revision, Is.EqualTo(2));
-                Assert.That(resolvedEvents[2].Revision, Is.EqualTo(3));
+                Assert.That(resolvedEvents[0], Is.EqualTo(event1.InStream("stream-id").ToResolvedEvent(1, 1)));
+                Assert.That(resolvedEvents[1], Is.EqualTo(event2.InStream("stream-id").ToResolvedEvent(3, 2)));
+                Assert.That(resolvedEvents[2], Is.EqualTo(event3.InStream("stream-id").ToResolvedEvent(5, 3)));
             }
+
 
             [Test]
             public async Task
