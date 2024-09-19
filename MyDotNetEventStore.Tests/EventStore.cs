@@ -156,6 +156,12 @@ public class ReadingCommandBuilder
             cmdText += " AND revision >= @lastRevision";
         }
 
+        if (_revision.IsT0 && _direction == Direction.Backward)
+        {
+            cmdText += " AND revision <= @lastRevision";
+        }
+
+
         if (_position is not null && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
