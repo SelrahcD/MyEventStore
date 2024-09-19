@@ -259,6 +259,24 @@ public class EventStoreTest
 
                 Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
             }
+
+            [Test]
+            public async Task doesnt_return_events_appended_to_another_stream()
+            {
+                var evtInStream = AnEvent().InStream("stream-id");
+
+                await _eventStore.AppendAsync("stream-id", evtInStream.ToEventData());
+                await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id");
+
+                var readEvents = await readStreamResult.ToListAsync();
+
+                Assert.That(readEvents, Is.EqualTo(new List<ResolvedEvent>
+                {
+                    evtInStream.ToResolvedEvent(1, 1),
+                }));
+            }
         }
 
     }
