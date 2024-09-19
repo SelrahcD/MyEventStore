@@ -202,7 +202,7 @@ public class ReadingCommandBuilder
     }
 }
 
-enum Direction
+public enum Direction
 {
     Forward,
     Backward
@@ -219,12 +219,12 @@ public class EventStore
         _npgsqlConnection = npgsqlConnection;
     }
 
-    public ReadStreamResult ReadStreamAsync(string streamId)
+    public ReadStreamResult ReadStreamAsync(string streamId, Direction direction)
     {
-        return ReadStreamAsync(streamId, 0);
+        return ReadStreamAsync(streamId, 0, Direction.Forward);
     }
 
-    public ReadStreamResult ReadStreamAsync(string streamId, int startingRevision)
+    public ReadStreamResult ReadStreamAsync(string streamId, int startingRevision, Direction direction)
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
