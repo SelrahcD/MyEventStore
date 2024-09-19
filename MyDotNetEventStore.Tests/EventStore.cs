@@ -202,6 +202,12 @@ public class ReadingCommandBuilder
     }
 }
 
+enum Direction
+{
+    Forward,
+    Backward
+}
+
 public class EventStore
 {
     private const int BatchSize = 100;
