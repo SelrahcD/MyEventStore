@@ -680,12 +680,7 @@ public static class EventBuilderExtensions
         return eventBuilders.Select(builder => builder.ToEventData()).ToList();
     }
 
-    public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders)
-    {
-        return ToResolvedEvents(eventBuilders, 1, 1);
-    }
-
-    public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders, int position, int startRevision)
+    public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders, int position = 1, int startRevision = 1)
     {
         var versions = new Dictionary<string, int>();
 
