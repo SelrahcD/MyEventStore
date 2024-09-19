@@ -61,7 +61,7 @@
 ### Reading Data and Metadata
 - [ ] Implement read operations with forward or backward directions:
     - [ ] Read Stream
-      - [ ] Forward
+      - [x] Forward
         - [x] Without position
         - [x] With position
       - [ ] Backward
