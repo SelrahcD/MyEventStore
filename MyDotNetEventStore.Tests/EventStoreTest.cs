@@ -208,6 +208,24 @@ public class EventStoreTest
 
                 Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
+
+            [Test]
+            public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
+            {
+                var eventsBeforeRequestedRevision = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+                    .ToList();
+                var eventAfterRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
+                await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id", 6);
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                Assert.That(resolvedEvents, Is.EqualTo(eventAfterRequestedRevision.ToResolvedEvents(6, 6)));
+            }
         }
 
     }
@@ -679,6 +697,27 @@ public static class EventBuilderExtensions
             versions[streamId]++;
 
             return builder.ToResolvedEvent(position, versions[streamId]);
+        }).ToList();
+    }
+
+    public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders, int position, int startRevision)
+    {
+        var versions = new Dictionary<string, int>();
+
+        return eventBuilders.Select(builder =>
+        {
+            var streamId = builder.StreamId();
+            if (!versions.ContainsKey(streamId))
+            {
+                versions[streamId] = startRevision;
+            }
+
+            var resolvedEvent = builder.ToResolvedEvent(position, versions[streamId]);
+
+            versions[streamId]++;
+            position++;
+
+            return resolvedEvent;
         }).ToList();
     }
 }

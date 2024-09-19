@@ -149,7 +149,7 @@ public class ReadingCommandBuilder
 
         if (_revision is not null)
         {
-            cmdText += " AND revision > @lastRevision";
+            cmdText += " AND revision >= @lastRevision";
         }
 
         cmdText += " ORDER BY position ASC";
