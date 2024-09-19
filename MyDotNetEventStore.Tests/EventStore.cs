@@ -1,5 +1,6 @@
 using Npgsql;
 using NpgsqlTypes;
+using OneOf;
 
 namespace MyDotNetEventStore.Tests;
 
@@ -94,7 +95,7 @@ public class ReadingCommandBuilder
     private int _batchSize = 100;
     private long? _position;
     private string? _streamId;
-    private long? _revision;
+    private OneOf<long, StreamRevision> _revision;
     private Direction _direction;
 
     public ReadingCommandBuilder WithBatchSize(int batchSize)
@@ -130,7 +131,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public ReadingCommandBuilder StartingFromRevision(long lastRevision)
+    public ReadingCommandBuilder StartingFromRevision(OneOf<long, StreamRevision> lastRevision)
     {
         _revision = lastRevision;
 
@@ -150,7 +151,7 @@ public class ReadingCommandBuilder
             cmdText += " AND stream_id = @streamId";
         }
 
-        if (_revision is not null && _direction == Direction.Forward)
+        if (_revision.IsT0 && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
@@ -187,10 +188,10 @@ public class ReadingCommandBuilder
             command.Parameters.AddWithValue("@lastPosition", _position);
         }
 
-        if (_revision is not null)
+        if (_revision.IsT0)
         {
             // Todo: fail if we are not fetching a stream
-            command.Parameters.AddWithValue("@lastRevision", _revision);
+            command.Parameters.AddWithValue("@lastRevision", _revision.Value);
         }
 
         command.Parameters.AddWithValue("@batchSize", _batchSize);
@@ -230,6 +231,12 @@ public enum Direction
     Backward
 }
 
+public enum StreamRevision
+{
+    Start,
+    End
+}
+
 public class EventStore
 {
     private const int BatchSize = 100;
@@ -246,7 +253,7 @@ public class EventStore
         return ReadStreamAsync(direction, streamId, 0);
     }
 
-    public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, int startingRevision)
+    public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, OneOf<long, StreamRevision> startingRevision)
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .InDirection(direction)

@@ -336,6 +336,28 @@ public class EventStoreTest
                 expectedEvents.Reverse();
                 Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
             }
+
+            // [Test]
+            // public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
+            // {
+            //     var eventsBeforeRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //     var eventAfterRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //
+            //     await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
+            //     await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
+            //
+            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", 115);
+            //
+            //     var resolvedEvents = await readStreamResult.ToListAsync();
+            //
+            //     var expectedEvents = eventAfterRequestedRevision.ToResolvedEvents();
+            //     expectedEvents.Reverse();
+            //
+            //     Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
+            // }
+
         }
 
     }
