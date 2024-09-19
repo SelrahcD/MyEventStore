@@ -263,7 +263,7 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events)
     {
-        return await DoAppendAsync(streamId, events, StreamState.Any());
+        return await AppendAsync(streamId, events, StreamState.Any());
     }
 
     private async Task<AppendResult> DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
