@@ -219,12 +219,12 @@ public class EventStore
         _npgsqlConnection = npgsqlConnection;
     }
 
-    public ReadStreamResult ReadStreamAsync(string streamId, Direction direction)
+    public ReadStreamResult ReadStreamAsync(Direction direction, string streamId)
     {
-        return ReadStreamAsync(streamId, 0, Direction.Forward);
+        return ReadStreamAsync(Direction.Forward, streamId, 0);
     }
 
-    public ReadStreamResult ReadStreamAsync(string streamId, int startingRevision, Direction direction)
+    public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, int startingRevision)
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
