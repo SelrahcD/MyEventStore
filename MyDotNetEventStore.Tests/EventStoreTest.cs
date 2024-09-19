@@ -319,6 +319,23 @@ public class EventStoreTest
 
                 Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
+
+            [Test]
+            public async Task returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
+            {
+                var eventBuilders = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", 10);
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                var expectedEvents = eventBuilders.ToResolvedEvents();
+                expectedEvents.Reverse();
+                Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
+            }
         }
 
     }

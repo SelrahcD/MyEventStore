@@ -150,7 +150,7 @@ public class ReadingCommandBuilder
             cmdText += " AND stream_id = @streamId";
         }
 
-        if (_revision is not null)
+        if (_revision is not null && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
