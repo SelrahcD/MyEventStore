@@ -308,6 +308,19 @@ public class EventStoreTest
             }
         }
 
+        public class BackwardProvidingAPosition : ReadingStream
+        {
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
+            {
+                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "a-stream-that-doesnt-exists", 10);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
+            }
+        }
+
     }
 
     [TestFixture]
