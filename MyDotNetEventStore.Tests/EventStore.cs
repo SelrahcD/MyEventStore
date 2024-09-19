@@ -150,6 +150,11 @@ public class ReadingCommandBuilder
             cmdText += " AND stream_id = @streamId";
         }
 
+        if (_revision is not null)
+        {
+            cmdText += " AND revision >= @lastRevision";
+        }
+
         if (_position is not null && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
@@ -158,11 +163,6 @@ public class ReadingCommandBuilder
         if (_position is not null && _direction == Direction.Backward)
         {
             cmdText += " AND position < @lastPosition";
-        }
-
-        if (_revision is not null)
-        {
-            cmdText += " AND revision >= @lastRevision";
         }
 
         cmdText += " ORDER BY position";
