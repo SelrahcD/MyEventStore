@@ -65,7 +65,7 @@
         - [x] Without position
         - [x] With position
       - [ ] Backward
-        - [ ] Without position
+        - [x] Without position
         - [ ] With position
   - [ ] Read All Streams
       - [ ] Forward
