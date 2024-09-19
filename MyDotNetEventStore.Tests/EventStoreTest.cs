@@ -113,9 +113,9 @@ public class EventStoreTest
             {
                 var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
-                var resolvedEvents = await readStreamResult.CountAsync();
+                var resolvedEventCount = await readStreamResult.CountAsync();
 
-                Assert.That(resolvedEvents, Is.EqualTo(0));
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
 
             [Test]
@@ -189,9 +189,9 @@ public class EventStoreTest
             {
                 var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists", 10);
 
-                var resolvedEvents = await readStreamResult.CountAsync();
+                var resolvedEventCount = await readStreamResult.CountAsync();
 
-                Assert.That(resolvedEvents, Is.EqualTo(0));
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
 
             [Test]
@@ -204,9 +204,9 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync("stream-id", 6);
 
-                var resolvedEvents = await readStreamResult.CountAsync();
+                var resolvedEventCount = await readStreamResult.CountAsync();
 
-                Assert.That(resolvedEvents, Is.EqualTo(0));
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
         }
 
