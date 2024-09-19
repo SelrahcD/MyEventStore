@@ -358,6 +358,23 @@ public class EventStoreTest
                 Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
             }
 
+            [Test]
+            public async Task returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
+            {
+                var eventBuilders = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", StreamRevision.End);
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                var expectedEvents = eventBuilders.ToResolvedEvents();
+                expectedEvents.Reverse();
+                Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
+            }
+
         }
 
     }

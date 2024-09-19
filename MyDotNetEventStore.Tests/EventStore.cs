@@ -151,11 +151,13 @@ public class ReadingCommandBuilder
             cmdText += " AND stream_id = @streamId";
         }
 
+        // _revision is a long
         if (_revision.IsT0 && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
 
+        // _revision is a long
         if (_revision.IsT0 && _direction == Direction.Backward)
         {
             cmdText += " AND revision <= @lastRevision";
