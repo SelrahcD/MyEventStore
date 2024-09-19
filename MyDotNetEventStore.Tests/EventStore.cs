@@ -95,6 +95,7 @@ public class ReadingCommandBuilder
     private long? _position;
     private string? _streamId;
     private long? _revision;
+    private Direction _direction;
 
     public ReadingCommandBuilder WithBatchSize(int batchSize)
     {
@@ -122,6 +123,13 @@ public class ReadingCommandBuilder
         return this;
     }
 
+    public ReadingCommandBuilder InDirection(Direction direction)
+    {
+        _direction = direction;
+
+        return this;
+    }
+
     public ReadingCommandBuilder StartingFromRevision(long lastRevision)
     {
         _revision = lastRevision;
@@ -142,9 +150,14 @@ public class ReadingCommandBuilder
             cmdText += " AND stream_id = @streamId";
         }
 
-        if (_position is not null)
+        if (_position is not null && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
+        }
+
+        if (_position is not null && _direction == Direction.Backward)
+        {
+            cmdText += " AND position < @lastPosition";
         }
 
         if (_revision is not null)
@@ -152,7 +165,16 @@ public class ReadingCommandBuilder
             cmdText += " AND revision >= @lastRevision";
         }
 
-        cmdText += " ORDER BY position ASC";
+        cmdText += " ORDER BY position";
+
+        if (_direction == Direction.Forward)
+        {
+            cmdText += " ASC";
+        }
+        else
+        {
+            cmdText += " DESC";
+        }
 
         cmdText += " LIMIT @batchSize";
 
@@ -221,12 +243,13 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId)
     {
-        return ReadStreamAsync(Direction.Forward, streamId, 0);
+        return ReadStreamAsync(direction, streamId, 0);
     }
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, int startingRevision)
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
+            .InDirection(direction)
             .FromStream(streamId)
             .StartingFromRevision(startingRevision)
             .WithBatchSize(BatchSize);
