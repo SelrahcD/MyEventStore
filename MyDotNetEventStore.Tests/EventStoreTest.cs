@@ -193,6 +193,21 @@ public class EventStoreTest
 
                 Assert.That(resolvedEvents, Is.EqualTo(0));
             }
+
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
+            {
+                var eventBuilders = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync("stream-id", 6);
+
+                var resolvedEvents = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEvents, Is.EqualTo(0));
+            }
         }
 
     }

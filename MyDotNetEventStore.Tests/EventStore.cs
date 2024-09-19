@@ -215,17 +215,17 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(string streamId)
     {
+        return ReadStreamAsync(streamId, 0);
+    }
+
+    public ReadStreamResult ReadStreamAsync(string streamId, int startingRevision)
+    {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .FromStream(streamId)
-            .StartingFromRevision(0)
+            .StartingFromRevision(startingRevision)
             .WithBatchSize(BatchSize);
 
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
-    }
-
-    public ReadStreamResult ReadStreamAsync(string streamId, int i)
-    {
-        return ReadStreamAsync(streamId);
     }
 
     public ReadStreamResult ReadAllAsync()
