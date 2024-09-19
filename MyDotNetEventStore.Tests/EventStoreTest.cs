@@ -8,6 +8,7 @@ namespace MyDotNetEventStore.Tests;
 
 // TODO:
 // - Test that we are properly releasing connections
+// - Test cancellation token stops enumeration
 
 [SetUpFixture]
 public class PostgresEventStoreSetup
@@ -233,8 +234,6 @@ public class EventStoreTest
     [TestFixture]
     public class ReadingAllStream : EventStoreTest
     {
-        // Todo: Test cancellation token stops enumeration
-
         [Test]
         public async Task returns_all_events_appended__to_all_streams_in_order(
             [Values(1, 3, 50, 100, 187, 200, 270, 600)]
