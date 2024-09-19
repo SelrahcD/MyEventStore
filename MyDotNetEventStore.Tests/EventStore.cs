@@ -253,21 +253,6 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
-        return await DoAppendAsync(streamId, events, streamState);
-    }
-
-    public async Task<AppendResult> AppendAsync(string streamId, EventData evt)
-    {
-        return await AppendAsync(streamId, [evt], StreamState.Any());
-    }
-
-    public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events)
-    {
-        return await AppendAsync(streamId, events, StreamState.Any());
-    }
-
-    private async Task<AppendResult> DoAppendAsync(string streamId, List<EventData> events, StreamState streamState)
-    {
         if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists || streamState.Type == StreamStateType.AtRevision)
         {
             var streamExists = await StreamExist(streamId);
@@ -315,6 +300,16 @@ public class EventStore
         }
 
         return new AppendResult(position, revision);
+    }
+
+    public async Task<AppendResult> AppendAsync(string streamId, EventData evt)
+    {
+        return await AppendAsync(streamId, [evt], StreamState.Any());
+    }
+
+    public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events)
+    {
+        return await AppendAsync(streamId, events, StreamState.Any());
     }
 
     public async Task<StreamExistence> StreamExist(string streamId)
