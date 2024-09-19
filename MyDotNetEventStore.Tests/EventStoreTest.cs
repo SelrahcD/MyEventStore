@@ -106,10 +106,10 @@ public class EventStoreTest
     [TestFixture]
     public class ReadingStream : EventStoreTest
     {
-        public class WhenTheStreamDoesntExists : ReadingStream
+        public class ForwardWithoutProvidingAPosition : ReadingStream
         {
             [Test]
-            public async Task returns_a_ReadStreamResult_without_any_events()
+            public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
             {
                 var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists");
 
@@ -117,12 +117,9 @@ public class EventStoreTest
 
                 Assert.That(resolvedEvents, Is.EqualTo(0));
             }
-        }
 
-        public class WhenTheStreamExists : ReadingStream
-        {
             [Test]
-            public async Task returns_all_events_appended_to_the_stream_in_order(
+            public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
                 var eventBuilders = ListOfNBuilders(eventCount, (e) => e.InStream("stream-id"))
@@ -154,10 +151,7 @@ public class EventStoreTest
                     evtInStream.ToResolvedEvent(1, 1),
                 }));
             }
-        }
 
-        public class TakesCareOfResources : ReadingStream
-        {
             [Test]
             // This is probably not a good way to test memory consumption but at least that test forced me to
             // fetch events by batch
