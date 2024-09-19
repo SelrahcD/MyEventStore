@@ -682,22 +682,7 @@ public static class EventBuilderExtensions
 
     public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders)
     {
-        var position = 0;
-        var versions = new Dictionary<string, int>();
-
-        return eventBuilders.Select(builder =>
-        {
-            position++;
-            var streamId = builder.StreamId();
-            if (!versions.ContainsKey(streamId))
-            {
-                versions[streamId] = 0;
-            }
-
-            versions[streamId]++;
-
-            return builder.ToResolvedEvent(position, versions[streamId]);
-        }).ToList();
+        return ToResolvedEvents(eventBuilders, 1, 1);
     }
 
     public static List<ResolvedEvent> ToResolvedEvents(this List<EventStoreTest.EventBuilder> eventBuilders, int position, int startRevision)
