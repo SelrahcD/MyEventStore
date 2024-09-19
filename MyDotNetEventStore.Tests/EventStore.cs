@@ -250,7 +250,14 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId)
     {
-        return ReadStreamAsync(direction, streamId, 0);
+        OneOf<long, StreamRevision> startingRevision = 0;
+
+        if (direction == Direction.Backward)
+        {
+            startingRevision = StreamRevision.End;
+        }
+
+        return ReadStreamAsync(direction, streamId, startingRevision);
     }
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, OneOf<long, StreamRevision> startingRevision)
