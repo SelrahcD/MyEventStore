@@ -246,9 +246,19 @@ public class EventStore
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
+    public async Task<AppendResult> AppendAsync(string streamId, EventData evt)
+    {
+        return await AppendAsync(streamId, [evt], StreamState.Any());
+    }
+
     public async Task<AppendResult> AppendAsync(string streamId, EventData evt, StreamState streamState)
     {
         return await AppendAsync(streamId, [evt], streamState);
+    }
+
+    public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events)
+    {
+        return await AppendAsync(streamId, events, StreamState.Any());
     }
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
@@ -300,16 +310,6 @@ public class EventStore
         }
 
         return new AppendResult(position, revision);
-    }
-
-    public async Task<AppendResult> AppendAsync(string streamId, EventData evt)
-    {
-        return await AppendAsync(streamId, [evt], StreamState.Any());
-    }
-
-    public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events)
-    {
-        return await AppendAsync(streamId, events, StreamState.Any());
     }
 
     public async Task<StreamExistence> StreamExist(string streamId)
