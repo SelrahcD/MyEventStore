@@ -58,9 +58,11 @@ public record EventData
     public string Data { get; }
     public string MetaData { get; }
     public string EventType { get; }
+    public Guid Id { get; }
 
-    public EventData(string eventType, string data, string metaData)
+    public EventData(string eventType, string data, string metaData, Guid id = new Guid())
     {
+        Id = id;
         Data = data;
         MetaData = metaData;
         EventType = eventType;
@@ -277,11 +279,12 @@ public class EventStore
         long revision = 0;
         foreach (var evt in events)
         {
-            var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, event_type, data, metadata) VALUES (@stream_id, @revision, @event_type, @event_data, @event_metadata) RETURNING position, revision;",
+            var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, id, event_type, data, metadata) VALUES (@stream_id, @revision, @id, @event_type, @event_data, @event_metadata) RETURNING position, revision;",
                 _npgsqlConnection);
             command.Parameters.AddWithValue("stream_id", streamId);
             command.Parameters.AddWithValue("revision", ++lastRevision);
             command.Parameters.AddWithValue("event_type", evt.EventType);
+            command.Parameters.AddWithValue("id", evt.Id);
             command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
             command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);
 

@@ -33,6 +33,7 @@ public class PostgresEventStoreSetup
         var command = new NpgsqlCommand($"""
                                          CREATE TABLE IF NOT EXISTS events (
                                              position SERIAL PRIMARY KEY,
+                                             id UUID NOT NULL,
                                              stream_id TEXT NOT NULL,
                                              revision BIGINT NOT NULL,
                                              event_type TEXT NOT NULL,

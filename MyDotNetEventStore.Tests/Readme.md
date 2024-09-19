@@ -6,7 +6,7 @@
 - [x] Ensure each event has the following attributes:
     - [x] **Type**: A string defined by the application.
     - [x] **Stream**: The stream the event belongs to, controlled by the application.
-    - [ ] **Id**: A unique string over the store (UUID).
+    - [x] **Id**: A unique string over the store (UUID).
     - [x] **Revision**: A number representing the position in the stream.
     - [x] **Positions**: Numbers representing the global position of the event in the stream structure.
     - [x] **Data**: The payload of the event as JSON
