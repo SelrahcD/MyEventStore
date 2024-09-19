@@ -179,22 +179,6 @@ public class ReadingCommandBuilder
         return command;
     }
 
-    private static async Task<(bool, long, List<ResolvedEvent>)> BuildEvents(NpgsqlDataReader reader)
-    {
-        long lastPosition = 0;
-        var events = new List<ResolvedEvent>();
-        while (await reader.ReadAsync())
-        {
-            var (position, resolvedEvent) = BuildOneEvent(reader);
-
-            events.Add(resolvedEvent);
-
-            lastPosition = position;
-        }
-
-        return (true, lastPosition, events);
-    }
-
     public static (long position, ResolvedEvent resolvedEvent) BuildOneEvent(NpgsqlDataReader reader)
     {
         var position = reader.GetInt64(0);
