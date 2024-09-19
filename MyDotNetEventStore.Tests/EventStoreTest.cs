@@ -181,6 +181,20 @@ public class EventStoreTest
                 Assert.That(count, Is.EqualTo(eventCount));
             }
         }
+
+        public class ForwardProvidingAPosition : ReadingStream
+        {
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
+            {
+                var readStreamResult = _eventStore.ReadStreamAsync("a-stream-that-doesnt-exists", 10);
+
+                var resolvedEvents = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEvents, Is.EqualTo(0));
+            }
+        }
+
     }
 
     [TestFixture]

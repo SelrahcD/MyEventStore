@@ -223,6 +223,11 @@ public class EventStore
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
+    public ReadStreamResult ReadStreamAsync(string streamId, int i)
+    {
+        return ReadStreamAsync(streamId);
+    }
+
     public ReadStreamResult ReadAllAsync()
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
