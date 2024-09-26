@@ -700,7 +700,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
-                var resolvedEventList = await ToListAsync<ResolvedEvent>(readStreamResult);
+                var resolvedEventList = await ToListAsync(readStreamResult);
 
                 Assert.That(resolvedEventList.First().Revision, Is.EqualTo(1));
             }
