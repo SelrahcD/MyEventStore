@@ -441,7 +441,7 @@ public class EventStoreTest
                     await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
                 }
 
-                var readStreamResult = _eventStore.ReadAllAsync();
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward);
 
                 var resolvedEvents = await readStreamResult.ToListAsync();
 
@@ -464,7 +464,7 @@ public class EventStoreTest
 
                     long memoryBefore = GC.GetTotalMemory(true);
 
-                    var readAllStreamResult = _eventStore.ReadAllAsync();
+                    var readAllStreamResult = _eventStore.ReadAllAsync(Direction.Forward);
 
                     var count = await readAllStreamResult.CountAsync();
 

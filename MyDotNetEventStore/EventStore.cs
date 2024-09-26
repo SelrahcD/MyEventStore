@@ -38,7 +38,7 @@ public class EventStore
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
     }
 
-    public ReadStreamResult ReadAllAsync()
+    public ReadStreamResult ReadAllAsync(Direction direction)
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(0)
