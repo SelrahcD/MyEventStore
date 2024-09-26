@@ -185,7 +185,15 @@ public class ReadingCommandBuilder
             cmdText += " DESC";
         }
 
-        cmdText += " LIMIT @batchSize";
+
+        if (_revision.IsT1 && _revision.AsT1 == StreamRevision.End && _direction == Direction.Forward)
+        {
+            cmdText += " LIMIT 0";
+        }
+        else
+        {
+            cmdText += " LIMIT @batchSize";
+        }
 
         cmdText += ";";
 

@@ -242,6 +242,21 @@ public class EventStoreTest
 
                 Assert.That(resolvedEvents, Is.EqualTo(events.ToResolvedEvents()));
             }
+
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
+            {
+                var events = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.End);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
+            }
         }
 
         public class BackwardWithoutProvidingAPosition : ReadingStream
