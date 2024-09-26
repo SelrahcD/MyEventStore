@@ -845,18 +845,6 @@ public class EventStoreTest
 
         return list;
     }
-
-    private static async Task<int> CountAsync<T>(IAsyncEnumerable<T> asyncEnumerable)
-    {
-        var count = 0;
-
-        await foreach (var item in asyncEnumerable)
-        {
-            count++;
-        }
-
-        return count;
-    }
 }
 
 public static class AsyncEnumerableExtensions
