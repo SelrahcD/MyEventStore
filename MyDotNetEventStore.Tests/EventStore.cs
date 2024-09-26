@@ -244,18 +244,6 @@ public class ReadingCommandBuilder
     }
 }
 
-public enum Direction
-{
-    Forward,
-    Backward
-}
-
-public enum StreamRevision
-{
-    Start,
-    End
-}
-
 public class EventStore
 {
     private const int BatchSize = 100;

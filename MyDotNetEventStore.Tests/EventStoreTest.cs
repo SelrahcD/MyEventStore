@@ -427,6 +427,64 @@ public class EventStoreTest
     [TestFixture]
     public class ReadingAllStream : EventStoreTest
     {
+        public class ForwardWithoutProvidingAPosition : ReadingStream
+        {
+            [Test]
+            public async Task returns_all_events_appended__to_all_streams_in_order(
+                [Values(1, 3, 50, 100, 187, 200, 270, 600)]
+                int eventCount)
+            {
+                var eventBuilders = ListOfNBuilders(eventCount).ToList();
+
+                foreach (var eventBuilder in eventBuilders)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                var readStreamResult = _eventStore.ReadAllAsync();
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEvents();
+                Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
+            }
+
+
+            public class TakesCareOfResources : ReadingAllStream
+            {
+                [Test]
+                // This is probably not a good way to test memory consumption but at least that test forced me to
+                // fetch events by batch
+                public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
+                {
+                    await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+                    await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
+                    await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
+                    await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
+
+                    long memoryBefore = GC.GetTotalMemory(true);
+
+                    var readAllStreamResult = _eventStore.ReadAllAsync();
+
+                    var count = await readAllStreamResult.CountAsync();
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+
+                    var memoryAfter = GC.GetTotalMemory(true);
+
+                    var memoryUsed = memoryAfter - memoryBefore;
+
+                    var acceptableMemoryUsage = 2 * 1024 * 1024; // 1 MB
+
+                    Assert.Less(memoryUsed, acceptableMemoryUsage,
+                        $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
+                    Assert.That(count, Is.EqualTo(4000));
+                }
+            }
+        }
+
         [Test]
         public async Task returns_all_events_appended__to_all_streams_in_order(
             [Values(1, 3, 50, 100, 187, 200, 270, 600)]
