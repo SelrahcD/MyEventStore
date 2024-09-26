@@ -42,6 +42,7 @@ public class EventStore
     {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(0)
+            .InDirection(direction)
             .WithBatchSize(BatchSize);
 
         return ReadStreamResult.PrepareForReading(_npgsqlConnection, readingCommandBuilder);
