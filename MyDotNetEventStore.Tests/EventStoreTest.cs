@@ -405,6 +405,21 @@ public class EventStoreTest
                 Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
             }
 
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
+            {
+                var eventBuilders = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+
+                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", StreamRevision.Start);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
+            }
+
         }
 
     }

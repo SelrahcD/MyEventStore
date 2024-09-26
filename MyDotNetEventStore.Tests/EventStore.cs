@@ -186,7 +186,10 @@ public class ReadingCommandBuilder
         }
 
 
-        if (_revision.IsT1 && _revision.AsT1 == StreamRevision.End && _direction == Direction.Forward)
+        if (_revision.IsT1 &&
+            ((_revision.AsT1 == StreamRevision.End && _direction == Direction.Forward) ||
+            (_revision.AsT1 == StreamRevision.Start && _direction == Direction.Backward))
+            )
         {
             cmdText += " LIMIT 0";
         }
