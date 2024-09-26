@@ -859,42 +859,6 @@ public class EventStoreTest
     }
 }
 
-public static class EventBuilderExtensions
-{
-    public static object ToEventData(this OneOf<EventBuilder, List<EventBuilder>> oneOf)
-    {
-        return oneOf.Match<OneOf<EventData, List<EventData>>>(
-            e => e.ToEventData(),
-            e => e.ToEventData()).Value;
-    }
-
-    public static List<EventData> ToEventData(this List<EventBuilder> eventBuilders)
-    {
-        return eventBuilders.Select(builder => builder.ToEventData()).ToList();
-    }
-
-    public static List<ResolvedEvent> ToResolvedEvents(this List<EventBuilder> eventBuilders, int position = 1, int startRevision = 1)
-    {
-        var versions = new Dictionary<string, int>();
-
-        return eventBuilders.Select(builder =>
-        {
-            var streamId = builder.StreamId();
-            if (!versions.ContainsKey(streamId))
-            {
-                versions[streamId] = startRevision;
-            }
-
-            var resolvedEvent = builder.ToResolvedEvent(position, versions[streamId]);
-
-            versions[streamId]++;
-            position++;
-
-            return resolvedEvent;
-        }).ToList();
-    }
-}
-
 public static class AsyncEnumerableExtensions
 {
     public static async Task<int> CountAsync<T>(this IAsyncEnumerable<T> asyncEnumerable)
