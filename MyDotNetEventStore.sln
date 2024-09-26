@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyDotNetEventStore.Tests", "MyDotNetEventStore.Tests\MyDotNetEventStore.Tests.csproj", "{B900E8F6-DEBE-4B7B-AD9C-052029BC6B23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyDotNetEventStore", "MyDotNetEventStore\MyDotNetEventStore.csproj", "{24044D6C-8282-4532-A7FA-D8F89D509896}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{B900E8F6-DEBE-4B7B-AD9C-052029BC6B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B900E8F6-DEBE-4B7B-AD9C-052029BC6B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B900E8F6-DEBE-4B7B-AD9C-052029BC6B23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24044D6C-8282-4532-A7FA-D8F89D509896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24044D6C-8282-4532-A7FA-D8F89D509896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24044D6C-8282-4532-A7FA-D8F89D509896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24044D6C-8282-4532-A7FA-D8F89D509896}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

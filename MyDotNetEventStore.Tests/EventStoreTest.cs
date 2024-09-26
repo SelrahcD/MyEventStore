@@ -910,12 +910,6 @@ public class EventStoreTest
     }
 }
 
-public enum StreamExistence
-{
-    Exists,
-    NotFound
-}
-
 public static class EventBuilderExtensions
 {
     public static object ToEventData(this OneOf<EventStoreTest.EventBuilder, List<EventStoreTest.EventBuilder>> oneOf)
