@@ -31,7 +31,7 @@ public class ReadingCommandBuilder
         return this;
     }
 
-    public ReadingCommandBuilder StartingFromPosition(long lastPosition)
+    public ReadingCommandBuilder StartingFromPosition(OneOf<long, StreamRevision> lastPosition)
     {
         _basedOnRevision = false;
         _position = lastPosition;

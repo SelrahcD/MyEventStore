@@ -40,8 +40,16 @@ public class EventStore
 
     public ReadStreamResult ReadAllAsync(Direction direction)
     {
+        OneOf<long, StreamRevision> startingPosition = 0;
+
+        if (direction == Direction.Backward)
+        {
+            startingPosition = StreamRevision.End;
+        }
+
+
         var readingCommandBuilder = new ReadingCommandBuilder()
-            .StartingFromPosition(0)
+            .StartingFromPosition(startingPosition)
             .InDirection(direction)
             .WithBatchSize(BatchSize);
 

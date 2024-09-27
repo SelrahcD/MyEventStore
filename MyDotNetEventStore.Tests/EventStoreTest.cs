@@ -481,7 +481,6 @@ public class EventStoreTest
             }
         }
 
-        [Ignore("Not yet implemented")]
         public class BackwardWithoutProvidingAPosition : ReadingAllStream
         {
             [Test]
