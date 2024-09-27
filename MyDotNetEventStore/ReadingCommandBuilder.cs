@@ -8,7 +8,6 @@ public class ReadingCommandBuilder
     private int _batchSize = 100;
     private OneOf<long, StreamRevision> _position;
     private string? _streamId;
-    private OneOf<long, StreamRevision> _revision;
     private Direction _direction;
     private bool _basedOnRevision;
 
@@ -49,7 +48,7 @@ public class ReadingCommandBuilder
     public ReadingCommandBuilder StartingFromRevision(OneOf<long, StreamRevision> lastRevision)
     {
         _basedOnRevision = true;
-        _revision = lastRevision;
+        _position = lastRevision;
 
         return this;
     }
@@ -68,13 +67,13 @@ public class ReadingCommandBuilder
         }
 
         // _revision is a long
-        if (_basedOnRevision && _revision.IsT0 && _direction == Direction.Forward)
+        if (_basedOnRevision && _position.IsT0 && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
 
         // _revision is a long
-        if (_basedOnRevision && _revision.IsT0 && _direction == Direction.Backward)
+        if (_basedOnRevision && _position.IsT0 && _direction == Direction.Backward)
         {
             cmdText += " AND revision <= @lastRevision";
         }
@@ -102,9 +101,9 @@ public class ReadingCommandBuilder
         }
 
 
-        if (_revision.IsT1 &&
-            ((_revision.AsT1 == StreamRevision.End && _direction == Direction.Forward) ||
-             (_revision.AsT1 == StreamRevision.Start && _direction == Direction.Backward))
+        if (_position.IsT1 &&
+            ((_position.AsT1 == StreamRevision.End && _direction == Direction.Forward) ||
+             (_position.AsT1 == StreamRevision.Start && _direction == Direction.Backward))
            )
         {
             cmdText += " LIMIT 0";
@@ -118,15 +117,15 @@ public class ReadingCommandBuilder
 
         var command = new NpgsqlCommand(cmdText, npgsqlConnection);
 
-        if (_position.IsT0)
+        if (!_basedOnRevision && _position.IsT0)
         {
             command.Parameters.AddWithValue("@lastPosition", _position.Value);
         }
 
-        if (_revision.IsT0)
+        if (_basedOnRevision && _position.IsT0)
         {
             // Todo: fail if we are not fetching a stream
-            command.Parameters.AddWithValue("@lastRevision", _revision.Value);
+            command.Parameters.AddWithValue("@lastRevision", _position.Value);
         }
 
         command.Parameters.AddWithValue("@batchSize", _batchSize);
