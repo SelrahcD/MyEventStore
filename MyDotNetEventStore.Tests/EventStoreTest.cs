@@ -23,9 +23,9 @@ public class PostgresEventStoreSetup
     {
         await _postgresContainer.StartAsync();
 
-        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
-        NpgsqlLoggingConfiguration.InitializeLogging(loggerFactory);
-        NpgsqlLoggingConfiguration.InitializeLogging(loggerFactory, parameterLoggingEnabled: true);
+        // var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
+        // NpgsqlLoggingConfiguration.InitializeLogging(loggerFactory);
+        // NpgsqlLoggingConfiguration.InitializeLogging(loggerFactory, parameterLoggingEnabled: true);
 
         Connection = new NpgsqlConnection(_postgresContainer.GetConnectionString());
 

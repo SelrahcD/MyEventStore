@@ -6,10 +6,11 @@ namespace MyDotNetEventStore.Tests;
 public class ReadingCommandBuilder
 {
     private int _batchSize = 100;
-    private long? _position;
+    private OneOf<long, StreamRevision> _position;
     private string? _streamId;
     private OneOf<long, StreamRevision> _revision;
     private Direction _direction;
+    private bool _basedOnRevision;
 
     public ReadingCommandBuilder WithBatchSize(int batchSize)
     {
@@ -32,6 +33,7 @@ public class ReadingCommandBuilder
 
     public ReadingCommandBuilder StartingFromPosition(long lastPosition)
     {
+        _basedOnRevision = false;
         _position = lastPosition;
 
         return this;
@@ -46,6 +48,7 @@ public class ReadingCommandBuilder
 
     public ReadingCommandBuilder StartingFromRevision(OneOf<long, StreamRevision> lastRevision)
     {
+        _basedOnRevision = true;
         _revision = lastRevision;
 
         return this;
@@ -65,24 +68,24 @@ public class ReadingCommandBuilder
         }
 
         // _revision is a long
-        if (_revision.IsT0 && _direction == Direction.Forward)
+        if (_basedOnRevision && _revision.IsT0 && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
 
         // _revision is a long
-        if (_revision.IsT0 && _direction == Direction.Backward)
+        if (_basedOnRevision && _revision.IsT0 && _direction == Direction.Backward)
         {
             cmdText += " AND revision <= @lastRevision";
         }
 
 
-        if (_position is not null && _direction == Direction.Forward)
+        if (!_basedOnRevision && _position.IsT0 && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
         }
 
-        if (_position is not null && _direction == Direction.Backward)
+        if (!_basedOnRevision && _position.IsT0 && _direction == Direction.Backward)
         {
             cmdText += " AND position < @lastPosition";
         }
@@ -115,9 +118,9 @@ public class ReadingCommandBuilder
 
         var command = new NpgsqlCommand(cmdText, npgsqlConnection);
 
-        if (_position is not null)
+        if (_position.IsT0)
         {
-            command.Parameters.AddWithValue("@lastPosition", _position);
+            command.Parameters.AddWithValue("@lastPosition", _position.Value);
         }
 
         if (_revision.IsT0)
