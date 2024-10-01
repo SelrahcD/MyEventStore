@@ -113,7 +113,7 @@ public class EventStore
         long position = 0;
         long revision = 0;
 
-        using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents");
+        using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
         {
             foreach (var evt in events)
             {
@@ -140,7 +140,7 @@ public class EventStore
 
     public async Task<StreamExistence> StreamExist(string streamId)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("StreamExist");
+        using var activity = Tracing.ActivitySource.StartActivity("StreamExist", ActivityKind.Client);
 
         var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
             _npgsqlConnection);
