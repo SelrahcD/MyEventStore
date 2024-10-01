@@ -7,7 +7,6 @@ namespace MyDotNetEventStore;
 
 public class EventStore
 {
-    private static readonly ActivitySource ActivitySource = new("MyDotNetEventStore");
     private const int BatchSize = 100;
 
     private readonly NpgsqlConnection _npgsqlConnection;
@@ -19,7 +18,7 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId)
     {
-        using var activity = ActivitySource.StartActivity("ReadStreamAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("ReadStreamAsync");
 
         OneOf<long, StreamRevision> startingRevision = 0;
 
@@ -33,7 +32,7 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, OneOf<long, StreamRevision> startingRevision)
     {
-        using var activity = ActivitySource.StartActivity("ReadStreamAsyncWithRevision");
+        using var activity = Tracing.ActivitySource.StartActivity("ReadStreamAsyncWithRevision");
 
         var readingCommandBuilder = new ReadingCommandBuilder()
             .InDirection(direction)
@@ -46,7 +45,7 @@ public class EventStore
 
     public ReadStreamResult ReadAllAsync(Direction direction)
     {
-        using var activity = ActivitySource.StartActivity("ReadAllAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("ReadAllAsync");
 
         OneOf<long, StreamRevision> startingPosition = 0;
 
@@ -81,7 +80,7 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
-        using var activity = ActivitySource.StartActivity("AppendAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("AppendAsync");
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
 
@@ -114,7 +113,7 @@ public class EventStore
         long position = 0;
         long revision = 0;
 
-        using var cmdActivity = ActivitySource.StartActivity("InsertEvents");
+        using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents");
         {
             foreach (var evt in events)
             {
@@ -141,7 +140,7 @@ public class EventStore
 
     public async Task<StreamExistence> StreamExist(string streamId)
     {
-        using var activity = ActivitySource.StartActivity("StreamExist");
+        using var activity = Tracing.ActivitySource.StartActivity("StreamExist");
 
         var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
             _npgsqlConnection);
