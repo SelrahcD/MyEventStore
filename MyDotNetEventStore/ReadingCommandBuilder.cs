@@ -1,7 +1,7 @@
 using Npgsql;
 using OneOf;
 
-namespace MyDotNetEventStore.Tests;
+namespace MyDotNetEventStore;
 
 public class ReadingCommandBuilder
 {

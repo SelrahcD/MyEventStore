@@ -1,4 +1,4 @@
-namespace MyDotNetEventStore.Tests;
+namespace MyDotNetEventStore;
 
 public enum Direction
 {

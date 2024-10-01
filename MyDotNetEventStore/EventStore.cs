@@ -2,7 +2,7 @@ using Npgsql;
 using NpgsqlTypes;
 using OneOf;
 
-namespace MyDotNetEventStore.Tests;
+namespace MyDotNetEventStore;
 
 public class EventStore
 {

@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace MyDotNetEventStore.Tests;
+namespace MyDotNetEventStore;
 
 public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 {
