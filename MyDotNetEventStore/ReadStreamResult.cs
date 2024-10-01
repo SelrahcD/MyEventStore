@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Npgsql;
+using OpenTelemetry.Trace;
 
 namespace MyDotNetEventStore;
 
@@ -20,6 +22,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
     public async IAsyncEnumerator<ResolvedEvent> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
     {
+        using var enumerationActivity = Tracing.ActivitySource.StartActivity("GetAsyncEnumerator");
+
         var readingCommandBuilder = _commandBuilder;
 
         long lastPosition = 0;
@@ -27,9 +31,14 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
         {
             int eventCount = 0;
 
+            using var commandActivity = Tracing.ActivitySource.StartActivity("BuildAndExecuteCommand");
+            commandActivity?.SetTag("last_position", lastPosition);
+
             await using var command = readingCommandBuilder.Build(_npgsqlConnection);
 
+            using var readEventsActivity = Tracing.ActivitySource.StartActivity("ReadEvents", ActivityKind.Client);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            readEventsActivity?.Stop();
 
             while (await reader.ReadAsync(cancellationToken))
             {
@@ -41,6 +50,8 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
                 yield return resolvedEvent;
             }
 
+            commandActivity?.Stop();
+
             // Todo: Add test when batch size === count of fetched events
             if (eventCount < readingCommandBuilder.BatchSize())
             {
@@ -49,5 +60,7 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             readingCommandBuilder = readingCommandBuilder.NextReadingCommandBuilderStartingAtPosition(lastPosition);
         }
+
+        enumerationActivity?.Stop();
     }
 }

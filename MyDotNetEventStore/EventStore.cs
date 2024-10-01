@@ -33,6 +33,8 @@ public class EventStore
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, OneOf<long, StreamRevision> startingRevision)
     {
         using var activity = Tracing.ActivitySource.StartActivity("ReadStreamAsyncWithRevision");
+        activity?.SetTag("direction", direction.ToString());
+        activity?.SetTag("streamId", streamId);
 
         var readingCommandBuilder = new ReadingCommandBuilder()
             .InDirection(direction)
@@ -46,6 +48,7 @@ public class EventStore
     public ReadStreamResult ReadAllAsync(Direction direction)
     {
         using var activity = Tracing.ActivitySource.StartActivity("ReadAllAsync");
+        activity?.SetTag("direction", direction.ToString());
 
         OneOf<long, StreamRevision> startingPosition = 0;
 
