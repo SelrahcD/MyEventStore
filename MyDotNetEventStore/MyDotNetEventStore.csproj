@@ -9,6 +9,8 @@
     <ItemGroup>
       <PackageReference Include="Npgsql" Version="8.0.4" />
       <PackageReference Include="OneOf" Version="3.0.271" />
+      <PackageReference Include="OpenTelemetry" Version="1.9.0" />
+      <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
     </ItemGroup>
 
 </Project>

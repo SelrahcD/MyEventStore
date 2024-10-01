@@ -1,0 +1,17 @@
+version: '3.8'  # Use the latest version that fits your needs
+
+services:
+  seq-dashboard:
+    image: datalust/seq:latest
+    container_name: seq-dashboard
+    ports:
+      - "5341:5341"
+      - "18080:80"
+    environment:
+      - ACCEPT_EULA=Y
+    restart: unless-stopped
+    volumes:
+      - seq_data:/data
+
+volumes:
+  seq_data:

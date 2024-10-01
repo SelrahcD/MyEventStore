@@ -2,6 +2,10 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using NUnit.Framework.Internal;
 using OneOf;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
@@ -16,11 +20,22 @@ public class PostgresEventStoreSetup
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
         .Build();
 
+    private TracerProvider _tracerProvider;
+
     public static NpgsqlConnection Connection;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
+         _tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyDotNetEventStore"))
+            .AddSource("MyDotNetEventStore")
+            .AddOtlpExporter(exporter =>
+            {
+                exporter.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces");
+            })
+            .Build();
+
         await _postgresContainer.StartAsync();
 
         // var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
@@ -51,6 +66,7 @@ public class PostgresEventStoreSetup
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
+        _tracerProvider.Dispose();
         await Connection.DisposeAsync();
         await _postgresContainer.DisposeAsync();
     }

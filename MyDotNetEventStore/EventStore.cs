@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Npgsql;
 using NpgsqlTypes;
 using OneOf;
@@ -6,6 +7,7 @@ namespace MyDotNetEventStore;
 
 public class EventStore
 {
+    private static readonly ActivitySource ActivitySource = new("MyDotNetEventStore");
     private const int BatchSize = 100;
 
     private readonly NpgsqlConnection _npgsqlConnection;
@@ -17,6 +19,8 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId)
     {
+        using var activity = ActivitySource.StartActivity("ReadStreamAsync");
+
         OneOf<long, StreamRevision> startingRevision = 0;
 
         if (direction == Direction.Backward)
@@ -29,6 +33,8 @@ public class EventStore
 
     public ReadStreamResult ReadStreamAsync(Direction direction, string streamId, OneOf<long, StreamRevision> startingRevision)
     {
+        using var activity = ActivitySource.StartActivity("ReadStreamAsyncWithRevision");
+
         var readingCommandBuilder = new ReadingCommandBuilder()
             .InDirection(direction)
             .FromStream(streamId)
@@ -40,6 +46,8 @@ public class EventStore
 
     public ReadStreamResult ReadAllAsync(Direction direction)
     {
+        using var activity = ActivitySource.StartActivity("ReadAllAsync");
+
         OneOf<long, StreamRevision> startingPosition = 0;
 
         if (direction == Direction.Backward)
@@ -73,6 +81,10 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
+        using var activity = ActivitySource.StartActivity("AppendAsync");
+        activity?.SetTag("streamId", streamId);
+        activity?.SetTag("eventCount", events.Count);
+
         if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists || streamState.Type == StreamStateType.AtRevision)
         {
             var streamExists = await StreamExist(streamId);
@@ -101,23 +113,27 @@ public class EventStore
 
         long position = 0;
         long revision = 0;
-        foreach (var evt in events)
+
+        using var cmdActivity = ActivitySource.StartActivity("InsertEvents");
         {
-            var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, id, event_type, data, metadata) VALUES (@stream_id, @revision, @id, @event_type, @event_data, @event_metadata) RETURNING position, revision;",
-                _npgsqlConnection);
-            command.Parameters.AddWithValue("stream_id", streamId);
-            command.Parameters.AddWithValue("revision", ++lastRevision);
-            command.Parameters.AddWithValue("event_type", evt.EventType);
-            command.Parameters.AddWithValue("id", evt.Id);
-            command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
-            command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);
+            foreach (var evt in events)
+            {
+                var command = new NpgsqlCommand("INSERT INTO events (stream_id, revision, id, event_type, data, metadata) VALUES (@stream_id, @revision, @id, @event_type, @event_data, @event_metadata) RETURNING position, revision;",
+                    _npgsqlConnection);
+                command.Parameters.AddWithValue("stream_id", streamId);
+                command.Parameters.AddWithValue("revision", ++lastRevision);
+                command.Parameters.AddWithValue("event_type", evt.EventType);
+                command.Parameters.AddWithValue("id", evt.Id);
+                command.Parameters.AddWithValue("event_data", NpgsqlDbType.Jsonb, evt.Data);
+                command.Parameters.AddWithValue("event_metadata", NpgsqlDbType.Jsonb, evt.MetaData);
 
-            await using var reader = await command.ExecuteReaderAsync();
+                await using var reader = await command.ExecuteReaderAsync();
 
-            if (!await reader.ReadAsync()) continue;
+                if (!await reader.ReadAsync()) continue;
 
-            position = reader.GetInt64(0);
-            revision = reader.GetInt64(1);
+                position = reader.GetInt64(0);
+                revision = reader.GetInt64(1);
+            }
         }
 
         return new AppendResult(position, revision);
@@ -125,6 +141,8 @@ public class EventStore
 
     public async Task<StreamExistence> StreamExist(string streamId)
     {
+        using var activity = ActivitySource.StartActivity("StreamExist");
+
         var checkStreamCommand = new NpgsqlCommand("SELECT 1 FROM events WHERE stream_id = @stream_id LIMIT 1;",
             _npgsqlConnection);
         checkStreamCommand.Parameters.AddWithValue("stream_id", streamId);
