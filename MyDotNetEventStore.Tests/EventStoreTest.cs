@@ -94,11 +94,38 @@ public class EventStoreTest
     [TearDown]
     public async Task TearDown()
     {
+        var outcome = TestContext.CurrentContext.Result.Outcome.Status;
+
+        switch (outcome)
+        {
+            case NUnit.Framework.Interfaces.TestStatus.Passed:
+                _activity?.SetStatus(ActivityStatusCode.Ok, "Test passed successfully.");
+                break;
+
+            case NUnit.Framework.Interfaces.TestStatus.Failed:
+                _activity?.SetStatus(ActivityStatusCode.Error, "Test failed.");
+                break;
+
+            case NUnit.Framework.Interfaces.TestStatus.Skipped:
+                _activity?.SetStatus(ActivityStatusCode.Unset, "Test was skipped.");
+                break;
+
+            case NUnit.Framework.Interfaces.TestStatus.Inconclusive:
+                _activity?.SetStatus(ActivityStatusCode.Unset, "Test result is inconclusive.");
+                break;
+
+            default:
+                _activity?.SetStatus(ActivityStatusCode.Unset, "Test completed with unknown status.");
+                break;
+        }
+
         var command = new NpgsqlCommand("DELETE FROM events", PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
         command = new NpgsqlCommand("ALTER SEQUENCE events_position_seq RESTART WITH 1;",
             PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
+
+
         _activity.Dispose();
     }
 
