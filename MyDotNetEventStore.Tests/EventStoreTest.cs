@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using NUnit.Framework.Internal;
@@ -28,8 +29,7 @@ public class PostgresEventStoreSetup
     public async Task OneTimeSetup()
     {
          _tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyDotNetEventStore"))
-            .AddSource("MyDotNetEventStore")
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyDotNetEventStore")).AddSource("MyDotNetEventStore", "EventStoreTest")
             .AddOtlpExporter(exporter =>
             {
                 exporter.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces");
@@ -75,11 +75,19 @@ public class PostgresEventStoreSetup
 
 public class EventStoreTest
 {
+    private static readonly ActivitySource ActivitySource = new("EventStoreTest");
+
     private EventStore _eventStore;
+
+    private Activity _activity;
 
     [SetUp]
     public void Setup()
     {
+        var testName = TestContext.CurrentContext.Test.Name;
+
+        _activity = ActivitySource.StartActivity(testName);
+
         _eventStore = new EventStore(PostgresEventStoreSetup.Connection);
     }
 
@@ -91,6 +99,7 @@ public class EventStoreTest
         command = new NpgsqlCommand("ALTER SEQUENCE events_position_seq RESTART WITH 1;",
             PostgresEventStoreSetup.Connection);
         await command.ExecuteNonQueryAsync();
+        _activity.Dispose();
     }
 
     [TestFixture]
