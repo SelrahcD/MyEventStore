@@ -19,6 +19,9 @@ services:
     ports:
       - 4317:4317
       - 55679:55679
+    command: [ "--config=/etc/otel-collector.yaml" ]
+    volumes:
+        - ./otel-collector.yaml:/etc/otel-collector.yaml
 
   prometheus:
     image: prom/prometheus:latest
@@ -35,6 +38,19 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor metricsSummary
     ports:
       - "3000:3000"
+    volumes:
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    ports:
+      - 3200:3200
+    volumes:
+      - ./tempo.yaml:/etc/tempo/tempo.yaml
+      - tempo_data:/var/tempo
+    command: [ "-config.file=/etc/tempo/tempo.yaml" ]
 
 volumes:
   seq_data:
+  tempo_data:
