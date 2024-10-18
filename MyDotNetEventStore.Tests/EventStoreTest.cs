@@ -35,6 +35,11 @@ public class PostgresEventStoreSetup
                 exporter.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces");
                 exporter.Protocol = OtlpExportProtocol.HttpProtobuf;
             })
+            .AddOtlpExporter(exporter =>
+            {
+                exporter.Endpoint = new Uri("http://localhost:4317");
+                exporter.Protocol = OtlpExportProtocol.Grpc;
+            })
             .Build();
 
         await _postgresContainer.StartAsync();
