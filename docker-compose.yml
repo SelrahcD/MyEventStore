@@ -30,6 +30,7 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yaml:/etc/prometheus.yaml
+      - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus.yaml
 
@@ -44,6 +45,7 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana_data:/var/lib/grafana
 
   tempo:
     image: grafana/tempo:latest
@@ -66,3 +68,5 @@ services:
 volumes:
   seq_data:
   tempo_data:
+  grafana_data:
+  prometheus_data:
