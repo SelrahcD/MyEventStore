@@ -12,10 +12,6 @@ public class EventStore
 
     private readonly NpgsqlConnection _npgsqlConnection;
 
-    static readonly Meter Meter = new("MyDotNetEventStore");
-
-    private static readonly Counter<long> AppendedEventCounter = Meter.CreateCounter<long>("AppendedEvents", "event", "Number of events appended to the Event Store");
-
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
         _npgsqlConnection = npgsqlConnection;
@@ -143,7 +139,7 @@ public class EventStore
             }
         }
 
-        AppendedEventCounter.Add(events.Count, new TagList {
+        Metrics.AppendedEventCounter.Add(events.Count, new TagList {
                 { "StreamId", streamId },
                 { "StreamState", streamState.ToString() }
             });
