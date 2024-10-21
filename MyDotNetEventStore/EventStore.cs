@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Npgsql;
 using NpgsqlTypes;
 using OneOf;
@@ -10,6 +11,10 @@ public class EventStore
     private const int BatchSize = 100;
 
     private readonly NpgsqlConnection _npgsqlConnection;
+
+    static readonly Meter MyMeter = new("MyDotNetEventStore");
+
+    private static readonly Counter<long> AppendedEventCounter = MyMeter.CreateCounter<long>("AppendedEvents", "event", "Number of events appended to the Event Store");
 
     public EventStore(NpgsqlConnection npgsqlConnection)
     {
@@ -137,6 +142,11 @@ public class EventStore
                 revision = reader.GetInt64(1);
             }
         }
+
+        AppendedEventCounter.Add(events.Count, new TagList {
+                { "StreamId", streamId },
+                { "StreamState", streamState.ToString() }
+            });
 
         return new AppendResult(position, revision);
     }
