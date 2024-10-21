@@ -28,6 +28,10 @@ services:
     container_name: prometheus
     ports:
       - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus.yaml
+    command:
+      - --config.file=/etc/prometheus.yaml
 
   grafana:
     image: grafana/grafana:11.2.0
@@ -50,6 +54,14 @@ services:
       - ./tempo.yaml:/etc/tempo/tempo.yaml
       - tempo_data:/var/tempo
     command: [ "-config.file=/etc/tempo/tempo.yaml" ]
+
+#  k6-tracing:
+#    image: ghcr.io/grafana/xk6-client-tracing:v0.0.5
+#    environment:
+#      - ENDPOINT=otel-collector:4317
+#    restart: always
+#    depends_on:
+#      - otel-collector
 
 volumes:
   seq_data:

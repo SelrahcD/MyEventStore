@@ -45,6 +45,7 @@ public class PostgresEventStoreSetup
             .Build();
 
          _metricProvider = Sdk.CreateMeterProviderBuilder()
+             .AddMeter("MyDotNetEventStore")
              .ConfigureResource(resource =>
              {
                  resource.AddService("MyDotNetEventStore");

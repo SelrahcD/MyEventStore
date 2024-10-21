@@ -12,9 +12,9 @@ public class EventStore
 
     private readonly NpgsqlConnection _npgsqlConnection;
 
-    static readonly Meter MyMeter = new("MyDotNetEventStore");
+    static readonly Meter Meter = new("MyDotNetEventStore");
 
-    private static readonly Counter<long> AppendedEventCounter = MyMeter.CreateCounter<long>("AppendedEvents", "event", "Number of events appended to the Event Store");
+    private static readonly Counter<long> AppendedEventCounter = Meter.CreateCounter<long>("AppendedEvents", "event", "Number of events appended to the Event Store");
 
     public EventStore(NpgsqlConnection npgsqlConnection)
     {

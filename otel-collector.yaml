@@ -5,13 +5,31 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+
 exporters:
   otlp:
     endpoint: tempo:4317
     tls:
       insecure: true
+
+  prometheus:
+    endpoint: 0.0.0.0:9090
+
+  debug:
+    verbosity: detailed
+
+processors:
+  batch:
+    send_batch_size: 10000
+    send_batch_max_size: 11000
+    timeout: 10s
+
 service:
   pipelines:
     traces:
       receivers: [otlp]
       exporters: [otlp]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ prometheus, debug ]
