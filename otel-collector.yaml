@@ -18,6 +18,13 @@ exporters:
   debug:
     verbosity: detailed
 
+connectors:
+  spanmetrics:
+    histogram:
+      explicit:
+        buckets: [ 100us, 1ms, 2ms, 6ms, 10ms, 100ms, 250ms ]
+    aggregation_temporality: "AGGREGATION_TEMPORALITY_CUMULATIVE"
+
 processors:
   batch:
     send_batch_size: 10000
@@ -28,8 +35,8 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [otlp]
+      exporters: [otlp, spanmetrics]
     metrics:
-      receivers: [ otlp ]
+      receivers: [ otlp, spanmetrics ]
       processors: [ batch ]
       exporters: [ prometheus, debug ]
