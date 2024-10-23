@@ -512,36 +512,21 @@ public class EventStoreTest
                 Assert.That(resolvedEventCount, Is.EqualTo(115));
                 Assert.That(resolvedEvents, Is.EqualTo(allEvents.GetRange(100, 115).ToResolvedEvents()));
             }
-            //
-            // [Test]
-            // public async Task returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
-            // {
-            //     var events = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
-            //         .ToList();
-            //
-            //     await _eventStore.AppendAsync("stream-id", events.ToEventData());
-            //
-            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.Start);
-            //
-            //     var resolvedEvents = await readStreamResult.ToListAsync();
-            //
-            //     Assert.That(resolvedEvents, Is.EqualTo(events.ToResolvedEvents()));
-            // }
-            //
-            // [Test]
-            // public async Task returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
-            // {
-            //     var events = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
-            //         .ToList();
-            //
-            //     await _eventStore.AppendAsync("stream-id", events.ToEventData());
-            //
-            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.End);
-            //
-            //     var resolvedEventCount = await readStreamResult.CountAsync();
-            //
-            //     Assert.That(resolvedEventCount, Is.EqualTo(0));
-            // }
+
+            [Test]
+            public async Task returns_a_ReadStreamResult_without_any_events_when_the_requested_revision_is_StreamRevision_End()
+            {
+                var events = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+                    .ToList();
+
+                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, StreamRevision.End);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
+            }
         }
 
 
