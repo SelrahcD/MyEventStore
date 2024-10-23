@@ -59,16 +59,9 @@ public class AppendingMultipleEvents
     }
 
     [Benchmark(Baseline = true)]
-    public async Task MultipleInsert()
+    public async Task CurrentImplementation()
     {
-        EventStore.AppendMode = "multiple";
         await _eventStore.AppendAsync("a-stream", _list);
     }
 
-    [Benchmark]
-    public async Task BatchMode()
-    {
-        EventStore.AppendMode = "batch";
-        await _eventStore.AppendAsync("a-stream", _list);
-    }
 }

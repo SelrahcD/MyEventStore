@@ -110,8 +110,6 @@ public class EventStoreTest
         _activity = ActivitySource.StartActivity(testName);
 
         _eventStore = new EventStore(PostgresEventStoreSetup.Connection);
-
-        EventStore.AppendMode = "batch";
     }
 
     [TearDown]
