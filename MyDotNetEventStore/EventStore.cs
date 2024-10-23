@@ -84,6 +84,11 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
+        return await AppendAsyncMultiple(streamId, events, streamState);
+    }
+
+    private async Task<AppendResult> AppendAsyncMultiple(string streamId, List<EventData> events, StreamState streamState)
+    {
         using var activity = Tracing.ActivitySource.StartActivity("AppendAsync");
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
@@ -140,9 +145,9 @@ public class EventStore
         }
 
         Metrics.AppendedEventCounter.Add(events.Count, new TagList {
-                { "StreamId", streamId },
-                { "StreamState", streamState.ToString() }
-            });
+            { "StreamId", streamId },
+            { "StreamState", streamState.ToString() }
+        });
 
         return new AppendResult(position, revision);
     }
