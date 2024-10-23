@@ -85,105 +85,105 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
-        return await AppendAsyncBatch(streamId, events, streamState);
-    }
-
-    public async Task<AppendResult> AppendAsyncBatch(string streamId, List<EventData> events, StreamState streamState)
-    {
-        using var activity = Tracing.ActivitySource.StartActivity("AppendAsync");
-        activity?.SetTag("streamId", streamId);
-        activity?.SetTag("eventCount", events.Count);
-
-        if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists ||
-            streamState.Type == StreamStateType.AtRevision)
+        AppendResult ret;
+        using (var activity = Tracing.ActivitySource.StartActivity("AppendAsync"))
         {
-            var streamExists = await StreamExist(streamId);
+            activity?.SetTag("streamId", streamId);
+            activity?.SetTag("eventCount", events.Count);
 
-            switch (streamExists == StreamExistence.Exists)
+            if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists ||
+                streamState.Type == StreamStateType.AtRevision)
             {
-                case true when streamState.Type == StreamStateType.NoStream:
-                    throw ConcurrencyException.StreamAlreadyExists(streamId);
-                case false when streamState.Type == StreamStateType.AtRevision:
-                    throw ConcurrencyException.StreamDoesntExist(streamId);
-                case false when streamState.Type == StreamStateType.StreamExists:
-                    throw ConcurrencyException.StreamDoesntExist(streamId);
-            }
-        }
+                var streamExists = await StreamExist(streamId);
 
-        var lastRevisionCommand =
-            new NpgsqlCommand(
-                "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY revision DESC LIMIT 1;",
-                _npgsqlConnection);
-        lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
-
-        var lastRevision = (long)(await lastRevisionCommand.ExecuteScalarAsync() ?? 0L);
-
-        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
-        {
-            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
-        }
-
-        long position = 0;
-        long revision = lastRevision;
-
-        using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
-
-        var commandText =
-            new StringBuilder("INSERT INTO events (stream_id, revision, id, event_type, data, metadata) VALUES ");
-
-        var parameters = new List<NpgsqlParameter>();
-
-        for (int i = 0; i < events.Count; i++)
-        {
-            var evt = events[i];
-            var paramStreamId = $"@stream_id{i}";
-            var paramRevision = $"@revision{i}";
-            var paramId = $"@id{i}";
-            var paramEventType = $"@event_type{i}";
-            var paramData = $"@event_data{i}";
-            var paramMetadata = $"@event_metadata{i}";
-
-            commandText.Append(
-                $"({paramStreamId}, {paramRevision}, {paramId}, {paramEventType}, {paramData}, {paramMetadata})");
-
-            // Add commas between values, except for the last one
-            if (i < events.Count - 1)
-            {
-                commandText.Append(", ");
+                switch (streamExists == StreamExistence.Exists)
+                {
+                    case true when streamState.Type == StreamStateType.NoStream:
+                        throw ConcurrencyException.StreamAlreadyExists(streamId);
+                    case false when streamState.Type == StreamStateType.AtRevision:
+                        throw ConcurrencyException.StreamDoesntExist(streamId);
+                    case false when streamState.Type == StreamStateType.StreamExists:
+                        throw ConcurrencyException.StreamDoesntExist(streamId);
+                }
             }
 
-            // Adding parameters for this event
-            parameters.Add(new NpgsqlParameter(paramStreamId, NpgsqlDbType.Varchar) { Value = streamId });
-            parameters.Add(new NpgsqlParameter(paramRevision, NpgsqlDbType.Bigint) { Value = ++revision });
-            parameters.Add(new NpgsqlParameter(paramId, NpgsqlDbType.Uuid) { Value = evt.Id });
-            parameters.Add(new NpgsqlParameter(paramEventType, NpgsqlDbType.Varchar) { Value = evt.EventType });
-            parameters.Add(new NpgsqlParameter(paramData, NpgsqlDbType.Jsonb) { Value = evt.Data });
-            parameters.Add(new NpgsqlParameter(paramMetadata, NpgsqlDbType.Jsonb) { Value = evt.MetaData });
+            var lastRevisionCommand =
+                new NpgsqlCommand(
+                    "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY revision DESC LIMIT 1;",
+                    _npgsqlConnection);
+            lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
+
+            var lastRevision = (long)(await lastRevisionCommand.ExecuteScalarAsync() ?? 0L);
+
+            if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
+            {
+                throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
+            }
+
+            long position = 0;
+            long revision = lastRevision;
+
+            using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
+
+            var commandText =
+                new StringBuilder("INSERT INTO events (stream_id, revision, id, event_type, data, metadata) VALUES ");
+
+            var parameters = new List<NpgsqlParameter>();
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                var evt = events[i];
+                var paramStreamId = $"@stream_id{i}";
+                var paramRevision = $"@revision{i}";
+                var paramId = $"@id{i}";
+                var paramEventType = $"@event_type{i}";
+                var paramData = $"@event_data{i}";
+                var paramMetadata = $"@event_metadata{i}";
+
+                commandText.Append(
+                    $"({paramStreamId}, {paramRevision}, {paramId}, {paramEventType}, {paramData}, {paramMetadata})");
+
+                // Add commas between values, except for the last one
+                if (i < events.Count - 1)
+                {
+                    commandText.Append(", ");
+                }
+
+                // Adding parameters for this event
+                parameters.Add(new NpgsqlParameter(paramStreamId, NpgsqlDbType.Varchar) { Value = streamId });
+                parameters.Add(new NpgsqlParameter(paramRevision, NpgsqlDbType.Bigint) { Value = ++revision });
+                parameters.Add(new NpgsqlParameter(paramId, NpgsqlDbType.Uuid) { Value = evt.Id });
+                parameters.Add(new NpgsqlParameter(paramEventType, NpgsqlDbType.Varchar) { Value = evt.EventType });
+                parameters.Add(new NpgsqlParameter(paramData, NpgsqlDbType.Jsonb) { Value = evt.Data });
+                parameters.Add(new NpgsqlParameter(paramMetadata, NpgsqlDbType.Jsonb) { Value = evt.MetaData });
+            }
+
+            // Add the RETURNING clause to get the last inserted position and revision
+            commandText.Append(" RETURNING position, revision;");
+
+            var command = new NpgsqlCommand(commandText.ToString(), _npgsqlConnection);
+            command.Parameters.AddRange(parameters.ToArray());
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            // Read the last inserted position and revision
+            while (await reader.ReadAsync())
+            {
+                position = reader.GetInt64(0);
+                revision = reader.GetInt64(1);
+            }
+
+            // Record the number of appended events
+            Metrics.AppendedEventCounter.Add(events.Count, new TagList
+            {
+                { "StreamId", streamId },
+                { "StreamState", streamState.ToString() }
+            });
+
+            ret = new AppendResult(position, revision);
         }
 
-        // Add the RETURNING clause to get the last inserted position and revision
-        commandText.Append(" RETURNING position, revision;");
-
-        var command = new NpgsqlCommand(commandText.ToString(), _npgsqlConnection);
-        command.Parameters.AddRange(parameters.ToArray());
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        // Read the last inserted position and revision
-        while (await reader.ReadAsync())
-        {
-            position = reader.GetInt64(0);
-            revision = reader.GetInt64(1);
-        }
-
-        // Record the number of appended events
-        Metrics.AppendedEventCounter.Add(events.Count, new TagList
-        {
-            { "StreamId", streamId },
-            { "StreamState", streamState.ToString() }
-        });
-
-        return new AppendResult(position, revision);
+        return ret;
     }
 
 
