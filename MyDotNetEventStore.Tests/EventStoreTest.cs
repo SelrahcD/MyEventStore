@@ -493,34 +493,25 @@ public class EventStoreTest
                 Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
 
-            // [Test]
-            // public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
-            // {
-            //     var revisions = new Dictionary<string, int>();
-            //
-            //     var eventsBeforeRequestedRevision = ListOfNBuilders(100, (eventBuilder) => eventBuilder.KeepTrackOfRevisions(revisions))
-            //         .ToList();
-            //     var eventAfterRequestedRevision = ListOfNBuilders(115)
-            //         .ToList();
-            //
-            //     foreach (var eventBuilder in eventsBeforeRequestedRevision)
-            //     {
-            //         await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-            //     }
-            //
-            //     foreach (var eventBuilder in eventAfterRequestedRevision)
-            //     {
-            //         await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-            //     }
-            //
-            //     var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, 100);
-            //
-            //     var resolvedEventCount = await readStreamResult.CountAsync();
-            //     var resolvedEvents = await readStreamResult.ToListAsync();
-            //
-            //     Assert.That(resolvedEventCount, Is.EqualTo(115));
-            //     Assert.That(resolvedEvents, Is.EqualTo(eventAfterRequestedRevision.ToResolvedEvents(101)));
-            // }
+            [Test]
+            public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
+            {
+                var allEvents
+                    = ListOfNBuilders(215)
+                    .ToList();
+                foreach (var eventBuilder in allEvents)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, 100);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(115));
+                Assert.That(resolvedEvents, Is.EqualTo(allEvents.GetRange(100, 115).ToResolvedEvents()));
+            }
             //
             // [Test]
             // public async Task returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
@@ -856,6 +847,12 @@ public class EventStoreTest
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
         return ListOfNBuilders(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
+    }
+
+    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
+        Dictionary<string, int> revisionTracker)
+    {
+        return ListOfNBuilders(eventCount, b => b, revisionTracker);
     }
 
     private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
