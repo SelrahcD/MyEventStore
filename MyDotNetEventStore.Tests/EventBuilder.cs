@@ -91,24 +91,13 @@ public static class EventBuilderExtensions
         return eventBuilders.Select(builder => builder.ToEventData()).ToList();
     }
 
-    public static List<ResolvedEvent> ToResolvedEvents(this List<EventBuilder> eventBuilders, int position = 1, int startRevision = 1)
+    public static List<ResolvedEvent> ToResolvedEvents(this List<EventBuilder> eventBuilders, int startRevision = 1)
     {
-        var versions = new Dictionary<string, int>();
-
         return eventBuilders.Select(builder =>
         {
-            var streamId = builder.StreamId();
-            if (!versions.ContainsKey(streamId))
-            {
-                versions[streamId] = startRevision;
-            }
 
-            var resolvedEvent = builder.ToResolvedEvent();
+            return builder.ToResolvedEvent();
 
-            versions[streamId]++;
-            position++;
-
-            return resolvedEvent;
         }).ToList();
     }
 }
