@@ -93,11 +93,6 @@ public static class EventBuilderExtensions
 
     public static List<ResolvedEvent> ToResolvedEvents(this List<EventBuilder> eventBuilders, int startRevision = 1)
     {
-        return eventBuilders.Select(builder =>
-        {
-
-            return builder.ToResolvedEvent();
-
-        }).ToList();
+        return eventBuilders.Select(builder => builder.ToResolvedEvent()).ToList();
     }
 }
