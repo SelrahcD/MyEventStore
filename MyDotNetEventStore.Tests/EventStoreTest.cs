@@ -210,7 +210,7 @@ public class EventStoreTest
 
                 Assert.That(readEvents, Is.EqualTo(new List<ResolvedEvent>
                 {
-                    evtInStream.ToResolvedEvent(1, 1),
+                    evtInStream.ToResolvedEvent(),
                 }));
             }
         }
@@ -336,7 +336,7 @@ public class EventStoreTest
 
                 Assert.That(readEvents, Is.EqualTo(new List<ResolvedEvent>
                 {
-                    evtInStream.ToResolvedEvent(1, 1),
+                    evtInStream.ToResolvedEvent(),
                 }));
             }
         }

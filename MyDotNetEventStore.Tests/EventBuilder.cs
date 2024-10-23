@@ -8,6 +8,8 @@ public class EventBuilder
     private readonly string _data;
     private readonly string _metadata;
     private string _streamId;
+    private int _position = 1;
+    private int _revision = 1;
 
     public EventBuilder()
     {
@@ -30,6 +32,11 @@ public class EventBuilder
     public ResolvedEvent ToResolvedEvent(int position, int revision)
     {
         return new ResolvedEvent(position, revision, _eventType, _data, _metadata, _streamId);
+    }
+
+    public ResolvedEvent ToResolvedEvent()
+    {
+        return new ResolvedEvent(_position, _revision, _eventType, _data, _metadata, _streamId);
     }
 
     public string StreamId()
