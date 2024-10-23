@@ -454,6 +454,91 @@ public class EventStoreTest
 
         }
 
+        public class ForwardProvidingAPosition : ReadingAllStream
+        {
+            [Test]
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
+            {
+                var eventBuilders = ListOfNBuilders(10).ToList();
+
+                foreach (var eventBuilder in eventBuilders)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, StreamRevision.Start);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(10));
+            }
+
+            // [Test]
+            // public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
+            // {
+            //     var eventBuilders = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //
+            //     await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+            //
+            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", 6);
+            //
+            //     var resolvedEventCount = await readStreamResult.CountAsync();
+            //
+            //     Assert.That(resolvedEventCount, Is.EqualTo(0));
+            // }
+            //
+            // [Test]
+            // public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
+            // {
+            //     var eventsBeforeRequestedRevision = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //     var eventAfterRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //
+            //     await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
+            //     await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
+            //
+            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", 6);
+            //
+            //     var resolvedEvents = await readStreamResult.ToListAsync();
+            //
+            //     Assert.That(resolvedEvents, Is.EqualTo(eventAfterRequestedRevision.ToResolvedEvents(6, 6)));
+            // }
+            //
+            // [Test]
+            // public async Task returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
+            // {
+            //     var events = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //
+            //     await _eventStore.AppendAsync("stream-id", events.ToEventData());
+            //
+            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.Start);
+            //
+            //     var resolvedEvents = await readStreamResult.ToListAsync();
+            //
+            //     Assert.That(resolvedEvents, Is.EqualTo(events.ToResolvedEvents()));
+            // }
+            //
+            // [Test]
+            // public async Task returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
+            // {
+            //     var events = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+            //         .ToList();
+            //
+            //     await _eventStore.AppendAsync("stream-id", events.ToEventData());
+            //
+            //     var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.End);
+            //
+            //     var resolvedEventCount = await readStreamResult.CountAsync();
+            //
+            //     Assert.That(resolvedEventCount, Is.EqualTo(0));
+            // }
+        }
+
+
         public class BackwardWithoutProvidingAPosition : ReadingAllStream
         {
             [Test]

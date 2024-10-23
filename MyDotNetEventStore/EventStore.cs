@@ -59,7 +59,11 @@ public class EventStore
             startingPosition = StreamRevision.End;
         }
 
+        return ReadAllAsync(direction, startingPosition);
+    }
 
+    public ReadStreamResult ReadAllAsync(Direction direction, OneOf<long, StreamRevision> startingPosition)
+    {
         var readingCommandBuilder = new ReadingCommandBuilder()
             .StartingFromPosition(startingPosition)
             .InDirection(direction)
