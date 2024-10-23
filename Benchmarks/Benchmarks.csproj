@@ -9,6 +9,12 @@
 
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+      <PackageReference Include="Npgsql" Version="8.0.4" />
+      <PackageReference Include="Testcontainers.PostgreSql" Version="3.9.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MyDotNetEventStore\MyDotNetEventStore.csproj" />
     </ItemGroup>
 
 </Project>
