@@ -85,7 +85,7 @@ The following todo list comes from the article [Requirements for the storage of 
           - [x] Without position
           - [ ] With position
       - [ ] Backward
-          - [ ] Without position
+          - [x] Without position
           - [ ] With position
   - [ ] Read events by correlationId
   - [ ] Read events by causationId
