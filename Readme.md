@@ -143,4 +143,13 @@ This project uses [BenchmarkDotNet](https://benchmarkdotnet.org) to create bench
 
 Benchmarks are in the Benchmarks project.
 
-To run them use `dotnet run -C Release --project Benchmarks`
+To run them use
+```sh
+dotnet run -C Release --project Benchmarks --filter "*{BENCHMARK_NAME}*"
+```
+
+To get the list of all benchmarks use
+```sh
+dotnet run -c Release --project Benchmarks -- --list
+```
+
