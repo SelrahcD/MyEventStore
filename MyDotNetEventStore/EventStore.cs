@@ -158,7 +158,6 @@ public class EventStore
                 parameters.Add(new NpgsqlParameter(paramMetadata, NpgsqlDbType.Jsonb) { Value = evt.MetaData });
             }
 
-            // Add the RETURNING clause to get the last inserted position and revision
             commandText.Append(" RETURNING position, revision;");
 
             var command = new NpgsqlCommand(commandText.ToString(), _npgsqlConnection);
@@ -166,14 +165,12 @@ public class EventStore
 
             await using var reader = await command.ExecuteReaderAsync();
 
-            // Read the last inserted position and revision
             while (await reader.ReadAsync())
             {
                 position = reader.GetInt64(0);
                 revision = reader.GetInt64(1);
             }
 
-            // Record the number of appended events
             Metrics.AppendedEventCounter.Add(events.Count, new TagList
             {
                 { "StreamId", streamId },
