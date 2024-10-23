@@ -853,9 +853,11 @@ public class EventStoreTest
     private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
+        var revisions = new Dictionary<string, int>();
+
         for (int i = 0; i < eventCount; i++)
         {
-            yield return eventBuilderConfiguratorConfigurator(new EventBuilder());
+            yield return eventBuilderConfiguratorConfigurator(new EventBuilder().WithCoherentRevisionsAndPositions(revisions));
         }
     }
 

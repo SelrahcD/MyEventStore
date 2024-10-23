@@ -57,6 +57,22 @@ public class EventBuilder
         var randomIndex = random.Next(elements.Count);
         return elements[randomIndex];
     }
+
+    public EventBuilder WithCoherentRevisionsAndPositions(Dictionary<string, int> revisions)
+    {
+        var streamId = StreamId();
+        if (!revisions.ContainsKey(streamId))
+        {
+            revisions[streamId] = 0;
+        }
+
+        revisions[streamId]++;
+
+        _revision = revisions[streamId];
+        _position = revisions.Sum((x) => x.Value);
+
+        return this;
+    }
 }
 
 public static class EventBuilderExtensions
