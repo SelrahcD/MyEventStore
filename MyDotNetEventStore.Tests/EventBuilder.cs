@@ -21,7 +21,7 @@ public class EventBuilder
         _eventType = SelectRandom(fakeEventTypes);
         _data = SelectRandom(fakeEventData);
         _metadata = SelectRandom(fakeEventMetaData);
-        _streamId = "stream-&" + new Random().Next(1, 100);
+        _streamId = "stream-&" + new Random().Next(1, 3);
     }
 
     public EventData ToEventData()
@@ -61,10 +61,7 @@ public class EventBuilder
     public EventBuilder WithCoherentRevisionsAndPositions(Dictionary<string, int> revisions)
     {
         var streamId = StreamId();
-        if (!revisions.ContainsKey(streamId))
-        {
-            revisions[streamId] = 0;
-        }
+        revisions.TryAdd(streamId, 0);
 
         revisions[streamId]++;
 
@@ -72,6 +69,11 @@ public class EventBuilder
         _position = revisions.Sum((x) => x.Value);
 
         return this;
+    }
+
+    public static Dictionary<string, int> RevisionTracker()
+    {
+        return new Dictionary<string, int>();
     }
 }
 
@@ -101,7 +103,7 @@ public static class EventBuilderExtensions
                 versions[streamId] = startRevision;
             }
 
-            var resolvedEvent = builder.ToResolvedEvent(position, versions[streamId]);
+            var resolvedEvent = builder.ToResolvedEvent();
 
             versions[streamId]++;
             position++;

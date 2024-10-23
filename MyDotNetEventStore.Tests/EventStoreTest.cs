@@ -245,9 +245,11 @@ public class EventStoreTest
             [Test]
             public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
             {
-                var eventsBeforeRequestedRevision = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
+                var revisions = EventBuilder.RevisionTracker();
+
+                var eventsBeforeRequestedRevision = ListOfNBuilders(5, (e) => e.InStream("stream-id"), revisions)
                     .ToList();
-                var eventAfterRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
+                var eventAfterRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"), revisions)
                     .ToList();
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
@@ -257,7 +259,7 @@ public class EventStoreTest
 
                 var resolvedEvents = await readStreamResult.ToListAsync();
 
-                Assert.That(resolvedEvents, Is.EqualTo(eventAfterRequestedRevision.ToResolvedEvents(6, 6)));
+                Assert.That(resolvedEvents, Is.EqualTo(eventAfterRequestedRevision.ToResolvedEvents()));
             }
 
             [Test]
@@ -853,11 +855,15 @@ public class EventStoreTest
     private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        var revisions = new Dictionary<string, int>();
+        return ListOfNBuilders(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
+    }
 
+    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
+        EventBuilderConfigurator eventBuilderConfiguratorConfigurator, Dictionary<string, int> revisionTracker)
+    {
         for (int i = 0; i < eventCount; i++)
         {
-            yield return eventBuilderConfiguratorConfigurator(new EventBuilder().WithCoherentRevisionsAndPositions(revisions));
+            yield return eventBuilderConfiguratorConfigurator(new EventBuilder()).WithCoherentRevisionsAndPositions(revisionTracker);
         }
     }
 
