@@ -5,6 +5,7 @@ using Testcontainers.PostgreSql;
 
 namespace Benchmarks;
 
+[MemoryDiagnoser]
 public class ReadingLongStream
 {
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
@@ -66,9 +67,8 @@ public class ReadingLongStream
     {
         var readStreamResult = _eventStore.ReadStreamAsync(Direction, "a-stream");
 
-        await foreach (var item in readStreamResult)
+        await foreach (var _ in readStreamResult)
         {
         }
     }
-
 }
