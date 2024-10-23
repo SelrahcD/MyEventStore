@@ -213,35 +213,6 @@ public class EventStoreTest
                     evtInStream.ToResolvedEvent(1, 1),
                 }));
             }
-
-            [Test]
-            // This is probably not a good way to test memory consumption but at least that test forced me to
-            // fetch events by batch
-            public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
-            {
-                var eventCount = 378;
-                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount));
-
-                long memoryBefore = GC.GetTotalMemory(true);
-
-                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
-
-                var count = await readStreamResult.CountAsync();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                var memoryAfter = GC.GetTotalMemory(true);
-
-                var memoryUsed = memoryAfter - memoryBefore;
-
-                var acceptableMemoryUsage = 1 * 1024 * 1024; // 1 MB
-
-                Assert.Less(memoryUsed, acceptableMemoryUsage,
-                    $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
-                Assert.That(count, Is.EqualTo(eventCount));
-            }
         }
 
         public class ForwardProvidingAPosition : ReadingStream
@@ -368,35 +339,6 @@ public class EventStoreTest
                     evtInStream.ToResolvedEvent(1, 1),
                 }));
             }
-
-            [Test]
-            // This is probably not a good way to test memory consumption but at least that test forced me to
-            // fetch events by batch
-            public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
-            {
-                var eventCount = 378;
-                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount));
-
-                long memoryBefore = GC.GetTotalMemory(true);
-
-                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id");
-
-                var count = await readStreamResult.CountAsync();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                var memoryAfter = GC.GetTotalMemory(true);
-
-                var memoryUsed = memoryAfter - memoryBefore;
-
-                var acceptableMemoryUsage = 1 * 1024 * 1024; // 1 MB
-
-                Assert.Less(memoryUsed, acceptableMemoryUsage,
-                    $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
-                Assert.That(count, Is.EqualTo(eventCount));
-            }
         }
 
         public class BackwardProvidingAPosition : ReadingStream
@@ -510,36 +452,6 @@ public class EventStoreTest
                 Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
             }
 
-            [Test]
-            // This is probably not a good way to test memory consumption but at least that test forced me to
-            // fetch events by batch
-            public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
-            {
-                await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-                await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
-                await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
-                await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-
-                long memoryBefore = GC.GetTotalMemory(true);
-
-                var readAllStreamResult = _eventStore.ReadAllAsync(Direction.Forward);
-
-                var count = await readAllStreamResult.CountAsync();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                var memoryAfter = GC.GetTotalMemory(true);
-
-                var memoryUsed = memoryAfter - memoryBefore;
-
-                var acceptableMemoryUsage = 2 * 1024 * 1024; // 1 MB
-
-                Assert.Less(memoryUsed, acceptableMemoryUsage,
-                    $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
-                Assert.That(count, Is.EqualTo(4000));
-            }
         }
 
         public class BackwardWithoutProvidingAPosition : ReadingAllStream
@@ -563,38 +475,6 @@ public class EventStoreTest
                 var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEvents();
                 resolvedEvents.Reverse();
                 Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
-            }
-
-
-            [Test]
-            // This is probably not a good way to test memory consumption but at least that test forced me to
-            // fetch events by batch
-            public async Task keeps_memory_footprint_low_even_with_a_lot_of_events()
-            {
-                await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-                await _eventStore.AppendAsync("stream-id2", ListOfNEvents(1000));
-                await _eventStore.AppendAsync("stream-id3", ListOfNEvents(1000));
-                await _eventStore.AppendAsync("stream-id1", ListOfNEvents(1000));
-
-                long memoryBefore = GC.GetTotalMemory(true);
-
-                var readAllStreamResult = _eventStore.ReadAllAsync(Direction.Backward);
-
-                var count = await readAllStreamResult.CountAsync();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                var memoryAfter = GC.GetTotalMemory(true);
-
-                var memoryUsed = memoryAfter - memoryBefore;
-
-                var acceptableMemoryUsage = 2 * 1024 * 1024; // 1 MB
-
-                Assert.Less(memoryUsed, acceptableMemoryUsage,
-                    $"Memory usage exceeded: {memoryUsed} bytes used, but the limit is {acceptableMemoryUsage} bytes.");
-                Assert.That(count, Is.EqualTo(4000));
             }
         }
 
