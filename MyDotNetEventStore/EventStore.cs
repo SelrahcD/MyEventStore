@@ -195,11 +195,9 @@ public class EventStore
 
         using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
 
-        // Constructing the batched INSERT command
         var commandText =
             new StringBuilder("INSERT INTO events (stream_id, revision, id, event_type, data, metadata) VALUES ");
 
-        // Dynamically build the parameters and command text for batched insert
         var parameters = new List<NpgsqlParameter>();
 
         for (int i = 0; i < events.Count; i++)
