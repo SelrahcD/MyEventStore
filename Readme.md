@@ -13,8 +13,6 @@ It takes inspiration from various sources such as:
 
 ## Todo
 
-- [ ] ⚠️ Transitionally append multiple events at once. So far each event is appended on its own without any guarantee that all events will be stored. I would like to implement observability and be able to run some benchmark before fixing that issue to see how the system evolves. (Yep, this is for learning purpose).
-
 The following todo list comes from the article [Requirements for the storage of events](https://www.eventstore.com/blog/requirements-for-the-storage-of-events) from Yves Lorphelin. I probably won't implement everything but it serves as a good list of ideas of thing that could be cool to play with.
 
 ## Events
