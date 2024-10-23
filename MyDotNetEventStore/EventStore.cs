@@ -9,6 +9,8 @@ namespace MyDotNetEventStore;
 
 public class EventStore
 {
+    public static string AppendMode = "multiple";
+
     private const int BatchSize = 100;
 
     private readonly NpgsqlConnection _npgsqlConnection;
@@ -85,7 +87,7 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
-        return await AppendAsyncMultiple(streamId, events, streamState);
+        return AppendMode == "multiple" ? await AppendAsyncMultiple(streamId, events, streamState) : await AppendAsyncBatch(streamId, events, streamState);
     }
 
     private async Task<AppendResult> AppendAsyncMultiple(string streamId, List<EventData> events, StreamState streamState)
