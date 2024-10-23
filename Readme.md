@@ -133,3 +133,14 @@ Later, I would like to start calling the database when iterating on events or lo
 https://event-driven.io/en/ordering_in_postgres_outbox/
 https://github.com/prooph/pdo-event-store/issues/189
 https://www.youtube.com/watch?v=rm2lFlI3Ubk
+
+
+## Benchmarks
+
+Let's be honest: I know nothing about running benchmarks and I use that project to learn a bit more about it.
+
+This project uses [BenchmarkDotNet](https://benchmarkdotnet.org) to create benchmarks.
+
+Benchmarks are in the Benchmarks project.
+
+To run them use `dotnet run -C Release --project Benchmarks`
