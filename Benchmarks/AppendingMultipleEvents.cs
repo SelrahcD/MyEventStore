@@ -58,8 +58,17 @@ public class AppendingMultipleEvents
         await _postgresContainer.DisposeAsync();
     }
 
+    [Benchmark(Baseline = true)]
+    public async Task MultipleInsert()
+    {
+        EventStore.AppendMode = "multiple";
+        await _eventStore.AppendAsync("a-stream", _list);
+    }
+
     [Benchmark]
-    public async Task Benchmark() =>  await _eventStore.AppendAsync("a-stream", _list);
-
-
+    public async Task BatchMode()
+    {
+        EventStore.AppendMode = "batch";
+        await _eventStore.AppendAsync("a-stream", _list);
+    }
 }
