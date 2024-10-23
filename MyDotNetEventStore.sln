@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyDotNetEventStore.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyDotNetEventStore", "MyDotNetEventStore\MyDotNetEventStore.csproj", "{24044D6C-8282-4532-A7FA-D8F89D509896}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{1313F15C-3436-4D25-A482-0098E22617B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{24044D6C-8282-4532-A7FA-D8F89D509896}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24044D6C-8282-4532-A7FA-D8F89D509896}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24044D6C-8282-4532-A7FA-D8F89D509896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1313F15C-3436-4D25-A482-0098E22617B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1313F15C-3436-4D25-A482-0098E22617B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1313F15C-3436-4D25-A482-0098E22617B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1313F15C-3436-4D25-A482-0098E22617B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

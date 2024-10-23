@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmarks.Md5VsSha256-20241023-094650</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, macOS Sonoma 14.6 (23G80) [Darwin 23.6.0]
+Apple M1, 1 CPU, 8 logical and 8 physical cores
+.NET SDK 8.0.403
+  [Host]     : .NET 8.0.10 (8.0.1024.46610), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 8.0.10 (8.0.1024.46610), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>Sha256</td><td>4.230 &mu;s</td><td>0.0305 &mu;s</td><td>0.0271 &mu;s</td>
+</tr><tr><td>Md5</td><td>19.090 &mu;s</td><td>0.1158 &mu;s</td><td>0.1083 &mu;s</td>
+</tr></tbody></table>
+</body>
+</html>
