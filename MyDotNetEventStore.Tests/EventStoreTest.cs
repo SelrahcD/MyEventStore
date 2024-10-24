@@ -738,6 +738,26 @@ public class EventStoreTest
                 }
 
                 [Test]
+                public async Task Doesnt_allow_to_write_to_stream_at_a_lower_revision(
+                    [Values] CountOfEvents countEvents,
+                    [Random(10, 20, 1)] int alreadyAppendedEventCount,
+                    [Random(1, 10, 1)] int deltaRevision)
+                {
+                    var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
+                    var triedRevision = alreadyAppendedEventCount - deltaRevision;
+
+                    await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
+
+                    var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
+                            StreamState.AtRevision(triedRevision)));
+
+                    Assert.That(exception.Message,
+                        Is.EqualTo(
+                            $"Stream 'stream-id' is at revision {alreadyAppendedEventCount}. You tried appending events at revision {triedRevision}."));
+                }
+
+                [Test]
                 public async Task Allows_to_write_to_a_stream_at_the_expected_revision(
                     [Values] CountOfEvents countEvents,
                     [Random(0, 1000, 1)] int alreadyAppendedEventCount)
