@@ -881,15 +881,15 @@ public class EventStoreTest
 
     delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
 
-    private static List<EventBuilder> NEvents(int eventCount)
+    private static EventBuilders NEvents(int eventCount)
     {
         return NEvents(eventCount, (e) => e);
     }
 
-    private static List<EventBuilder> NEvents(int eventCount,
+    private static EventBuilders NEvents(int eventCount,
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        return NEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker()).ToList();
+        return NEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
     }
 
     private static EventBuilders NEvents(int eventCount,

@@ -104,7 +104,21 @@ public class EventBuilders
         return _builders.Select(builder => builder.ToResolvedEvent()).ToList();
     }
 
+    public async Task AppendTo(EventStore eventStore)
+    {
+        foreach (var eventBuilder in _builders)
+        {
+            await eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+        }
+    }
+
+    public EventBuilders GetRange(int i, int i1)
+    {
+        return new EventBuilders(_builders.GetRange(i, i1));
+    }
+
     public static implicit operator List<EventData>(EventBuilders l) => l.ToEventData();
+
     public static implicit operator List<ResolvedEvent>(EventBuilders l) => l.ToResolvedEvents();
 }
 
