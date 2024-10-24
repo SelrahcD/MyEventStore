@@ -1,7 +1,5 @@
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using Npgsql;
-using NUnit.Framework.Internal;
 using OneOf;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -30,8 +28,9 @@ public class PostgresEventStoreSetup
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-         _tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyDotNetEventStore")).AddSource("MyDotNetEventStore", "EventStoreTest")
+        _tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyDotNetEventStore"))
+            .AddSource("MyDotNetEventStore", "EventStoreTest")
             .AddOtlpExporter(exporter =>
             {
                 exporter.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces");
@@ -44,18 +43,15 @@ public class PostgresEventStoreSetup
             })
             .Build();
 
-         _metricProvider = Sdk.CreateMeterProviderBuilder()
-             .AddMeter("MyDotNetEventStore")
-             .ConfigureResource(resource =>
-             {
-                 resource.AddService("MyDotNetEventStore");
-             })
-             .AddOtlpExporter(exporter =>
-             {
-                 exporter.Endpoint = new Uri("http://localhost:4317");
-                 exporter.Protocol = OtlpExportProtocol.Grpc;
-             })
-             .Build();
+        _metricProvider = Sdk.CreateMeterProviderBuilder()
+            .AddMeter("MyDotNetEventStore")
+            .ConfigureResource(resource => { resource.AddService("MyDotNetEventStore"); })
+            .AddOtlpExporter(exporter =>
+            {
+                exporter.Endpoint = new Uri("http://localhost:4317");
+                exporter.Protocol = OtlpExportProtocol.Grpc;
+            })
+            .Build();
 
         await _postgresContainer.StartAsync();
 
@@ -220,7 +216,8 @@ public class EventStoreTest
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
             {
-                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "a-stream-that-doesnt-exists", 10);
+                var readStreamResult =
+                    _eventStore.ReadStreamAsync(Direction.Forward, "a-stream-that-doesnt-exists", 10);
 
                 var resolvedEventCount = await readStreamResult.CountAsync();
 
@@ -228,7 +225,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
+            public async Task
+                returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
             {
                 var eventBuilders = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
                     ;
@@ -243,7 +241,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
             {
                 var revisions = EventBuilder.RevisionTracker();
 
@@ -263,14 +262,16 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
             {
                 var events = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
                     ;
 
                 await _eventStore.AppendAsync("stream-id", events.ToEventData());
 
-                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.Start);
+                var readStreamResult =
+                    _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.Start);
 
                 var resolvedEvents = await readStreamResult.ToListAsync();
 
@@ -278,7 +279,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
+            public async Task
+                returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
             {
                 var events = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
                     ;
@@ -348,7 +350,8 @@ public class EventStoreTest
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
             {
-                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "a-stream-that-doesnt-exists", 10);
+                var readStreamResult =
+                    _eventStore.ReadStreamAsync(Direction.Backward, "a-stream-that-doesnt-exists", 10);
 
                 var resolvedEventCount = await readStreamResult.CountAsync();
 
@@ -356,7 +359,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
             {
                 var eventBuilders = ListOfNBuilders(5, (e) => e.InStream("stream-id"))
                     ;
@@ -373,7 +377,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
             {
                 var eventsBeforeRequestedRevision = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
                     ;
@@ -394,7 +399,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
             {
                 var eventBuilders = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
                     ;
@@ -411,22 +417,22 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
+            public async Task
+                returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
             {
                 var eventBuilders = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
                     ;
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
-                var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", StreamRevision.Start);
+                var readStreamResult =
+                    _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", StreamRevision.Start);
 
                 var resolvedEventCount = await readStreamResult.CountAsync();
 
                 Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
-
         }
-
     }
 
     [TestFixture]
@@ -450,7 +456,6 @@ public class EventStoreTest
                 var resolvedEventsOfMultiplesStreams = eventBuilders.ToResolvedEvents();
                 Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
             }
-
         }
 
         public class ForwardProvidingAPosition : ReadingAllStream
@@ -472,7 +477,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
+            public async Task
+                returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
             {
                 var eventBuilders = ListOfNBuilders(10);
 
@@ -486,10 +492,11 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
             {
                 var allEvents
-                    = ListOfNBuilders(215)
+                        = ListOfNBuilders(215)
                     ;
 
                 await allEvents.AppendTo(_eventStore);
@@ -504,7 +511,8 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_a_ReadStreamResult_without_any_events_when_the_requested_revision_is_StreamRevision_End()
+            public async Task
+                returns_a_ReadStreamResult_without_any_events_when_the_requested_revision_is_StreamRevision_End()
             {
                 var events = ListOfNBuilders(115, (e) => e.InStream("stream-id"))
                     ;
@@ -614,8 +622,6 @@ public class EventStoreTest
                 Assert.That(resolvedEventCount, Is.EqualTo(0));
             }
         }
-
-
     }
 
     [TestFixture]
