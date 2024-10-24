@@ -889,10 +889,10 @@ public class EventStoreTest
     private static List<EventBuilder> NEvents(int eventCount,
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        return NEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
+        return NEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker()).ToList();
     }
 
-    private static List<EventBuilder> NEvents(int eventCount,
+    private static EventBuilders NEvents(int eventCount,
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator, Dictionary<string, int> revisionTracker)
     {
         var eventBuilders = new List<EventBuilder>();
@@ -902,7 +902,7 @@ public class EventStoreTest
                 .WithCoherentRevisionsAndPositions(revisionTracker));
         }
 
-        return new EventBuilders(eventBuilders).ToList();
+        return new EventBuilders(eventBuilders);
     }
 
     public enum OneOrMultipleEvents

@@ -93,6 +93,17 @@ public class EventBuilders
     {
         return _builders;
     }
+
+
+    public List<EventData> ToEventData()
+    {
+        return _builders.Select(builder => builder.ToEventData()).ToList();
+    }
+
+    public List<ResolvedEvent> ToResolvedEvents()
+    {
+        return _builders.Select(builder => builder.ToResolvedEvent()).ToList();
+    }
 }
 
 public static class EventBuilderExtensions
