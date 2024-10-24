@@ -441,10 +441,7 @@ public class EventStoreTest
             {
                 var eventBuilders = ListOfNBuilders(eventCount).ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward);
 
@@ -464,10 +461,7 @@ public class EventStoreTest
             {
                 var eventBuilders = ListOfNBuilders(10).ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, StreamRevision.Start);
 
@@ -482,10 +476,7 @@ public class EventStoreTest
             {
                 var eventBuilders = ListOfNBuilders(10).ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, 11);
 
@@ -500,10 +491,8 @@ public class EventStoreTest
                 var allEvents
                     = ListOfNBuilders(215)
                     .ToList();
-                foreach (var eventBuilder in allEvents)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+
+                await allEvents.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, 100);
 
@@ -540,10 +529,7 @@ public class EventStoreTest
             {
                 var eventBuilders = ListOfNBuilders(eventCount).ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward);
 
@@ -563,10 +549,7 @@ public class EventStoreTest
             {
                 var eventBuilders = ListOfNBuilders(10).ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward, 5);
 
@@ -583,10 +566,7 @@ public class EventStoreTest
             {
                 var eventBuilders = ListOfNBuilders(215).ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward, 115);
 
@@ -604,10 +584,7 @@ public class EventStoreTest
                 var eventBuilders = ListOfNBuilders(115)
                     .ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward, StreamRevision.End);
 
@@ -625,10 +602,7 @@ public class EventStoreTest
                 var eventBuilders = ListOfNBuilders(115)
                     .ToList();
 
-                foreach (var eventBuilder in eventBuilders)
-                {
-                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-                }
+                await eventBuilders.AppendTo(_eventStore);
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 

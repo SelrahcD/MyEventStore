@@ -95,4 +95,13 @@ public static class EventBuilderExtensions
     {
         return eventBuilders.Select(builder => builder.ToResolvedEvent()).ToList();
     }
+
+    public static async Task AppendTo(this List<EventBuilder> eventBuilders, EventStore eventStore)
+    {
+        foreach (var eventBuilder in eventBuilders)
+        {
+            await eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+        }
+    }
+
 }

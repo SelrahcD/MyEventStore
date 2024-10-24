@@ -182,6 +182,7 @@ public class EventStore
             });
 
             ret = new AppendResult(position, revision);
+
         }
 
         return ret;
