@@ -180,8 +180,7 @@ public class EventStoreTest
             public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
-                var eventBuilders = NEvents(eventCount, (e) => e.InStream("stream-id"))
-                    ;
+                var eventBuilders = NEvents(eventCount, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -228,8 +227,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
             {
-                var eventBuilders = NEvents(5, (e) => e.InStream("stream-id"))
-                    ;
+                var eventBuilders = NEvents(5, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -246,10 +244,8 @@ public class EventStoreTest
             {
                 var revisions = EventBuilder.RevisionTracker();
 
-                var eventsBeforeRequestedRevision = NEvents(5, (e) => e.InStream("stream-id"), revisions)
-                    ;
-                var eventAfterRequestedRevision = NEvents(115, (e) => e.InStream("stream-id"), revisions)
-                    ;
+                var eventsBeforeRequestedRevision = NEvents(5, (e) => e.InStream("stream-id"), revisions);
+                var eventAfterRequestedRevision = NEvents(115, (e) => e.InStream("stream-id"), revisions);
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
                 await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
@@ -265,8 +261,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events = NEvents(115, (e) => e.InStream("stream-id"))
-                    ;
+                var events = NEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events.ToEventData());
 
@@ -282,8 +277,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = NEvents(5, (e) => e.InStream("stream-id"))
-                    ;
+                var events = NEvents(5, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events.ToEventData());
 
@@ -311,8 +305,7 @@ public class EventStoreTest
             public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_reverse_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
-                var eventBuilders = NEvents(eventCount, (e) => e.InStream("stream-id"))
-                    ;
+                var eventBuilders = NEvents(eventCount, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -362,8 +355,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
             {
-                var eventBuilders = NEvents(5, (e) => e.InStream("stream-id"))
-                    ;
+                var eventBuilders = NEvents(5, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -380,10 +372,8 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
             {
-                var eventsBeforeRequestedRevision = NEvents(115, (e) => e.InStream("stream-id"))
-                    ;
-                var eventAfterRequestedRevision = NEvents(20, (e) => e.InStream("stream-id"))
-                    ;
+                var eventsBeforeRequestedRevision = NEvents(115, (e) => e.InStream("stream-id"));
+                var eventAfterRequestedRevision = NEvents(20, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
                 await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
@@ -402,8 +392,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
             {
-                var eventBuilders = NEvents(115, (e) => e.InStream("stream-id"))
-                    ;
+                var eventBuilders = NEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -420,8 +409,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var eventBuilders = NEvents(115, (e) => e.InStream("stream-id"))
-                    ;
+                var eventBuilders = NEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
 
@@ -495,9 +483,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
             {
-                var allEvents
-                        = NEvents(215)
-                    ;
+                var allEvents = NEvents(215);
 
                 await allEvents.AppendTo(_eventStore);
 
@@ -514,8 +500,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = NEvents(115, (e) => e.InStream("stream-id"))
-                    ;
+                var events = NEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events.ToEventData());
 
@@ -589,8 +574,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
             {
-                var eventBuilders = NEvents(115)
-                    ;
+                var eventBuilders = NEvents(115);
 
                 await eventBuilders.AppendTo(_eventStore);
 
@@ -607,8 +591,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var eventBuilders = NEvents(115)
-                    ;
+                var eventBuilders = NEvents(115);
 
                 await eventBuilders.AppendTo(_eventStore);
 
