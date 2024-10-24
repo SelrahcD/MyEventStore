@@ -723,10 +723,10 @@ public class EventStoreTest
                     )
                 {
                     var alreadyAppendedEventCount = 3;
-                    var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
+                    var pastEvents = NEvents(alreadyAppendedEventCount);
                     var triedRevision = 4;
 
-                    await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
+                    await _eventStore.AppendAsync("stream-id", pastEvents.ToEventData(), StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
@@ -742,10 +742,10 @@ public class EventStoreTest
                     [Values] CountOfEvents countEvents)
                 {
                     var alreadyAppendedEventCount = 3;
-                    var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
+                    var pastEvents = NEvents(alreadyAppendedEventCount);
                     var triedRevision = 2;
 
-                    await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
+                    await _eventStore.AppendAsync("stream-id", pastEvents.ToEventData(), StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(countEvents).ToEventData(),
