@@ -718,7 +718,7 @@ public class EventStoreTest
                 }
 
                 [Test]
-                public async Task Doesnt_allow_to_write_to_stream_at_a_different_revision(
+                public async Task Doesnt_allow_to_write_to_stream_at_a_greater_revision(
                     [Values] CountOfEvents countEvents,
                     [Random(0, 1000, 1)] int alreadyAppendedEventCount,
                     [Random(1, 100, 1)] int deltaRevision)
