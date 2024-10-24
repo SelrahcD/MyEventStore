@@ -761,9 +761,9 @@ public class EventStoreTest
                     [Values] CountOfEvents countEvents,
                     [Random(0, 1000, 1)] int alreadyAppendedEventCount)
                 {
-                    var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
+                    var pastEvents = NEvents(alreadyAppendedEventCount);
 
-                    await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
+                    await _eventStore.AppendAsync("stream-id", pastEvents.ToEventData(), StreamState.NoStream());
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
@@ -795,7 +795,7 @@ public class EventStoreTest
                 Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_at_once(
                     [Random(0, 1000, 5)] int eventCount)
             {
-                var appendedEvent = ListOfNEvents(eventCount);
+                var appendedEvent = NEvents(eventCount).ToEventData();
                 await _eventStore.AppendAsync("stream-id", appendedEvent);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
@@ -836,9 +836,9 @@ public class EventStoreTest
                     [Random(0, 100, 1)] int eventCount3
                 )
             {
-                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount1));
-                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount2));
-                await _eventStore.AppendAsync("stream-id", ListOfNEvents(eventCount3));
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount1).ToEventData());
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount2).ToEventData());
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount3).ToEventData());
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -850,13 +850,13 @@ public class EventStoreTest
             [Test]
             public async Task Returns_a_AppendResult_with_Position_and_Revision()
             {
-                await _eventStore.AppendAsync("stream-1", ListOfNEvents(10));
+                await _eventStore.AppendAsync("stream-1", NEvents(10).ToEventData());
 
-                await _eventStore.AppendAsync("stream-2", ListOfNEvents(10));
+                await _eventStore.AppendAsync("stream-2", NEvents(10).ToEventData());
 
-                await _eventStore.AppendAsync("stream-3", ListOfNEvents(10));
+                await _eventStore.AppendAsync("stream-3", NEvents(10).ToEventData());
 
-                var appendResult = await _eventStore.AppendAsync("stream-2", ListOfNEvents(10));
+                var appendResult = await _eventStore.AppendAsync("stream-2", NEvents(10).ToEventData());
 
                 Assert.That(appendResult, Is.EqualTo(new AppendResult(40, 20)));
             }
@@ -877,18 +877,6 @@ public class EventStoreTest
         var evt2 = AnEvent();
         var evt3 = AnEvent();
         return [evt1, evt2, evt3];
-    }
-
-    private static List<EventData> ListOfNEvents(int eventCount)
-    {
-        var events = new List<EventData>();
-
-        for (int i = 0; i < eventCount; i++)
-        {
-            events.Add(AnEvent().ToEventData());
-        }
-
-        return events;
     }
 
     delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
