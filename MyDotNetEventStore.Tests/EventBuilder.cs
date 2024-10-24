@@ -94,7 +94,6 @@ public class EventBuilders
         return _builders;
     }
 
-
     public List<EventData> ToEventData()
     {
         return _builders.Select(builder => builder.ToEventData()).ToList();
@@ -104,6 +103,9 @@ public class EventBuilders
     {
         return _builders.Select(builder => builder.ToResolvedEvent()).ToList();
     }
+
+    public static implicit operator List<EventData>(EventBuilders l) => l.ToEventData();
+    public static implicit operator List<ResolvedEvent>(EventBuilders l) => l.ToResolvedEvents();
 }
 
 public static class EventBuilderExtensions

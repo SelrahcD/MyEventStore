@@ -247,8 +247,8 @@ public class EventStoreTest
                 var eventsBeforeRequestedRevision = NEvents(5, (e) => e.InStream("stream-id"), revisions);
                 var eventAfterRequestedRevision = NEvents(115, (e) => e.InStream("stream-id"), revisions);
 
-                await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
-                await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
+                await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision);
+                await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", 6);
 
