@@ -21,7 +21,7 @@ public class EventBuilder
         _eventType = SelectRandom(fakeEventTypes);
         _data = SelectRandom(fakeEventData);
         _metadata = SelectRandom(fakeEventMetaData);
-        _streamId = "stream-&" + new Random().Next(1, 3);
+        _streamId = "stream-&" + new Random().Next(1, 100);
     }
 
     public EventData ToEventData()

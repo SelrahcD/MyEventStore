@@ -471,9 +471,10 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, StreamRevision.Start);
 
-                var resolvedEventCount = await readStreamResult.CountAsync();
+                var resolvedEvents = await readStreamResult.ToListAsync();
 
-                Assert.That(resolvedEventCount, Is.EqualTo(10));
+                var expectedEvents = eventBuilders.ToResolvedEvents();
+                Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
             }
 
             [Test]
@@ -553,6 +554,93 @@ public class EventStoreTest
                 Assert.That(resolvedEvents, Is.EqualTo(resolvedEventsOfMultiplesStreams));
             }
         }
+
+        public class BackwardProvidingAPosition : ReadingStream
+        {
+            [Test]
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
+            {
+                var eventBuilders = ListOfNBuilders(10).ToList();
+
+                foreach (var eventBuilder in eventBuilders)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward, 5);
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                var expectedEvents = eventBuilders.GetRange(0, 4).ToResolvedEvents();
+                expectedEvents.Reverse();
+                Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
+            }
+
+            [Test]
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
+            {
+                var eventBuilders = ListOfNBuilders(215).ToList();
+
+                foreach (var eventBuilder in eventBuilders)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward, 115);
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                var expectedEvents = eventBuilders.GetRange(0, 114).ToResolvedEvents();
+                expectedEvents.Reverse();
+                Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
+            }
+
+            [Test]
+            public async Task
+                returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
+            {
+                var eventBuilders = ListOfNBuilders(115)
+                    .ToList();
+
+                foreach (var eventBuilder in eventBuilders)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                var readStreamResult = _eventStore.ReadAllAsync(Direction.Backward, StreamRevision.End);
+
+                var resolvedEvents = await readStreamResult.ToListAsync();
+
+                var expectedEvents = eventBuilders.ToResolvedEvents();
+                expectedEvents.Reverse();
+                Assert.That(resolvedEvents, Is.EqualTo(expectedEvents));
+            }
+
+            [Test]
+            public async Task
+                returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
+            {
+                var eventBuilders = ListOfNBuilders(115)
+                    .ToList();
+
+                foreach (var eventBuilder in eventBuilders)
+                {
+                    await _eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
+                }
+
+                await _eventStore.AppendAsync("stream-id", eventBuilders.ToEventData());
+
+                var readStreamResult =
+                    _eventStore.ReadAllAsync(Direction.Backward, StreamRevision.Start);
+
+                var resolvedEventCount = await readStreamResult.CountAsync();
+
+                Assert.That(resolvedEventCount, Is.EqualTo(0));
+            }
+        }
+
 
     }
 
@@ -832,12 +920,6 @@ public class EventStoreTest
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
         return ListOfNBuilders(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
-    }
-
-    private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
-        Dictionary<string, int> revisionTracker)
-    {
-        return ListOfNBuilders(eventCount, b => b, revisionTracker);
     }
 
     private static IEnumerable<EventBuilder> ListOfNBuilders(int eventCount,
