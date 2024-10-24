@@ -75,6 +75,8 @@ public class EventBuilder
     {
         return new Dictionary<string, int>();
     }
+
+    public static implicit operator EventData(EventBuilder b) => b.ToEventData();
 }
 
 public static class EventBuilderExtensions

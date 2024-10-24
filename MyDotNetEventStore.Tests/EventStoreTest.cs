@@ -152,7 +152,7 @@ public class EventStoreTest
             [Test]
             public async Task returns_StreamExistence_Exists()
             {
-                await _eventStore.AppendAsync("a-stream", AnEvent().ToEventData());
+                await _eventStore.AppendAsync("a-stream", AnEvent());
 
                 var streamExist = await _eventStore.StreamExist("a-stream");
 
@@ -196,8 +196,8 @@ public class EventStoreTest
             {
                 var evtInStream = AnEvent().InStream("stream-id");
 
-                await _eventStore.AppendAsync("stream-id", evtInStream.ToEventData());
-                await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
+                await _eventStore.AppendAsync("stream-id", evtInStream);
+                await _eventStore.AppendAsync("another-stream-id", AnEvent());
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -324,8 +324,8 @@ public class EventStoreTest
             {
                 var evtInStream = AnEvent().InStream("stream-id");
 
-                await _eventStore.AppendAsync("stream-id", evtInStream.ToEventData());
-                await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
+                await _eventStore.AppendAsync("stream-id", evtInStream);
+                await _eventStore.AppendAsync("another-stream-id", AnEvent());
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id");
 
