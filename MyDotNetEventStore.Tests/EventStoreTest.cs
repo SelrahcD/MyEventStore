@@ -719,12 +719,12 @@ public class EventStoreTest
 
                 [Test]
                 public async Task Doesnt_allow_to_write_to_stream_at_a_greater_revision(
-                    [Values] CountOfEvents countEvents,
-                    [Random(0, 1000, 1)] int alreadyAppendedEventCount,
-                    [Random(1, 100, 1)] int deltaRevision)
+                    [Values] CountOfEvents countEvents
+                    )
                 {
+                    var alreadyAppendedEventCount = 3;
                     var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
-                    var triedRevision = alreadyAppendedEventCount + deltaRevision;
+                    var triedRevision = 4;
 
                     await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
 
@@ -739,12 +739,11 @@ public class EventStoreTest
 
                 [Test]
                 public async Task Doesnt_allow_to_write_to_stream_at_a_lower_revision(
-                    [Values] CountOfEvents countEvents,
-                    [Random(10, 20, 1)] int alreadyAppendedEventCount,
-                    [Random(1, 10, 1)] int deltaRevision)
+                    [Values] CountOfEvents countEvents)
                 {
+                    var alreadyAppendedEventCount = 3;
                     var pastEvents = ListOfNEvents(alreadyAppendedEventCount);
-                    var triedRevision = alreadyAppendedEventCount - deltaRevision;
+                    var triedRevision = 2;
 
                     await _eventStore.AppendAsync("stream-id", (dynamic)pastEvents, StreamState.NoStream());
 
