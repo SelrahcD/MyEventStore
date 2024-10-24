@@ -902,7 +902,7 @@ public class EventStoreTest
                 .WithCoherentRevisionsAndPositions(revisionTracker));
         }
 
-        return eventBuilders;
+        return new EventBuilders(eventBuilders).ToList();
     }
 
     public enum OneOrMultipleEvents

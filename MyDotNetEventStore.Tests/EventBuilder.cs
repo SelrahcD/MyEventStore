@@ -80,6 +80,21 @@ public class EventBuilder
     public static implicit operator ResolvedEvent(EventBuilder b) => b.ToResolvedEvent();
 }
 
+public class EventBuilders
+{
+    private readonly List<EventBuilder> _builders;
+
+    public EventBuilders(List<EventBuilder> builders)
+    {
+        _builders = builders;
+    }
+
+    public List<EventBuilder> ToList()
+    {
+        return _builders;
+    }
+}
+
 public static class EventBuilderExtensions
 {
     public static object ToEventData(this OneOf<EventBuilder, List<EventBuilder>> oneOf)
