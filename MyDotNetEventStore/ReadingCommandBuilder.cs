@@ -101,7 +101,7 @@ public class ReadingCommandBuilder
         }
 
 
-        if (_position.IsT1 &&
+        if (PositionIsANamedPosition() &&
             ((_position.AsT1 == StreamRevision.End && _direction == Direction.Forward) ||
              (_position.AsT1 == StreamRevision.Start && _direction == Direction.Backward))
            )
@@ -136,6 +136,11 @@ public class ReadingCommandBuilder
         }
 
         return command;
+    }
+
+    private bool PositionIsANamedPosition()
+    {
+        return _position.IsT1;
     }
 
     private bool positionIsNumeric()
