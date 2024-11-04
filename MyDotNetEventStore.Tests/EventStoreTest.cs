@@ -440,7 +440,6 @@ public class EventStoreTest
             }
         }
 
-
         public class BackwardWithoutProvidingAPosition : ReadingAllStream
         {
             [Test]
