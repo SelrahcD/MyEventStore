@@ -10,10 +10,6 @@ using Testcontainers.PostgreSql;
 
 namespace MyDotNetEventStore.Tests;
 
-// TODO:
-// - Test that we are properly releasing connections
-// - Test cancellation token stops enumeration
-
 [SetUpFixture]
 public class PostgresEventStoreSetup
 {

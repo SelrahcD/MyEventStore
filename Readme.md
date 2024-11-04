@@ -114,6 +114,11 @@ The following todo list comes from the article [Requirements for the storage of 
 - [ ] Count events between revisions/positions: `Count(Stream, Revision, Revision) -> Number`.
 
 
+
+### Tests
+- [ ] Test that we are properly releasing connections
+- [ ] Test cancellation token stops enumeration
+- 
 ## To keep in mind
 
 ### EventStore should ask for a connection when needed from the pool
