@@ -116,9 +116,8 @@ The following todo list comes from the article [Requirements for the storage of 
 
 
 ### Tests
-- [ ] Test that we are properly releasing connections
 - [ ] Test cancellation token stops enumeration
-- 
+
 ## To keep in mind
 
 ### Tell that the stream doesn't exists when the stream is read
