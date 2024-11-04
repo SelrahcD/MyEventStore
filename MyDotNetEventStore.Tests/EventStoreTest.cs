@@ -62,9 +62,9 @@ public class EventStoreTest
     }
 
     [TestFixture]
-    public class KnowingIfAStreamExists : EventStoreTest
+    public static class KnowingIfAStreamExists
     {
-        public class WhenTheStreamDoesntExist : KnowingIfAStreamExists
+        public class WhenTheStreamDoesntExist : EventStoreTest
         {
             [Test]
             public async Task returns_StreamExistence_NotFound()
@@ -75,7 +75,7 @@ public class EventStoreTest
             }
         }
 
-        public class WhenTheStreamExists : KnowingIfAStreamExists
+        public class WhenTheStreamExists : EventStoreTest
         {
             [Test]
             public async Task returns_StreamExistence_Exists()
@@ -90,9 +90,9 @@ public class EventStoreTest
     }
 
     [TestFixture]
-    public class ReadingStream : EventStoreTest
+    public static class ReadingStream
     {
-        public class ForwardWithoutProvidingAPosition : ReadingStream
+        public class ForwardWithoutProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -138,7 +138,8 @@ public class EventStoreTest
             }
         }
 
-        public class ForwardProvidingAPosition : ReadingStream
+        [TestFixture]
+        public class ForwardProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -217,7 +218,8 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardWithoutProvidingAPosition : ReadingStream
+        [TestFixture]
+        public class BackwardWithoutProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -266,7 +268,8 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardProvidingAPosition : ReadingStream
+        [TestFixture]
+        public class BackwardProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -352,9 +355,10 @@ public class EventStoreTest
     }
 
     [TestFixture]
-    public class ReadingAllStream : EventStoreTest
+    public static class ReadingAllStream
     {
-        public class ForwardWithoutProvidingAPosition : ReadingAllStream
+        [TestFixture]
+        public class ForwardWithoutProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task returns_all_events_appended_to_all_streams_in_order(
@@ -374,7 +378,8 @@ public class EventStoreTest
             }
         }
 
-        public class ForwardProvidingAPosition : ReadingAllStream
+        [TestFixture]
+        public class ForwardProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task
@@ -440,7 +445,7 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardWithoutProvidingAPosition : ReadingAllStream
+        public class BackwardWithoutProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task returns_all_events_appended_to_all_streams_in_reverse_order(
@@ -461,7 +466,7 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardProvidingAPosition : ReadingStream
+        public class BackwardProvidingAPosition : EventStoreTest
         {
             [Test]
             public async Task
@@ -535,9 +540,10 @@ public class EventStoreTest
     }
 
     [TestFixture]
-    public class AppendingEvents : EventStoreTest
+    public static class AppendingEvents
     {
-        public class PerformsConcurrencyChecks : AppendingEvents
+        [TestFixture]
+        public class PerformsConcurrencyChecks : EventStoreTest
         {
             [TestFixture]
             public class WithStreamStateNoStream : PerformsConcurrencyChecks
@@ -702,7 +708,7 @@ public class EventStoreTest
         }
 
         [TestFixture]
-        public class MaintainsStreamRevision : AppendingEvents
+        public class MaintainsStreamRevision : EventStoreTest
         {
             [Test]
             public async Task Adds_first_event_in_stream_at_revision_1()
@@ -786,6 +792,7 @@ public class EventStoreTest
                 Assert.That(appendResult, Is.EqualTo(new AppendResult(40, 20)));
             }
         }
+
     }
 
 
