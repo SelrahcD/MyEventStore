@@ -67,24 +67,24 @@ public class ReadingCommandBuilder
         }
 
         // _revision is a long
-        if (_basedOnRevision && positionIsNumeric() && _direction == Direction.Forward)
+        if (_basedOnRevision && PositionIsNumeric() && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
 
         // _revision is a long
-        if (_basedOnRevision && positionIsNumeric() && _direction == Direction.Backward)
+        if (_basedOnRevision && PositionIsNumeric() && _direction == Direction.Backward)
         {
             cmdText += " AND revision <= @lastRevision";
         }
 
 
-        if (!_basedOnRevision && positionIsNumeric() && _direction == Direction.Forward)
+        if (!_basedOnRevision && PositionIsNumeric() && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
         }
 
-        if (!_basedOnRevision && positionIsNumeric() && _direction == Direction.Backward)
+        if (!_basedOnRevision && PositionIsNumeric() && _direction == Direction.Backward)
         {
             cmdText += " AND position < @lastPosition";
         }
@@ -117,12 +117,12 @@ public class ReadingCommandBuilder
 
         var command = new NpgsqlCommand(cmdText, npgsqlConnection);
 
-        if (!_basedOnRevision && positionIsNumeric())
+        if (!_basedOnRevision && PositionIsNumeric())
         {
             command.Parameters.AddWithValue("@lastPosition", _position.Value);
         }
 
-        if (_basedOnRevision && positionIsNumeric())
+        if (_basedOnRevision && PositionIsNumeric())
         {
             // Todo: fail if we are not fetching a stream
             command.Parameters.AddWithValue("@lastRevision", _position.Value);
@@ -143,7 +143,7 @@ public class ReadingCommandBuilder
         return _position.IsT1;
     }
 
-    private bool positionIsNumeric()
+    private bool PositionIsNumeric()
     {
         return _position.IsT0;
     }
