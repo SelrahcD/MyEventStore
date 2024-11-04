@@ -102,8 +102,8 @@ public class ReadingCommandBuilder
 
 
         if (PositionIsANamedPosition() &&
-            ((_position.AsT1 == StreamRevision.End && _direction == Direction.Forward) ||
-             (_position.AsT1 == StreamRevision.Start && _direction == Direction.Backward))
+            ((RequestedPositionIs(StreamRevision.End) && _direction == Direction.Forward) ||
+             (RequestedPositionIs(StreamRevision.Start) && _direction == Direction.Backward))
            )
         {
             cmdText += " LIMIT 0";
@@ -136,6 +136,11 @@ public class ReadingCommandBuilder
         }
 
         return command;
+    }
+
+    private bool RequestedPositionIs(StreamRevision streamRevision)
+    {
+        return _position.AsT1 == streamRevision;
     }
 
     private bool PositionIsANamedPosition()
