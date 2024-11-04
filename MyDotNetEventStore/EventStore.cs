@@ -89,7 +89,6 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
-        AppendResult ret;
         using var activity = Tracing.ActivitySource.StartActivity("AppendAsync");
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
@@ -180,9 +179,7 @@ public class EventStore
             { "StreamState", streamState.ToString() }
         });
 
-        ret = new AppendResult(position, revision);
-
-        return ret;
+        return new AppendResult(position, revision);
     }
 
 
