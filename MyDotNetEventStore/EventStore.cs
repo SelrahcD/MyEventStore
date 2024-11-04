@@ -202,6 +202,8 @@ public class EventStore
 
     public async Task<long> HeadPosition()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("HeadPosition", ActivityKind.Client);
+
         var positionCommand = new NpgsqlCommand("SELECT position FROM events ORDER BY position DESC LIMIT 1;",
             _npgsqlConnection);
 
