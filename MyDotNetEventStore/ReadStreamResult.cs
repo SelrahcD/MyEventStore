@@ -52,7 +52,6 @@ public class ReadStreamResult : IAsyncEnumerable<ResolvedEvent>
 
             commandActivity?.Stop();
 
-            // Todo: Add test when batch size === count of fetched events
             if (eventCount < readingCommandBuilder.BatchSize())
             {
                 break;
