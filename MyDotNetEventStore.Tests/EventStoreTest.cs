@@ -788,6 +788,24 @@ public class EventStoreTest
         }
     }
 
+
+    [TestFixture]
+    public class ReadingHeadPosition : EventStoreTest
+    {
+
+        [Test]
+        public async Task returns_the_current_position_across_all_streams()
+        {
+            var events = A.ListOfNEvents(100);
+
+            await events.AppendTo(_eventStore);
+
+            var actualHeadPosition = _eventStore.HeadPosition();
+
+            Assert.That(actualHeadPosition, Is.EqualTo(100));
+        }
+    }
+
     private static OneOf<EventBuilder, EventBuilders> BuildEvents(OneOrMultipleEvents countEvents)
     {
         if (countEvents == OneOrMultipleEvents.One)

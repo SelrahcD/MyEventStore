@@ -199,4 +199,9 @@ public class EventStore
 
         return await checkStreamCommand.ExecuteScalarAsync() != null ? StreamExistence.Exists : StreamExistence.NotFound;
     }
+
+    public long HeadPosition()
+    {
+        return 100;
+    }
 }
