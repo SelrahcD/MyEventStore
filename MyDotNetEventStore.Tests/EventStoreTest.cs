@@ -182,7 +182,7 @@ public class EventStoreTest
             {
                 var events = NEvents(eventCount, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -229,7 +229,7 @@ public class EventStoreTest
             {
                 var events = NEvents(5, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", 6);
 
@@ -263,7 +263,7 @@ public class EventStoreTest
             {
                 var events = NEvents(115, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult =
                     _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.Start);
@@ -279,7 +279,7 @@ public class EventStoreTest
             {
                 var events = NEvents(5, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id", StreamRevision.End);
 
@@ -307,7 +307,7 @@ public class EventStoreTest
             {
                 var events = NEvents(eventCount, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id");
 
@@ -357,7 +357,7 @@ public class EventStoreTest
             {
                 var events = NEvents(5, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", 10);
 
@@ -375,8 +375,8 @@ public class EventStoreTest
                 var eventsBeforeRequestedRevision = NEvents(115, (e) => e.InStream("stream-id"));
                 var eventAfterRequestedRevision = NEvents(20, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision.ToEventData());
-                await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision.ToEventData());
+                await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision);
+                await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", 115);
 
@@ -394,7 +394,7 @@ public class EventStoreTest
             {
                 var events = NEvents(115, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", StreamRevision.End);
 
@@ -411,7 +411,7 @@ public class EventStoreTest
             {
                 var events= NEvents(115, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult =
                     _eventStore.ReadStreamAsync(Direction.Backward, "stream-id", StreamRevision.Start);
@@ -502,7 +502,7 @@ public class EventStoreTest
             {
                 var events = NEvents(115, (e) => e.InStream("stream-id"));
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult = _eventStore.ReadAllAsync(Direction.Forward, StreamRevision.End);
 
@@ -595,7 +595,7 @@ public class EventStoreTest
 
                 await events.AppendTo(_eventStore);
 
-                await _eventStore.AppendAsync("stream-id", events.ToEventData());
+                await _eventStore.AppendAsync("stream-id", events);
 
                 var readStreamResult =
                     _eventStore.ReadAllAsync(Direction.Backward, StreamRevision.Start);
@@ -726,7 +726,7 @@ public class EventStoreTest
                     var pastEvents = NEvents(alreadyAppendedEventCount);
                     var triedRevision = 4;
 
-                    await _eventStore.AppendAsync("stream-id", pastEvents.ToEventData(), StreamState.NoStream());
+                    await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
@@ -745,7 +745,7 @@ public class EventStoreTest
                     var pastEvents = NEvents(alreadyAppendedEventCount);
                     var triedRevision = 2;
 
-                    await _eventStore.AppendAsync("stream-id", pastEvents.ToEventData(), StreamState.NoStream());
+                    await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
@@ -763,7 +763,7 @@ public class EventStoreTest
                 {
                     var pastEvents = NEvents(alreadyAppendedEventCount);
 
-                    await _eventStore.AppendAsync("stream-id", pastEvents.ToEventData(), StreamState.NoStream());
+                    await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
@@ -780,8 +780,7 @@ public class EventStoreTest
             [Test]
             public async Task Adds_first_event_in_stream_at_revision_1()
             {
-                var appendedEvent = AnEvent().ToEventData();
-                await _eventStore.AppendAsync("stream-id", appendedEvent);
+                await _eventStore.AppendAsync("stream-id", AnEvent());
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -795,8 +794,7 @@ public class EventStoreTest
                 Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_at_once(
                     [Random(0, 1000, 5)] int eventCount)
             {
-                var appendedEvent = NEvents(eventCount).ToEventData();
-                await _eventStore.AppendAsync("stream-id", appendedEvent);
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount));
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -810,13 +808,13 @@ public class EventStoreTest
                 Event_revision_is_the_position_of_the_event_in_the_stream()
             {
                 var event1 = AnEvent();
-                await _eventStore.AppendAsync("stream-id", event1.ToEventData());
-                await _eventStore.AppendAsync("another-stream-id", AnEvent().ToEventData());
+                await _eventStore.AppendAsync("stream-id", event1);
+                await _eventStore.AppendAsync("another-stream-id", AnEvent());
                 var event2 = AnEvent();
-                await _eventStore.AppendAsync("stream-id", event2.ToEventData());
-                await _eventStore.AppendAsync("yet-another-stream-id", AnEvent().ToEventData());
+                await _eventStore.AppendAsync("stream-id", event2);
+                await _eventStore.AppendAsync("yet-another-stream-id", AnEvent());
                 var event3 = AnEvent();
-                await _eventStore.AppendAsync("stream-id", event3.ToEventData());
+                await _eventStore.AppendAsync("stream-id", event3);
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -836,9 +834,9 @@ public class EventStoreTest
                     [Random(0, 100, 1)] int eventCount3
                 )
             {
-                await _eventStore.AppendAsync("stream-id", NEvents(eventCount1).ToEventData());
-                await _eventStore.AppendAsync("stream-id", NEvents(eventCount2).ToEventData());
-                await _eventStore.AppendAsync("stream-id", NEvents(eventCount3).ToEventData());
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount1));
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount2));
+                await _eventStore.AppendAsync("stream-id", NEvents(eventCount3));
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -850,11 +848,11 @@ public class EventStoreTest
             [Test]
             public async Task Returns_a_AppendResult_with_Position_and_Revision()
             {
-                await _eventStore.AppendAsync("stream-1", NEvents(10).ToEventData());
+                await _eventStore.AppendAsync("stream-1", NEvents(10));
 
-                await _eventStore.AppendAsync("stream-2", NEvents(10).ToEventData());
+                await _eventStore.AppendAsync("stream-2", NEvents(10));
 
-                await _eventStore.AppendAsync("stream-3", NEvents(10).ToEventData());
+                await _eventStore.AppendAsync("stream-3", NEvents(10));
 
                 var appendResult = await _eventStore.AppendAsync("stream-2", NEvents(10).ToEventData());
 
