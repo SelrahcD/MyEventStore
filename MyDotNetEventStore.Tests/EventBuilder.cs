@@ -126,7 +126,7 @@ public class EventBuilders
 
 public static class EventBuilderExtensions
 {
-    public static object ToEventData(this OneOf<EventBuilder, List<EventBuilder>> oneOf)
+    public static object ToEventData(this OneOf<EventBuilder, EventBuilders> oneOf)
     {
         return oneOf.Match<OneOf<EventData, List<EventData>>>(
             e => e.ToEventData(),

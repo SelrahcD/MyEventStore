@@ -858,20 +858,12 @@ public class EventStoreTest
         }
     }
 
-    private static OneOf<EventBuilder, List<EventBuilder>> BuildEvents(OneOrMultipleEvents countEvents)
+    private static OneOf<EventBuilder, EventBuilders> BuildEvents(OneOrMultipleEvents countEvents)
     {
         if (countEvents == OneOrMultipleEvents.One)
             return An.Event();
 
-        return MultipleEvents();
-    }
-
-    private static List<EventBuilder> MultipleEvents()
-    {
-        var evt1 = An.Event();
-        var evt2 = An.Event();
-        var evt3 = An.Event();
-        return [evt1, evt2, evt3];
+        return A.ListOfNEvents(3);
     }
 
     public enum OneOrMultipleEvents
@@ -879,7 +871,6 @@ public class EventStoreTest
         One,
         Multiple
     }
-
 
     private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> asyncEnumerable)
     {
