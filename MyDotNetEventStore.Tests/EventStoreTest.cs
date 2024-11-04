@@ -794,6 +794,14 @@ public class EventStoreTest
     {
 
         [Test]
+        public async Task returns_0_as_the_current_position_when_the_event_store_is_empty()
+        {
+            var actualHeadPosition = await _eventStore.HeadPosition();
+
+            Assert.That(actualHeadPosition, Is.EqualTo(0));
+        }
+
+        [Test]
         public async Task returns_the_current_position_across_all_streams(
             [Random(0, 1000, 1)] int eventCount)
         {

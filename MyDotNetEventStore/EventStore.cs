@@ -212,6 +212,6 @@ public class EventStore
             return reader.GetInt64(0);
         }
 
-        return 896874534;
+        return 0;
     }
 }
