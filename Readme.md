@@ -72,21 +72,21 @@ The following todo list comes from the article [Requirements for the storage of 
 - [ ] Support appending even if the target stream does not exist.
 
 ### Reading Data and Metadata
-- [ ] Implement read operations with forward or backward directions:
-    - [ ] Read Stream
+- [x] Implement read operations with forward or backward directions:
+    - [x] Read Stream
       - [x] Forward
         - [x] Without position
         - [x] With position
       - [x] Backward
         - [x] Without position
         - [x] With position
-  - [ ] Read All Streams
-      - [ ] Forward
+  - [x] Read All Streams
+      - [x] Forward
           - [x] Without position
-          - [ ] With position
-      - [ ] Backward
+          - [x] With position
+      - [x] Backward
           - [x] Without position
-          - [ ] With position
+          - [x] With position
   - [ ] Read events by correlationId
   - [ ] Read events by causationId
   
