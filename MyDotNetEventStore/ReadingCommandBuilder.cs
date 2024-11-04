@@ -100,7 +100,6 @@ public class ReadingCommandBuilder
             cmdText += " DESC";
         }
 
-
         if (PositionIsANamedPosition() &&
             ((RequestedPositionIs(StreamRevision.End) && _direction == Direction.Forward) ||
              (RequestedPositionIs(StreamRevision.Start) && _direction == Direction.Backward))
