@@ -132,23 +132,4 @@ public static class EventBuilderExtensions
             e => e.ToEventData(),
             e => e.ToEventData()).Value;
     }
-
-    public static List<EventData> ToEventData(this List<EventBuilder> eventBuilders)
-    {
-        return eventBuilders.Select(builder => builder.ToEventData()).ToList();
-    }
-
-    public static List<ResolvedEvent> ToResolvedEvents(this List<EventBuilder> eventBuilders)
-    {
-        return eventBuilders.Select(builder => builder.ToResolvedEvent()).ToList();
-    }
-
-    public static async Task AppendTo(this List<EventBuilder> eventBuilders, EventStore eventStore)
-    {
-        foreach (var eventBuilder in eventBuilders)
-        {
-            await eventStore.AppendAsync(eventBuilder.StreamId(), eventBuilder.ToEventData());
-        }
-    }
-
 }
