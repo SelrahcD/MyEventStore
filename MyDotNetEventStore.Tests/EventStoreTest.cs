@@ -73,14 +73,6 @@ public class PostgresEventStoreSetup
     }
 }
 
-public class An
-{
-    public static EventBuilder Event()
-    {
-        return new EventBuilder();
-    }
-}
-
 public static class A
 {
     public static EventBuilders ListOfNEvents(int eventCount)
