@@ -62,30 +62,24 @@ public class EventStoreTest
     }
 
     [TestFixture]
-    public static class KnowingIfAStreamExists
+    public class KnowingIfAStreamExists : EventStoreTest
     {
-        public class WhenTheStreamDoesntExist : EventStoreTest
+        [Test]
+        public async Task returns_StreamExistence_NotFound_when_the_stream_doesnt_exist()
         {
-            [Test]
-            public async Task returns_StreamExistence_NotFound()
-            {
-                var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
+            var streamExist = await _eventStore.StreamExist("a-stream-that-doesnt-exists");
 
-                Assert.That(streamExist, Is.EqualTo(StreamExistence.NotFound));
-            }
+            Assert.That(streamExist, Is.EqualTo(StreamExistence.NotFound));
         }
 
-        public class WhenTheStreamExists : EventStoreTest
+        [Test]
+        public async Task returns_StreamExistence_Exists_when_the_stream_exists()
         {
-            [Test]
-            public async Task returns_StreamExistence_Exists()
-            {
-                await _eventStore.AppendAsync("a-stream", An.Event());
+            await _eventStore.AppendAsync("a-stream", An.Event());
 
-                var streamExist = await _eventStore.StreamExist("a-stream");
+            var streamExist = await _eventStore.StreamExist("a-stream");
 
-                Assert.That(streamExist, Is.EqualTo(StreamExistence.Exists));
-            }
+            Assert.That(streamExist, Is.EqualTo(StreamExistence.Exists));
         }
     }
 
