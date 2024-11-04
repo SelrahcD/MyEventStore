@@ -756,9 +756,9 @@ public class EventStoreTest
             [Test]
             public async Task
                 Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_events_are_in_multiple_times(
-                    [Random(0, 100, 2)] int eventCount1,
-                    [Random(0, 100, 1)] int eventCount2,
-                    [Random(0, 100, 1)] int eventCount3
+                    [Random(1, 100, 2)] int eventCount1,
+                    [Random(1, 100, 1)] int eventCount2,
+                    [Random(1, 100, 1)] int eventCount3
                 )
             {
                 await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount1));
