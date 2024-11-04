@@ -200,8 +200,18 @@ public class EventStore
         return await checkStreamCommand.ExecuteScalarAsync() != null ? StreamExistence.Exists : StreamExistence.NotFound;
     }
 
-    public long HeadPosition()
+    public async Task<long> HeadPosition()
     {
-        return 100;
+        var positionCommand = new NpgsqlCommand("SELECT position FROM events ORDER BY position DESC LIMIT 1;",
+            _npgsqlConnection);
+
+        await using var reader = await positionCommand.ExecuteReaderAsync();
+
+        if (await reader.ReadAsync())
+        {
+            return reader.GetInt64(0);
+        }
+
+        return 896874534;
     }
 }

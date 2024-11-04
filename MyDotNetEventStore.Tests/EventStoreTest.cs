@@ -794,15 +794,16 @@ public class EventStoreTest
     {
 
         [Test]
-        public async Task returns_the_current_position_across_all_streams()
+        public async Task returns_the_current_position_across_all_streams(
+            [Random(0, 1000, 1)] int eventCount)
         {
-            var events = A.ListOfNEvents(100);
+            var events = A.ListOfNEvents(eventCount);
 
             await events.AppendTo(_eventStore);
 
-            var actualHeadPosition = _eventStore.HeadPosition();
+            var actualHeadPosition = await _eventStore.HeadPosition();
 
-            Assert.That(actualHeadPosition, Is.EqualTo(100));
+            Assert.That(actualHeadPosition, Is.EqualTo(eventCount));
         }
     }
 
