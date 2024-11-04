@@ -91,11 +91,6 @@ public class EventBuilders
         _builders = builders;
     }
 
-    public List<EventBuilder> ToList()
-    {
-        return _builders;
-    }
-
     public List<EventData> ToEventData()
     {
         return _builders.Select(builder => builder.ToEventData()).ToList();
