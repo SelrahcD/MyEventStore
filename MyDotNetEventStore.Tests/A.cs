@@ -4,17 +4,17 @@ public static class A
 {
     public static EventBuilders ListOfNEvents(int eventCount)
     {
-        return ListOfNEvents(eventCount, (e) => e);
+        return ListOfNEvents(eventCount, e => e);
     }
 
     public static EventBuilders ListOfNEvents(int eventCount,
-        A.EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
+        EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
         return ListOfNEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
     }
 
     public static EventBuilders ListOfNEvents(int eventCount,
-        A.EventBuilderConfigurator eventBuilderConfiguratorConfigurator, Dictionary<string, int> revisionTracker)
+        EventBuilderConfigurator eventBuilderConfiguratorConfigurator, Dictionary<string, int> revisionTracker)
     {
         var eventBuilders = new List<EventBuilder>();
         for (var i = 0; i < eventCount; i++)
