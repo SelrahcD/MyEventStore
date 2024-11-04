@@ -124,7 +124,6 @@ public class ReadingCommandBuilder
 
         if (_basedOnRevision && PositionIsNumeric())
         {
-            // Todo: fail if we are not fetching a stream
             command.Parameters.AddWithValue("@lastRevision", _position.Value);
         }
 
