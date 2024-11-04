@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Npgsql;
+using NUnit.Framework.Interfaces;
 using OneOf;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -98,19 +99,19 @@ public class EventStoreTest
 
         switch (outcome)
         {
-            case NUnit.Framework.Interfaces.TestStatus.Passed:
+            case TestStatus.Passed:
                 _activity?.SetStatus(ActivityStatusCode.Ok, "Test passed successfully.");
                 break;
 
-            case NUnit.Framework.Interfaces.TestStatus.Failed:
+            case TestStatus.Failed:
                 _activity?.SetStatus(ActivityStatusCode.Error, "Test failed.");
                 break;
 
-            case NUnit.Framework.Interfaces.TestStatus.Skipped:
+            case TestStatus.Skipped:
                 _activity?.SetStatus(ActivityStatusCode.Unset, "Test was skipped.");
                 break;
 
-            case NUnit.Framework.Interfaces.TestStatus.Inconclusive:
+            case TestStatus.Inconclusive:
                 _activity?.SetStatus(ActivityStatusCode.Unset, "Test result is inconclusive.");
                 break;
 
@@ -132,7 +133,7 @@ public class EventStoreTest
     [TestFixture]
     public class KnowingIfAStreamExists : EventStoreTest
     {
-        public class WhenTheStreamDoesntExist : EventStoreTest.KnowingIfAStreamExists
+        public class WhenTheStreamDoesntExist : KnowingIfAStreamExists
         {
             [Test]
             public async Task returns_StreamExistence_NotFound()
@@ -143,7 +144,7 @@ public class EventStoreTest
             }
         }
 
-        public class WhenTheStreamExists : EventStoreTest.KnowingIfAStreamExists
+        public class WhenTheStreamExists : KnowingIfAStreamExists
         {
             [Test]
             public async Task returns_StreamExistence_Exists()
@@ -160,7 +161,7 @@ public class EventStoreTest
     [TestFixture]
     public class ReadingStream : EventStoreTest
     {
-        public class ForwardWithoutProvidingAPosition : EventStoreTest.ReadingStream
+        public class ForwardWithoutProvidingAPosition : ReadingStream
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -176,7 +177,7 @@ public class EventStoreTest
             public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
-                var events = A.ListOfNEvents(eventCount, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(eventCount, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -206,7 +207,7 @@ public class EventStoreTest
             }
         }
 
-        public class ForwardProvidingAPosition : EventStoreTest.ReadingStream
+        public class ForwardProvidingAPosition : ReadingStream
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -223,7 +224,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
             {
-                var events = A.ListOfNEvents(5, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(5, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -240,8 +241,8 @@ public class EventStoreTest
             {
                 var revisions = EventBuilder.RevisionTracker();
 
-                var eventsBeforeRequestedRevision = A.ListOfNEvents(5, (e) => e.InStream("stream-id"), revisions);
-                var eventAfterRequestedRevision = A.ListOfNEvents(115, (e) => e.InStream("stream-id"), revisions);
+                var eventsBeforeRequestedRevision = A.ListOfNEvents(5, e => e.InStream("stream-id"), revisions);
+                var eventAfterRequestedRevision = A.ListOfNEvents(115, e => e.InStream("stream-id"), revisions);
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision);
                 await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision);
@@ -257,7 +258,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(115, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -273,7 +274,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = A.ListOfNEvents(5, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(5, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -285,7 +286,7 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardWithoutProvidingAPosition : EventStoreTest.ReadingStream
+        public class BackwardWithoutProvidingAPosition : ReadingStream
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -301,7 +302,7 @@ public class EventStoreTest
             public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_reverse_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
-                var events = A.ListOfNEvents(eventCount, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(eventCount, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -334,7 +335,7 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardProvidingAPosition : EventStoreTest.ReadingStream
+        public class BackwardProvidingAPosition : ReadingStream
         {
             [Test]
             public async Task returns_a_ReadStreamResult_without_any_events_when_the_stream_does_not_exist()
@@ -351,7 +352,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
             {
-                var events = A.ListOfNEvents(5, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(5, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -368,8 +369,8 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
             {
-                var eventsBeforeRequestedRevision = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
-                var eventAfterRequestedRevision = A.ListOfNEvents(20, (e) => e.InStream("stream-id"));
+                var eventsBeforeRequestedRevision = A.ListOfNEvents(115, e => e.InStream("stream-id"));
+                var eventAfterRequestedRevision = A.ListOfNEvents(20, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision);
                 await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision);
@@ -388,7 +389,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(115, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -405,7 +406,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events= A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
+                var events= A.ListOfNEvents(115, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -422,7 +423,7 @@ public class EventStoreTest
     [TestFixture]
     public class ReadingAllStream : EventStoreTest
     {
-        public class ForwardWithoutProvidingAPosition : EventStoreTest.ReadingAllStream
+        public class ForwardWithoutProvidingAPosition : ReadingAllStream
         {
             [Test]
             public async Task returns_all_events_appended_to_all_streams_in_order(
@@ -442,7 +443,7 @@ public class EventStoreTest
             }
         }
 
-        public class ForwardProvidingAPosition : EventStoreTest.ReadingAllStream
+        public class ForwardProvidingAPosition : ReadingAllStream
         {
             [Test]
             public async Task
@@ -496,7 +497,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(115, e => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -509,7 +510,7 @@ public class EventStoreTest
         }
 
 
-        public class BackwardWithoutProvidingAPosition : EventStoreTest.ReadingAllStream
+        public class BackwardWithoutProvidingAPosition : ReadingAllStream
         {
             [Test]
             public async Task returns_all_events_appended_to_all_streams_in_reverse_order(
@@ -530,7 +531,7 @@ public class EventStoreTest
             }
         }
 
-        public class BackwardProvidingAPosition : EventStoreTest.ReadingStream
+        public class BackwardProvidingAPosition : ReadingStream
         {
             [Test]
             public async Task
@@ -606,7 +607,7 @@ public class EventStoreTest
     [TestFixture]
     public class AppendingEvents : EventStoreTest
     {
-        public class PerformsConcurrencyChecks : EventStoreTest.AppendingEvents
+        public class PerformsConcurrencyChecks : AppendingEvents
         {
             [TestFixture]
             public class WithStreamStateNoStream : PerformsConcurrencyChecks
@@ -615,7 +616,7 @@ public class EventStoreTest
                 public async Task Doesnt_allow_to_write_to_an_existing_stream(
                     [Values] OneOrMultipleEvents oneOrMultipleEvents)
                 {
-                    var events = EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData();
+                    var events = BuildEvents(oneOrMultipleEvents).ToEventData();
 
                     await _eventStore.AppendAsync("stream-id", (dynamic)events);
 
@@ -632,7 +633,7 @@ public class EventStoreTest
                     Assert.DoesNotThrowAsync(async () =>
                     {
                         await _eventStore.AppendAsync("a-non-existing-id",
-                            (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(), StreamState.NoStream());
+                            (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(), StreamState.NoStream());
                     });
 
                     return Task.CompletedTask;
@@ -647,7 +648,7 @@ public class EventStoreTest
                 {
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("a-non-existing-id",
-                            (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(), StreamState.StreamExists()));
+                            (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(), StreamState.StreamExists()));
 
                     Assert.That(exception.Message, Is.EqualTo("Stream 'a-non-existing-id' doesn't exists."));
                     return Task.CompletedTask;
@@ -657,11 +658,11 @@ public class EventStoreTest
                 public async Task Allows_to_write_to_an_existing_stream(
                     [Values] OneOrMultipleEvents oneOrMultipleEvents)
                 {
-                    await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData());
+                    await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData());
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(),
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
                             StreamState.StreamExists());
                     });
                 }
@@ -673,11 +674,11 @@ public class EventStoreTest
                 public async Task Allow_to_write_to_an_existing_stream(
                     [Values] OneOrMultipleEvents oneOrMultipleEvents)
                 {
-                    await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData());
+                    await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData());
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(),
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
                             StreamState.Any());
                     });
                 }
@@ -689,7 +690,7 @@ public class EventStoreTest
                     Assert.DoesNotThrowAsync(async () =>
                     {
                         await _eventStore.AppendAsync("a-non-existing-id",
-                            (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(), StreamState.Any());
+                            (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(), StreamState.Any());
                     });
 
                     return Task.CompletedTask;
@@ -703,7 +704,7 @@ public class EventStoreTest
                 public Task Doesnt_allow_to_write_to_non_existing_stream(
                     [Values] OneOrMultipleEvents oneOrMultipleEvents)
                 {
-                    var events = EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData();
+                    var events = BuildEvents(oneOrMultipleEvents).ToEventData();
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
                         await _eventStore.AppendAsync("a-non-existing-stream-id", (dynamic)events,
@@ -725,7 +726,7 @@ public class EventStoreTest
                     await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(),
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
                             StreamState.AtRevision(triedRevision)));
 
                     Assert.That(exception.Message,
@@ -744,7 +745,7 @@ public class EventStoreTest
                     await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
 
                     var exception = Assert.ThrowsAsync<ConcurrencyException>(async () =>
-                        await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(),
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
                             StreamState.AtRevision(triedRevision)));
 
                     Assert.That(exception.Message,
@@ -763,7 +764,7 @@ public class EventStoreTest
 
                     Assert.DoesNotThrowAsync(async () =>
                     {
-                        await _eventStore.AppendAsync("stream-id", (dynamic)EventStoreTest.BuildEvents(oneOrMultipleEvents).ToEventData(),
+                        await _eventStore.AppendAsync("stream-id", (dynamic)BuildEvents(oneOrMultipleEvents).ToEventData(),
                             StreamState.AtRevision(alreadyAppendedEventCount));
                     });
                 }
@@ -771,7 +772,7 @@ public class EventStoreTest
         }
 
         [TestFixture]
-        public class MaintainsStreamRevision : EventStoreTest.AppendingEvents
+        public class MaintainsStreamRevision : AppendingEvents
         {
             [Test]
             public async Task Adds_first_event_in_stream_at_revision_1()
@@ -780,7 +781,7 @@ public class EventStoreTest
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
-                var resolvedEventList = await EventStoreTest.ToListAsync(readStreamResult);
+                var resolvedEventList = await ToListAsync(readStreamResult);
 
                 Assert.That(resolvedEventList.First().Revision, Is.EqualTo(1));
             }
