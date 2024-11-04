@@ -121,11 +121,6 @@ The following todo list comes from the article [Requirements for the storage of 
 - 
 ## To keep in mind
 
-### EventStore should ask for a connection when needed from the pool
-
-But how can we deal with transaction ?
--> Could use a UnitOfWork that gets a Connection and pass it to the event store ?
-
 ### Tell that the stream doesn't exists when the stream is read
 
 I've temporarily removed that information from the `ReadStreamResult` to get a simpler design for now.
