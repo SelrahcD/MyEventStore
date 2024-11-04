@@ -1,3 +1,5 @@
+using static MyDotNetEventStore.Tests.EventBuilder;
+
 namespace MyDotNetEventStore.Tests;
 
 public static class A
@@ -10,7 +12,7 @@ public static class A
     public static EventBuilders ListOfNEvents(int eventCount,
         EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
     {
-        return ListOfNEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
+        return ListOfNEvents(eventCount, eventBuilderConfiguratorConfigurator, RevisionTracker());
     }
 
     public static EventBuilders ListOfNEvents(int eventCount,
@@ -25,6 +27,4 @@ public static class A
 
         return new EventBuilders(eventBuilders);
     }
-
-    public delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
 }

@@ -78,6 +78,8 @@ public class EventBuilder
 
     public static implicit operator EventData(EventBuilder b) => b.ToEventData();
     public static implicit operator ResolvedEvent(EventBuilder b) => b.ToResolvedEvent();
+
+    public delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
 }
 
 public class EventBuilders
