@@ -76,7 +76,6 @@ public class ReadingCommandBuilder
             cmdText += " AND revision <= @lastRevision";
         }
 
-
         if (!_basedOnRevision && RequestedPositionIsNumeric() && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
