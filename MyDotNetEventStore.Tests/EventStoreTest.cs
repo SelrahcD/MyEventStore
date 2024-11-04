@@ -81,6 +81,35 @@ public class An
     }
 }
 
+public static class A
+{
+    public static EventBuilders ListOfNEvents(int eventCount)
+    {
+        return ListOfNEvents(eventCount, (e) => e);
+    }
+
+    public static EventBuilders ListOfNEvents(int eventCount,
+        A.EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
+    {
+        return ListOfNEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
+    }
+
+    public static EventBuilders ListOfNEvents(int eventCount,
+        A.EventBuilderConfigurator eventBuilderConfiguratorConfigurator, Dictionary<string, int> revisionTracker)
+    {
+        var eventBuilders = new List<EventBuilder>();
+        for (var i = 0; i < eventCount; i++)
+        {
+            eventBuilders.Add(eventBuilderConfiguratorConfigurator(new EventBuilder())
+                .WithCoherentRevisionsAndPositions(revisionTracker));
+        }
+
+        return new EventBuilders(eventBuilders);
+    }
+
+    public delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
+}
+
 public class EventStoreTest
 {
     private static readonly ActivitySource ActivitySource = new("EventStoreTest");
@@ -184,7 +213,7 @@ public class EventStoreTest
             public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
-                var events = EventStoreTest.NEvents(eventCount, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(eventCount, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -231,7 +260,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
             {
-                var events = EventStoreTest.NEvents(5, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(5, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -248,8 +277,8 @@ public class EventStoreTest
             {
                 var revisions = EventBuilder.RevisionTracker();
 
-                var eventsBeforeRequestedRevision = EventStoreTest.NEvents(5, (e) => e.InStream("stream-id"), revisions);
-                var eventAfterRequestedRevision = EventStoreTest.NEvents(115, (e) => e.InStream("stream-id"), revisions);
+                var eventsBeforeRequestedRevision = A.ListOfNEvents(5, (e) => e.InStream("stream-id"), revisions);
+                var eventAfterRequestedRevision = A.ListOfNEvents(115, (e) => e.InStream("stream-id"), revisions);
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision);
                 await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision);
@@ -265,7 +294,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events = EventStoreTest.NEvents(115, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -281,7 +310,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = EventStoreTest.NEvents(5, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(5, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -309,7 +338,7 @@ public class EventStoreTest
             public async Task returns_a_ReadStreamResult_with_all_events_appended_to_the_stream_in_reverse_order(
                 [Values(1, 50, 100, 270, 336)] int eventCount)
             {
-                var events = EventStoreTest.NEvents(eventCount, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(eventCount, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -359,7 +388,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
             {
-                var events = EventStoreTest.NEvents(5, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(5, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -376,8 +405,8 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
             {
-                var eventsBeforeRequestedRevision = EventStoreTest.NEvents(115, (e) => e.InStream("stream-id"));
-                var eventAfterRequestedRevision = EventStoreTest.NEvents(20, (e) => e.InStream("stream-id"));
+                var eventsBeforeRequestedRevision = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
+                var eventAfterRequestedRevision = A.ListOfNEvents(20, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", eventsBeforeRequestedRevision);
                 await _eventStore.AppendAsync("stream-id", eventAfterRequestedRevision);
@@ -396,7 +425,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = EventStoreTest.NEvents(115, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -413,7 +442,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events= EventStoreTest.NEvents(115, (e) => e.InStream("stream-id"));
+                var events= A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -437,7 +466,7 @@ public class EventStoreTest
                 [Values(1, 3, 50, 100, 187, 200, 270, 600)]
                 int eventCount)
             {
-                var events = EventStoreTest.NEvents(eventCount);
+                var events = A.ListOfNEvents(eventCount);
 
                 await events.AppendTo(_eventStore);
 
@@ -456,7 +485,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events = EventStoreTest.NEvents(10);
+                var events = A.ListOfNEvents(10);
 
                 await events.AppendTo(_eventStore);
 
@@ -472,7 +501,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_stream_has_less_events_than_the_requested_revision()
             {
-                var events = EventStoreTest.NEvents(10);
+                var events = A.ListOfNEvents(10);
 
                 await events.AppendTo(_eventStore);
 
@@ -487,7 +516,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_with_a_revision_greater_or_equal_to_the_requested_revision()
             {
-                var events = EventStoreTest.NEvents(215);
+                var events = A.ListOfNEvents(215);
 
                 await events.AppendTo(_eventStore);
 
@@ -504,7 +533,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_any_events_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = EventStoreTest.NEvents(115, (e) => e.InStream("stream-id"));
+                var events = A.ListOfNEvents(115, (e) => e.InStream("stream-id"));
 
                 await _eventStore.AppendAsync("stream-id", events);
 
@@ -524,7 +553,7 @@ public class EventStoreTest
                 [Values(1, 3, 50, 100, 187, 200, 270, 600)]
                 int eventCount)
             {
-                var events = EventStoreTest.NEvents(eventCount);
+                var events = A.ListOfNEvents(eventCount);
 
                 await events.AppendTo(_eventStore);
 
@@ -544,7 +573,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_greater_than_the_current_revision()
             {
-                var events = EventStoreTest.NEvents(10);
+                var events = A.ListOfNEvents(10);
 
                 await events.AppendTo(_eventStore);
 
@@ -561,7 +590,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_with_a_revision_lesser_or_equal_to_the_requested_revision_in_reverse_order()
             {
-                var events = EventStoreTest.NEvents(215);
+                var events = A.ListOfNEvents(215);
 
                 await events.AppendTo(_eventStore);
 
@@ -578,7 +607,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_with_all_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_End()
             {
-                var events = EventStoreTest.NEvents(115);
+                var events = A.ListOfNEvents(115);
 
                 await events.AppendTo(_eventStore);
 
@@ -595,7 +624,7 @@ public class EventStoreTest
             public async Task
                 returns_a_ReadStreamResult_without_events_in_reverse_order_when_the_requested_revision_is_StreamRevision_Start()
             {
-                var events = EventStoreTest.NEvents(115);
+                var events = A.ListOfNEvents(115);
 
                 await events.AppendTo(_eventStore);
 
@@ -727,7 +756,7 @@ public class EventStoreTest
                     )
                 {
                     var alreadyAppendedEventCount = 3;
-                    var pastEvents = EventStoreTest.NEvents(alreadyAppendedEventCount);
+                    var pastEvents = A.ListOfNEvents(alreadyAppendedEventCount);
                     var triedRevision = 4;
 
                     await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
@@ -746,7 +775,7 @@ public class EventStoreTest
                     [Values] OneOrMultipleEvents oneOrMultipleEvents)
                 {
                     var alreadyAppendedEventCount = 3;
-                    var pastEvents = EventStoreTest.NEvents(alreadyAppendedEventCount);
+                    var pastEvents = A.ListOfNEvents(alreadyAppendedEventCount);
                     var triedRevision = 2;
 
                     await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
@@ -765,7 +794,7 @@ public class EventStoreTest
                     [Values] OneOrMultipleEvents oneOrMultipleEvents,
                     [Random(0, 1000, 1)] int alreadyAppendedEventCount)
                 {
-                    var pastEvents = EventStoreTest.NEvents(alreadyAppendedEventCount);
+                    var pastEvents = A.ListOfNEvents(alreadyAppendedEventCount);
 
                     await _eventStore.AppendAsync("stream-id", pastEvents, StreamState.NoStream());
 
@@ -798,7 +827,7 @@ public class EventStoreTest
                 Last_event_in_stream_revision_is_equal_to_the_count_of_inserted_events_when_all_events_are_added_at_once(
                     [Random(0, 1000, 5)] int eventCount)
             {
-                await _eventStore.AppendAsync("stream-id", EventStoreTest.NEvents(eventCount));
+                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -838,9 +867,9 @@ public class EventStoreTest
                     [Random(0, 100, 1)] int eventCount3
                 )
             {
-                await _eventStore.AppendAsync("stream-id", EventStoreTest.NEvents(eventCount1));
-                await _eventStore.AppendAsync("stream-id", EventStoreTest.NEvents(eventCount2));
-                await _eventStore.AppendAsync("stream-id", EventStoreTest.NEvents(eventCount3));
+                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount1));
+                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount2));
+                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount3));
 
                 var readStreamResult = _eventStore.ReadStreamAsync(Direction.Forward, "stream-id");
 
@@ -852,13 +881,13 @@ public class EventStoreTest
             [Test]
             public async Task Returns_a_AppendResult_with_Position_and_Revision()
             {
-                await _eventStore.AppendAsync("stream-1", EventStoreTest.NEvents(10));
+                await _eventStore.AppendAsync("stream-1", A.ListOfNEvents(10));
 
-                await _eventStore.AppendAsync("stream-2", EventStoreTest.NEvents(10));
+                await _eventStore.AppendAsync("stream-2", A.ListOfNEvents(10));
 
-                await _eventStore.AppendAsync("stream-3", EventStoreTest.NEvents(10));
+                await _eventStore.AppendAsync("stream-3", A.ListOfNEvents(10));
 
-                var appendResult = await _eventStore.AppendAsync("stream-2", EventStoreTest.NEvents(10).ToEventData());
+                var appendResult = await _eventStore.AppendAsync("stream-2", A.ListOfNEvents(10).ToEventData());
 
                 Assert.That(appendResult, Is.EqualTo(new AppendResult(40, 20)));
             }
@@ -879,32 +908,6 @@ public class EventStoreTest
         var evt2 = An.Event();
         var evt3 = An.Event();
         return [evt1, evt2, evt3];
-    }
-
-    delegate EventBuilder EventBuilderConfigurator(EventBuilder eventBuilder);
-
-    private static EventBuilders NEvents(int eventCount)
-    {
-        return NEvents(eventCount, (e) => e);
-    }
-
-    private static EventBuilders NEvents(int eventCount,
-        EventBuilderConfigurator eventBuilderConfiguratorConfigurator)
-    {
-        return NEvents(eventCount, eventBuilderConfiguratorConfigurator, EventBuilder.RevisionTracker());
-    }
-
-    private static EventBuilders NEvents(int eventCount,
-        EventBuilderConfigurator eventBuilderConfiguratorConfigurator, Dictionary<string, int> revisionTracker)
-    {
-        var eventBuilders = new List<EventBuilder>();
-        for (var i = 0; i < eventCount; i++)
-        {
-            eventBuilders.Add(eventBuilderConfiguratorConfigurator(new EventBuilder())
-                .WithCoherentRevisionsAndPositions(revisionTracker));
-        }
-
-        return new EventBuilders(eventBuilders);
     }
 
     public enum OneOrMultipleEvents
