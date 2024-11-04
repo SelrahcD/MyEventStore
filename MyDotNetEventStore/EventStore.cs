@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Text;
+using MyDotNetEventStore.Tests;
 using Npgsql;
 using NpgsqlTypes;
 using OneOf;
@@ -89,6 +90,9 @@ public class EventStore
 
     public async Task<AppendResult> AppendAsync(string streamId, List<EventData> events, StreamState streamState)
     {
+        if (events.Count == 0)
+            throw CannotAppendAnEmptyListException.ToStream(streamId);
+
         using var activity = Tracing.ActivitySource.StartActivity("AppendAsync");
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);

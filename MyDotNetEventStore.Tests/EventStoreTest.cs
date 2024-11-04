@@ -534,8 +534,17 @@ public class EventStoreTest
     }
 
     [TestFixture]
-    public static class AppendingEvents
+    public class AppendingEvents : EventStoreTest
     {
+        [Test]
+        public void necessitates_at_least_one_event_to_be_appended()
+        {
+            var exception = Assert.ThrowsAsync<CannotAppendAnEmptyListException>(async () =>
+                await _eventStore.AppendAsync("stream-id", []));
+
+            Assert.That(exception.Message, Is.EqualTo("Cannot append an empty list to stream 'stream-id'."));
+        }
+
         [TestFixture]
         public class PerformsConcurrencyChecks : EventStoreTest
         {
