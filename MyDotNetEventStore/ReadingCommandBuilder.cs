@@ -66,25 +66,23 @@ public class ReadingCommandBuilder
             cmdText += " AND stream_id = @streamId";
         }
 
-        // _revision is a long
-        if (_basedOnRevision && PositionIsNumeric() && _direction == Direction.Forward)
+        if (_basedOnRevision && RequestedPositionIsNumeric() && _direction == Direction.Forward)
         {
             cmdText += " AND revision >= @lastRevision";
         }
 
-        // _revision is a long
-        if (_basedOnRevision && PositionIsNumeric() && _direction == Direction.Backward)
+        if (_basedOnRevision && RequestedPositionIsNumeric() && _direction == Direction.Backward)
         {
             cmdText += " AND revision <= @lastRevision";
         }
 
 
-        if (!_basedOnRevision && PositionIsNumeric() && _direction == Direction.Forward)
+        if (!_basedOnRevision && RequestedPositionIsNumeric() && _direction == Direction.Forward)
         {
             cmdText += " AND position > @lastPosition";
         }
 
-        if (!_basedOnRevision && PositionIsNumeric() && _direction == Direction.Backward)
+        if (!_basedOnRevision && RequestedPositionIsNumeric() && _direction == Direction.Backward)
         {
             cmdText += " AND position < @lastPosition";
         }
@@ -116,12 +114,12 @@ public class ReadingCommandBuilder
 
         var command = new NpgsqlCommand(cmdText, npgsqlConnection);
 
-        if (!_basedOnRevision && PositionIsNumeric())
+        if (!_basedOnRevision && RequestedPositionIsNumeric())
         {
             command.Parameters.AddWithValue("@lastPosition", _position.Value);
         }
 
-        if (_basedOnRevision && PositionIsNumeric())
+        if (_basedOnRevision && RequestedPositionIsNumeric())
         {
             command.Parameters.AddWithValue("@lastRevision", _position.Value);
         }
@@ -146,7 +144,7 @@ public class ReadingCommandBuilder
         return _position.IsT1;
     }
 
-    private bool PositionIsNumeric()
+    private bool RequestedPositionIsNumeric()
     {
         return _position.IsT0;
     }
