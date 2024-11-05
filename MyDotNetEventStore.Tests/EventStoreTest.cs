@@ -825,6 +825,18 @@ public class EventStoreTest
         }
     }
 
+    [TestFixture]
+    public class ReadingStreamHead : EventStoreTest
+    {
+        [Test]
+        public void returns_0_as_stream_revision_when_the_stream_doesnt_exists()
+        {
+            var streamHead = _eventStore.StreamHead("stream-that-does-not-exist");
+
+            Assert.That(streamHead, Is.EqualTo(0));
+        }
+    }
+
     private static OneOf<EventBuilder, EventBuilders> BuildEvents(OneOrMultipleEvents countEvents)
     {
         if (countEvents == OneOrMultipleEvents.One)

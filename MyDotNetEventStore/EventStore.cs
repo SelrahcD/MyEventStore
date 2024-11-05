@@ -214,4 +214,9 @@ public class EventStore
 
         return 0;
     }
+
+    public long StreamHead(string streamId)
+    {
+        return 0;
+    }
 }
