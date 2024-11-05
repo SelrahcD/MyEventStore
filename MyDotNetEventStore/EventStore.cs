@@ -217,9 +217,9 @@ public class EventStore
 
     public async Task<long> StreamHead(string streamId)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("HeadPosition", ActivityKind.Client);
+        using var activity = Tracing.ActivitySource.StartActivity("StreamHead", ActivityKind.Client);
 
-        var positionCommand = new NpgsqlCommand(
+        var revisionCommand = new NpgsqlCommand(
             "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
             _npgsqlConnection)
         {
@@ -229,7 +229,7 @@ public class EventStore
             }
         };
 
-        await using var reader = await positionCommand.ExecuteReaderAsync();
+        await using var reader = await revisionCommand.ExecuteReaderAsync();
 
         if (await reader.ReadAsync())
         {
