@@ -219,23 +219,45 @@ public class EventStore
     {
         using var activity = Tracing.ActivitySource.StartActivity("StreamHead", ActivityKind.Client);
 
-        var revisionCommand = new NpgsqlCommand(
-            "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
-            _npgsqlConnection)
+        long revision = 0;
+        await using (var revisionCommand = new NpgsqlCommand(
+                         "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
+                         _npgsqlConnection)
+                     {
+                         Parameters =
+                         {
+                             new("@stream_id", streamId),
+                         }
+                     })
         {
-            Parameters =
+            await using var revisionReader = await revisionCommand.ExecuteReaderAsync();
+
+            if (await revisionReader.ReadAsync())
             {
-                new("@stream_id", streamId),
+                revision = revisionReader.GetInt64(0);
             }
-        };
-
-        await using var reader = await revisionCommand.ExecuteReaderAsync();
-
-        if (await reader.ReadAsync())
-        {
-            return new StreamHead(reader.GetInt64(0));
         }
 
-        return new StreamHead(0);
+        long position = 0;
+
+        await using (var positionCommand = new NpgsqlCommand(
+                         "SELECT position FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
+                         _npgsqlConnection)
+                     {
+                         Parameters =
+                         {
+                             new("@stream_id", streamId),
+                         }
+                     })
+        {
+            await using var positionReader = await positionCommand.ExecuteReaderAsync();
+
+            if (await positionReader.ReadAsync())
+            {
+                position = positionReader.GetInt64(0);
+            }
+        }
+
+        return new StreamHead(revision, position);
     }
 }

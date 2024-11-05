@@ -825,6 +825,7 @@ public class EventStoreTest
         }
     }
 
+    [TestFixture]
     public static class ReadingStreamHead
     {
         [TestFixture]
@@ -851,6 +852,18 @@ public class EventStoreTest
                 var streamHead = await _eventStore.StreamHead("stream-id");
 
                 Assert.That(streamHead.Revision, Is.EqualTo(eventCount));
+            }
+
+            [Test]
+            public async Task returns_the_stream_last_position(
+                [Random(1, 100, 1)] int eventCount)
+            {
+                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
+                await _eventStore.AppendAsync("another-stream-id", A.ListOfNEvents(1));
+
+                var streamHead = await _eventStore.StreamHead("stream-id");
+
+                Assert.That(streamHead.Position, Is.EqualTo(eventCount));
             }
         }
 

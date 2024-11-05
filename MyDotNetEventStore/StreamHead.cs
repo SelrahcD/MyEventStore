@@ -1,3 +1,5 @@
 namespace MyDotNetEventStore;
 
-public record StreamHead(long Revision);
+public record StreamHead(long Revision, long Position)
+{
+}
