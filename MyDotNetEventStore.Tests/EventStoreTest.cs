@@ -880,7 +880,7 @@ public class EventStoreTest
                 [Random(1, 100, 1)] int eventCount)
             {
                 await _eventStore.AppendAsync("another-stream-id", A.ListOfNEvents(10));
-                var lastAppendResult = await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(10));
+                var lastAppendResult = await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
                 await _eventStore.AppendAsync("another-stream-id", A.ListOfNEvents(1));
 
                 var streamHead = await _eventStore.StreamHead("stream-id");
