@@ -876,6 +876,9 @@ public class EventStoreTest
             private static readonly List<(string, EventBuilders)>[] ExamplesOfHistoryForStreamHead = [
                 [
                     ("stream-id", A.ListOfNEvents(10)),
+                ],
+                [
+                    ("stream-id", A.ListOfNEvents(10)),
                     ("another-stream-id", A.ListOfNEvents(1))
                 ]
             ];
