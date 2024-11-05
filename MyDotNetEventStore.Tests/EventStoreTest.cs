@@ -863,21 +863,22 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_the_stream_last_position(
-                [Random(1, 100, 1)] int eventCount)
+            [TestCaseSource(nameof(ExamplesOfHistoryForStreamHead))]
+            public async Task returns_the_stream_last_position(List<(string, EventBuilders)> history)
             {
-                var history = new List<(string, EventBuilders)>()
-                {
-                    ("stream-id", A.ListOfNEvents(eventCount)),
-                    ("another-stream-id", A.ListOfNEvents(1))
-                };
-
                 await WithHistory(history);
 
                 var streamHead = await _eventStore.StreamHead("stream-id");
 
-                Assert.That(streamHead.Position, Is.EqualTo(eventCount));
+                Assert.That(streamHead.Position, Is.EqualTo(10));
             }
+
+            private static readonly List<(string, EventBuilders)>[] ExamplesOfHistoryForStreamHead = [
+                [
+                    ("stream-id", A.ListOfNEvents(10)),
+                    ("another-stream-id", A.ListOfNEvents(1))
+                ]
+            ];
 
             [Test]
             public async Task stream_head_has_same_information_as_the_last_append_result_to_the_stream(
