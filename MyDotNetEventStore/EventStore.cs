@@ -96,8 +96,7 @@ public class EventStore
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
 
-        if (streamState.Type == StreamStateType.NoStream || streamState.Type == StreamStateType.StreamExists ||
-            streamState.Type == StreamStateType.AtRevision)
+        if (streamState.Type is StreamStateType.NoStream or StreamStateType.StreamExists or StreamStateType.AtRevision)
         {
             var streamExists = await StreamExist(streamId);
 
