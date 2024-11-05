@@ -838,6 +838,14 @@ public class EventStoreTest
 
                 Assert.That(streamHead.Revision, Is.EqualTo(0));
             }
+
+            [Test]
+            public async Task returns_0_as_stream_position_when_the_stream_doesnt_exists()
+            {
+                var streamHead = await _eventStore.StreamHead("stream-that-does-not-exist");
+
+                Assert.That(streamHead.Position, Is.EqualTo(0));
+            }
         }
 
         [TestFixture]
