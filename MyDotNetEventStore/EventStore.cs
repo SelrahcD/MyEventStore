@@ -215,7 +215,7 @@ public class EventStore
         return 0;
     }
 
-    public async Task<long> StreamHead(string streamId)
+    public async Task<StreamHead> StreamHead(string streamId)
     {
         using var activity = Tracing.ActivitySource.StartActivity("StreamHead", ActivityKind.Client);
 
@@ -233,9 +233,9 @@ public class EventStore
 
         if (await reader.ReadAsync())
         {
-            return reader.GetInt64(0);
+            return new StreamHead(reader.GetInt64(0));
         }
 
-        return 0;
+        return new StreamHead(0);
     }
 }

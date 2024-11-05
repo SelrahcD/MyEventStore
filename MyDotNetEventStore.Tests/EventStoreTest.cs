@@ -833,7 +833,7 @@ public class EventStoreTest
         {
             var streamHead = await _eventStore.StreamHead("stream-that-does-not-exist");
 
-            Assert.That(streamHead, Is.EqualTo(0));
+            Assert.That(streamHead.Revision, Is.EqualTo(0));
         }
 
         [Test]
@@ -844,7 +844,7 @@ public class EventStoreTest
 
             var streamHead = await _eventStore.StreamHead("stream-id");
 
-            Assert.That(streamHead, Is.EqualTo(eventCount));
+            Assert.That(streamHead.Revision, Is.EqualTo(eventCount));
         }
     }
 
