@@ -108,7 +108,7 @@ The following todo list comes from the article [Requirements for the storage of 
   - [x] with an existing stream
   - [x] with an unknown stream
   - [ ] with a deleted stream
-- [ ] Get the last revision and position: `StreamHead(Stream) -> Result`.
+- [x] Get the last revision and position: `StreamHead(Stream) -> Result`.
 - [x] Get the last known position in the store: `HeadPosition() -> Position`.
 - [ ] Retrieve schemas, categories, IDs, and event types: `Streams(Filter) -> string[]`.
 - [ ] Count events between revisions/positions: `Count(Stream, Revision, Revision) -> Number`.
