@@ -215,8 +215,27 @@ public class EventStore
         return 0;
     }
 
-    public long StreamHead(string streamId)
+    public async Task<long> StreamHead(string streamId)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("HeadPosition", ActivityKind.Client);
+
+        var positionCommand = new NpgsqlCommand(
+            "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
+            _npgsqlConnection)
+        {
+            Parameters =
+            {
+                new("@stream_id", streamId),
+            }
+        };
+
+        await using var reader = await positionCommand.ExecuteReaderAsync();
+
+        if (await reader.ReadAsync())
+        {
+            return reader.GetInt64(0);
+        }
+
         return 0;
     }
 }
