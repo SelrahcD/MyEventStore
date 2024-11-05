@@ -825,27 +825,35 @@ public class EventStoreTest
         }
     }
 
-    [TestFixture]
-    public class ReadingStreamHead : EventStoreTest
+    public static class ReadingStreamHead
     {
-        [Test]
-        public async Task returns_0_as_stream_revision_when_the_stream_doesnt_exists()
+        [TestFixture]
+        public class WhenTheStreamDoesntExist : EventStoreTest
         {
-            var streamHead = await _eventStore.StreamHead("stream-that-does-not-exist");
+            [Test]
+            public async Task returns_0_as_stream_revision_when_the_stream_doesnt_exists()
+            {
+                var streamHead = await _eventStore.StreamHead("stream-that-does-not-exist");
 
-            Assert.That(streamHead.Revision, Is.EqualTo(0));
+                Assert.That(streamHead.Revision, Is.EqualTo(0));
+            }
         }
 
-        [Test]
-        public async Task returns_the_stream_revision_when_the_stream_exists(
-            [Random(1, 100, 1)] int eventCount)
+        [TestFixture]
+        public class WhenTheStreamExists : EventStoreTest
         {
-            await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
+            [Test]
+            public async Task returns_the_stream_revision_when_the_stream_exists(
+                [Random(1, 100, 1)] int eventCount)
+            {
+                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
 
-            var streamHead = await _eventStore.StreamHead("stream-id");
+                var streamHead = await _eventStore.StreamHead("stream-id");
 
-            Assert.That(streamHead.Revision, Is.EqualTo(eventCount));
+                Assert.That(streamHead.Revision, Is.EqualTo(eventCount));
+            }
         }
+
     }
 
     private static OneOf<EventBuilder, EventBuilders> BuildEvents(OneOrMultipleEvents countEvents)
