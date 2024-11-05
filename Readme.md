@@ -116,7 +116,7 @@ The following todo list comes from the article [Requirements for the storage of 
 
 
 ### Tests
-- [ ] Test cancellation token stops enumeration
+- [ ] Test cancellation token stops enumeration. How can I do that ?
 
 ## To keep in mind
 
