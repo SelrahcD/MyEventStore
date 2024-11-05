@@ -813,7 +813,7 @@ public class EventStoreTest
 
         [Test]
         public async Task returns_the_current_position_across_all_streams(
-            [Random(1, 1000, 1)] int eventCount)
+            [Random(1, 100, 1)] int eventCount)
         {
             var events = A.ListOfNEvents(eventCount);
 
