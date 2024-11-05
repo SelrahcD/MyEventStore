@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Text;
 using MyDotNetEventStore.Tests;
 using Npgsql;
