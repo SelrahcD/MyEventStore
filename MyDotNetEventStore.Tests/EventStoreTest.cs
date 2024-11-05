@@ -866,8 +866,13 @@ public class EventStoreTest
             public async Task returns_the_stream_last_position(
                 [Random(1, 100, 1)] int eventCount)
             {
-                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
-                await _eventStore.AppendAsync("another-stream-id", A.ListOfNEvents(1));
+                var history = new List<(string, EventBuilders)>()
+                {
+                    ("stream-id", A.ListOfNEvents(eventCount)),
+                    ("another-stream-id", A.ListOfNEvents(1))
+                };
+
+                await WithHistory(history);
 
                 var streamHead = await _eventStore.StreamHead("stream-id");
 
@@ -915,5 +920,13 @@ public class EventStoreTest
         }
 
         return list;
+    }
+
+    private async Task WithHistory(List<(string, EventBuilders)> history)
+    {
+        foreach (var historyItem in history)
+        {
+            await _eventStore.AppendAsync(historyItem.Item1, historyItem.Item2);
+        }
     }
 }
