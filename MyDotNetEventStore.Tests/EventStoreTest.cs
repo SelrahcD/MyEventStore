@@ -852,15 +852,48 @@ public class EventStoreTest
         public class WhenTheStreamExists : EventStoreTest
         {
             [Test]
+            [TestCaseSource(nameof(ExamplesOfHistoryForStreamHeadRevision))]
             public async Task returns_the_stream_revision(
-                [Random(1, 100, 1)] int eventCount)
+                (List<(string, EventBuilders)> History, long ExpectedRevision) td
+                )
             {
-                await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
+                await WithHistory(td.History);
 
                 var streamHead = await _eventStore.StreamHead("stream-id");
 
-                Assert.That(streamHead.Revision, Is.EqualTo(eventCount));
+                Assert.That(streamHead.Revision, Is.EqualTo(td.ExpectedRevision));
             }
+
+            private static readonly (List<(string, EventBuilders)>, long)[] ExamplesOfHistoryForStreamHeadRevision = [
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(10)),
+                    ],
+                    10
+                ),
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(1)),
+                        ("stream-id", A.ListOfNEvents(1)),
+                        ("stream-id", A.ListOfNEvents(1)),
+                    ],
+                    3
+                ),
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(1)),
+                        ("another-stream-id", A.ListOfNEvents(1)),
+                    ],
+                    1
+                ),
+                (
+                    [
+                        ("another-stream-id", A.ListOfNEvents(1)),
+                        ("stream-id", A.ListOfNEvents(1)),
+                    ],
+                    1
+                ),
+            ];
 
             [Test]
             [TestCaseSource(nameof(ExamplesOfHistoryForStreamHead))]
