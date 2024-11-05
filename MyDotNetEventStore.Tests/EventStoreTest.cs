@@ -873,6 +873,20 @@ public class EventStoreTest
 
                 Assert.That(streamHead.Position, Is.EqualTo(eventCount));
             }
+
+            [Test]
+            public async Task stream_head_has_same_information_as_the_last_append_result_to_the_stream(
+                [Random(1, 100, 1)] int eventCount)
+            {
+                await _eventStore.AppendAsync("another-stream-id", A.ListOfNEvents(10));
+                var lastAppendResult = await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(10));
+                await _eventStore.AppendAsync("another-stream-id", A.ListOfNEvents(1));
+
+                var streamHead = await _eventStore.StreamHead("stream-id");
+
+                Assert.That(streamHead.Position, Is.EqualTo(lastAppendResult.Position));
+                Assert.That(streamHead.Revision, Is.EqualTo(lastAppendResult.Revision));
+            }
         }
 
     }

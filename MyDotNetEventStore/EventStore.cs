@@ -236,7 +236,7 @@ public class EventStore
         if (await revisionReader.ReadAsync())
         {
             revision = revisionReader.GetInt64(0);
-            position = revisionReader.GetInt64(0);
+            position = revisionReader.GetInt64(1);
         }
 
 
