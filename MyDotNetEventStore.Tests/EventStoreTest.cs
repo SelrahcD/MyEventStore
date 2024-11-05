@@ -864,7 +864,9 @@ public class EventStoreTest
 
             [Test]
             [TestCaseSource(nameof(ExamplesOfHistoryForStreamHead))]
-            public async Task returns_the_stream_last_position((List<(string, EventBuilders)> History, long ExpectedPosition) td)
+            public async Task returns_the_stream_last_position(
+                (List<(string, EventBuilders)> History, long ExpectedPosition) td
+            )
             {
                 await WithHistory(td.History);
 
