@@ -832,7 +832,7 @@ public class EventStoreTest
         public class WhenTheStreamDoesntExist : EventStoreTest
         {
             [Test]
-            public async Task returns_0_as_stream_revision_when_the_stream_doesnt_exists()
+            public async Task returns_0_as_stream_revision()
             {
                 var streamHead = await _eventStore.StreamHead("stream-that-does-not-exist");
 
@@ -840,7 +840,7 @@ public class EventStoreTest
             }
 
             [Test]
-            public async Task returns_0_as_stream_position_when_the_stream_doesnt_exists()
+            public async Task returns_0_as_stream_position()
             {
                 var streamHead = await _eventStore.StreamHead("stream-that-does-not-exist");
 
@@ -852,7 +852,7 @@ public class EventStoreTest
         public class WhenTheStreamExists : EventStoreTest
         {
             [Test]
-            public async Task returns_the_stream_revision_when_the_stream_exists(
+            public async Task returns_the_stream_revision(
                 [Random(1, 100, 1)] int eventCount)
             {
                 await _eventStore.AppendAsync("stream-id", A.ListOfNEvents(eventCount));
