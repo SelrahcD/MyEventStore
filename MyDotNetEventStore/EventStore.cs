@@ -221,24 +221,24 @@ public class EventStore
 
         long revision = 0;
         long position = 0;
-        await using (var revisionCommand = new NpgsqlCommand(
-                         "SELECT revision, position FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
-                         _npgsqlConnection)
-                     {
-                         Parameters =
-                         {
-                             new("@stream_id", streamId),
-                         }
-                     })
+        await using var revisionCommand = new NpgsqlCommand(
+            "SELECT revision, position FROM events WHERE stream_id = @stream_id ORDER BY position DESC LIMIT 1;",
+            _npgsqlConnection)
         {
-            await using var revisionReader = await revisionCommand.ExecuteReaderAsync();
-
-            if (await revisionReader.ReadAsync())
+            Parameters =
             {
-                revision = revisionReader.GetInt64(0);
-                position = revisionReader.GetInt64(0);
+                new("@stream_id", streamId),
             }
+        };
+
+        await using var revisionReader = await revisionCommand.ExecuteReaderAsync();
+
+        if (await revisionReader.ReadAsync())
+        {
+            revision = revisionReader.GetInt64(0);
+            position = revisionReader.GetInt64(0);
         }
+
 
         return new StreamHead(revision, position);
     }
