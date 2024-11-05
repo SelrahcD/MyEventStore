@@ -875,20 +875,6 @@ public class EventStoreTest
                 Assert.That(streamHead.Position, Is.EqualTo(td.ExpectedPosition));
             }
 
-            private static readonly (List<(string, EventBuilders)>, long)[] ExamplesOfHistoryForStreamHead = [
-                (
-                    [
-                        ("stream-id", A.ListOfNEvents(10)),
-                    ],
-                    10),
-                (
-                    [
-                        ("stream-id", A.ListOfNEvents(10)),
-                        ("another-stream-id", A.ListOfNEvents(1))
-                    ],
-                    10)
-            ];
-
             [Test]
             public async Task stream_head_has_same_information_as_the_last_append_result_to_the_stream(
                 [Random(1, 100, 1)] int eventCount)
@@ -902,6 +888,37 @@ public class EventStoreTest
                 Assert.That(streamHead.Position, Is.EqualTo(lastAppendResult.Position));
                 Assert.That(streamHead.Revision, Is.EqualTo(lastAppendResult.Revision));
             }
+
+            private static readonly (List<(string, EventBuilders)>, long)[] ExamplesOfHistoryForStreamHead = [
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(10)),
+                    ],
+                    10
+                ),
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(10)),
+                        ("another-stream-id", A.ListOfNEvents(1))
+                    ],
+                    10
+                ),
+                (
+                    [
+                        ("another-stream-id", A.ListOfNEvents(1)),
+                        ("stream-id", A.ListOfNEvents(10)),
+                    ],
+                    11
+                ),
+                (
+                    [
+                        ("another-stream-id", A.ListOfNEvents(1)),
+                        ("stream-id", A.ListOfNEvents(10)),
+                        ("another-stream-id", A.ListOfNEvents(1)),
+                    ],
+                    11
+                ),
+            ];
         }
 
     }
