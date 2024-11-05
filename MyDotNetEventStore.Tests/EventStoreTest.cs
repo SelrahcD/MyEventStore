@@ -864,23 +864,27 @@ public class EventStoreTest
 
             [Test]
             [TestCaseSource(nameof(ExamplesOfHistoryForStreamHead))]
-            public async Task returns_the_stream_last_position(List<(string, EventBuilders)> history)
+            public async Task returns_the_stream_last_position((List<(string, EventBuilders)> History, long ExpectedPosition) td)
             {
-                await WithHistory(history);
+                await WithHistory(td.History);
 
                 var streamHead = await _eventStore.StreamHead("stream-id");
 
-                Assert.That(streamHead.Position, Is.EqualTo(10));
+                Assert.That(streamHead.Position, Is.EqualTo(td.ExpectedPosition));
             }
 
-            private static readonly List<(string, EventBuilders)>[] ExamplesOfHistoryForStreamHead = [
-                [
-                    ("stream-id", A.ListOfNEvents(10)),
-                ],
-                [
-                    ("stream-id", A.ListOfNEvents(10)),
-                    ("another-stream-id", A.ListOfNEvents(1))
-                ]
+            private static readonly (List<(string, EventBuilders)>, long)[] ExamplesOfHistoryForStreamHead = [
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(10)),
+                    ],
+                    10),
+                (
+                    [
+                        ("stream-id", A.ListOfNEvents(10)),
+                        ("another-stream-id", A.ListOfNEvents(1))
+                    ],
+                    10)
             ];
 
             [Test]
