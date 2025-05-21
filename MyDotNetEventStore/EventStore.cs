@@ -96,6 +96,8 @@ public class EventStore
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
 
+        // Concurrency issue: By the time we insert the events, the stream might exist.
+        // If we want to have NoStream, we need to force the first revision to be 0. This will cause the unique constraint to fail.
         if (streamState.Type is StreamStateType.NoStream or StreamStateType.StreamExists or StreamStateType.AtRevision)
         {
             var streamExists = await StreamExist(streamId);
@@ -111,6 +113,23 @@ public class EventStore
             }
         }
 
+        // Concurrency issue: By the time we insert the events, the revision might be different.
+        // Is this really an issue?
+        // If we want to have Any, we are ok to insert the events anyway.
+        // If we want NoStream, this is an issue. We need to force the first revision to be 0.
+        //      If the stream already exists, it will fail thanks to the unique constraint.
+        // If we want StreamExists, this is like any.
+        //      We are ok to insert the events by now, as we already checked that the stream exists.
+        //      We could probably avoid the previous call and check the value of lastRevision to be not null.
+        // If we want to be AtRevision, this is where it becomes trickier.
+        //      To be sure that we do not insert events if some events were written after our check,
+        //      we can use the specified revision instead of lastRevision for creating the increment.
+        //      But because we are checking that lastRevision is equal to the specified revision,
+        //      we can use lastRevision. This is the most important case.
+        //      In the (strange) case we would be waiting to be at a specified revision to allow the insertion,
+        //      until we reach that version the check would fail. At the moment we reach that version,
+        //      we pass, and try inserting the events. If some events were written between the check and our insertion attempt
+        //      we will get a concurrency exception because of the unique constraint.
         var lastRevisionCommand =
             new NpgsqlCommand(
                 "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY revision DESC LIMIT 1;",
