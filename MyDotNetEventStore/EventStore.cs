@@ -186,6 +186,7 @@ public class EventStore
         var command = new NpgsqlCommand(commandText.ToString(), _npgsqlConnection);
         command.Parameters.AddRange(parameters.ToArray());
 
+        // We should add a Try/Catch here to catch the unique constraint exception and transform it into a concurrency exception.
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
