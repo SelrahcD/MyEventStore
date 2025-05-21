@@ -3,6 +3,7 @@
 This is a .Net Event Store built on top PostgresSQL for learning purpose.
 
 **⚠️ This is a toy project, do not use in production.**
+** ⚠️⚠️ Seriously, do not use in production. We might have some concurrency issues.**
 
 It takes inspiration from various sources such as:
 - [EventStoreDb](https://www.eventstore.com/)
