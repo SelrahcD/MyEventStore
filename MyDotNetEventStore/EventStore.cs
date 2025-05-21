@@ -98,6 +98,7 @@ public class EventStore
 
         // Concurrency issue: By the time we insert the events, the stream might exist.
         // If we want to have NoStream, we need to force the first revision to be 0. This will cause the unique constraint to fail.
+        // This is now fixed.
         if (streamState.Type is StreamStateType.NoStream or StreamStateType.StreamExists or StreamStateType.AtRevision)
         {
             var streamExists = await StreamExist(streamId);
@@ -118,6 +119,7 @@ public class EventStore
         // If we want to have Any, we are ok to insert the events anyway.
         // If we want NoStream, this is an issue. We need to force the first revision to be 0.
         //      If the stream already exists, it will fail thanks to the unique constraint.
+        //      This is now fixed.
         // If we want StreamExists, this is like any.
         //      We are ok to insert the events by now, as we already checked that the stream exists.
         //      We could probably avoid the previous call and check the value of lastRevision to be not null.
