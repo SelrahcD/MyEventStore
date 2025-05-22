@@ -96,20 +96,6 @@ public class EventStore
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
 
-        // Concurrency issue: By the time we insert the events, the stream might exist.
-        // If we want to have NoStream, we need to force the first revision to be 0. This will cause the unique constraint to fail.
-        // This is now fixed.
-        if (streamState.Type is StreamStateType.NoStream or StreamStateType.StreamExists or StreamStateType.AtRevision)
-        {
-            var streamExists = await StreamExist(streamId);
-
-            switch (streamExists == StreamExistence.Exists)
-            {
-                case true when streamState.Type == StreamStateType.NoStream:
-                    throw ConcurrencyException.StreamAlreadyExists(streamId);
-            }
-        }
-
         // Concurrency issue: By the time we insert the events, the revision might be different.
         // Is this really an issue?
         // If we want to have Any, we are ok to insert the events anyway.
@@ -146,6 +132,11 @@ public class EventStore
         }
 
         var lastRevision = (long)(storedRevision ?? 0L);
+
+        if (streamState.Type == StreamStateType.NoStream && lastRevision > 0)
+        {
+            throw ConcurrencyException.StreamAlreadyExists(streamId);
+        }
 
         if (streamState.Type == StreamStateType.AtRevision && lastRevision == 0)
         {
