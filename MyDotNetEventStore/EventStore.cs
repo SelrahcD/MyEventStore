@@ -141,7 +141,11 @@ public class EventStore
         }
 
         long position = 0;
-        long revision = streamState.Type is StreamStateType.NoStream ? 0L : lastRevision;
+        long revision = streamState.Type switch
+        {
+            StreamStateType.NoStream => 0L,
+            _ => lastRevision
+        };
 
         using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
 
