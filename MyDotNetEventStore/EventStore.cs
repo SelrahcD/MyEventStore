@@ -116,13 +116,13 @@ public class EventStore
         //      we will get a concurrency exception because of the unique constraint.
 
         // Check on revision not being greater than the current stored revision forces us to always make the query
-        var storedRevision = await currentRevisionForStream(streamId);
         long position = 0;
+        var currentlyKnownRevision = (long) (await currentRevisionForStream(streamId) ?? 0L);
         long revision = streamState.Type switch
         {
             StreamStateType.NoStream => 0L,
-            StreamStateType.Any => (long) (storedRevision ?? 0L),
-            StreamStateType.StreamExists => (long) (storedRevision ?? 0L),
+            StreamStateType.Any => currentlyKnownRevision,
+            StreamStateType.StreamExists => currentlyKnownRevision,
             StreamStateType.AtRevision => streamState.ExpectedRevision,
         };
 
@@ -131,7 +131,7 @@ public class EventStore
             throw ConcurrencyException.StreamDoesntExist(streamId);
         }
 
-        var lastRevision = (long)(storedRevision ?? 0L);
+        var lastRevision = currentlyKnownRevision;
 
         if (streamState.Type == StreamStateType.NoStream && lastRevision > 0)
         {
