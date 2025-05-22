@@ -138,7 +138,8 @@ public class EventStore
                 _npgsqlConnection);
         lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
 
-        var lastRevision = (long)(await lastRevisionCommand.ExecuteScalarAsync() ?? 0L);
+        var storedRevision = await lastRevisionCommand.ExecuteScalarAsync();
+        var lastRevision = (long)(storedRevision ?? 0L);
 
         if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
         {
