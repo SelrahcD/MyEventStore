@@ -107,8 +107,6 @@ public class EventStore
             {
                 case true when streamState.Type == StreamStateType.NoStream:
                     throw ConcurrencyException.StreamAlreadyExists(streamId);
-                case false when streamState.Type == StreamStateType.AtRevision:
-                    throw ConcurrencyException.StreamDoesntExist(streamId);
             }
         }
 
@@ -148,6 +146,11 @@ public class EventStore
         }
 
         var lastRevision = (long)(storedRevision ?? 0L);
+
+        if (streamState.Type == StreamStateType.AtRevision && lastRevision == 0)
+        {
+            throw ConcurrencyException.StreamDoesntExist(streamId);
+        }
 
         if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision > lastRevision)
         {
