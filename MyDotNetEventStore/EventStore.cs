@@ -131,21 +131,19 @@ public class EventStore
             throw ConcurrencyException.StreamDoesntExist(streamId);
         }
 
-        var lastRevision = currentlyKnownRevision;
-
-        if (streamState.Type == StreamStateType.NoStream && lastRevision > 0)
+        if (streamState.Type == StreamStateType.NoStream && currentlyKnownRevision > 0)
         {
             throw ConcurrencyException.StreamAlreadyExists(streamId);
         }
 
-        if (streamState.Type == StreamStateType.AtRevision && lastRevision == 0)
+        if (streamState.Type == StreamStateType.AtRevision && currentlyKnownRevision == 0)
         {
             throw ConcurrencyException.StreamDoesntExist(streamId);
         }
 
-        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision > lastRevision)
+        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision > currentlyKnownRevision)
         {
-            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
+            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, currentlyKnownRevision);
         }
 
         using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
@@ -208,7 +206,7 @@ public class EventStore
         }
         catch (PostgresException e) when (e.SqlState == "23505")
         {
-            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
+            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, currentlyKnownRevision);
         }
     }
 
