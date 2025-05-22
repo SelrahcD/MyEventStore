@@ -96,25 +96,6 @@ public class EventStore
         activity?.SetTag("streamId", streamId);
         activity?.SetTag("eventCount", events.Count);
 
-        // Concurrency issue: By the time we insert the events, the revision might be different.
-        // Is this really an issue?
-        // If we want to have Any, we are ok to insert the events anyway.
-        // If we want NoStream, this is an issue. We need to force the first revision to be 0.
-        //      If the stream already exists, it will fail thanks to the unique constraint.
-        //      This is now fixed.
-        // If we want StreamExists, this is like any.
-        //      We are ok to insert the events by now, as we already checked that the stream exists.
-        //      We could probably avoid the previous call and check the value of lastRevision to be not null.
-        // If we want to be AtRevision, this is where it becomes trickier.
-        //      To be sure that we do not insert events if some events were written after our check,
-        //      we can use the specified revision instead of lastRevision for creating the increment.
-        //      But because we are checking that lastRevision is equal to the specified revision,
-        //      we can use lastRevision. This is the most important case.
-        //      In the (strange) case we would be waiting to be at a specified revision to allow the insertion,
-        //      until we reach that version the check would fail. At the moment we reach that version,
-        //      we pass, and try inserting the events. If some events were written between the check and our insertion attempt
-        //      we will get a concurrency exception because of the unique constraint.
-
         // Check on revision not being greater than the current stored revision forces us to always make the query
         var currentlyKnownRevision = (long) (await currentRevisionForStream(streamId) ?? 0L);
         long expectedRevision = streamState.Type switch
