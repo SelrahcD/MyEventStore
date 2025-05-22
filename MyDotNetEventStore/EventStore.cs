@@ -148,7 +148,12 @@ public class EventStore
         var storedRevision = await currentRevisionForStream(streamId);
         var lastRevision = (long)(storedRevision ?? 0L);
 
-        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
+        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision > lastRevision)
+        {
+            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
+        }
+
+        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision < lastRevision)
         {
             throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
         }
