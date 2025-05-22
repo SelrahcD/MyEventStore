@@ -109,8 +109,6 @@ public class EventStore
                     throw ConcurrencyException.StreamAlreadyExists(streamId);
                 case false when streamState.Type == StreamStateType.AtRevision:
                     throw ConcurrencyException.StreamDoesntExist(streamId);
-                case false when streamState.Type == StreamStateType.StreamExists:
-                    throw ConcurrencyException.StreamDoesntExist(streamId);
             }
         }
 
@@ -149,6 +147,11 @@ public class EventStore
             StreamStateType.AtRevision => streamState.ExpectedRevision,
             _ => lastRevision
         };
+
+        if (streamState.Type == StreamStateType.StreamExists && revision == 0)
+        {
+            throw ConcurrencyException.StreamDoesntExist(streamId);
+        }
 
         using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
 
