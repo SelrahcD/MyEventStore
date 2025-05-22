@@ -144,6 +144,9 @@ public class EventStore
         long revision = streamState.Type switch
         {
             StreamStateType.NoStream => 0L,
+            StreamStateType.Any => (long) (await currentRevisionForStream(streamId) ?? 0L),
+            StreamStateType.StreamExists => (long) (await currentRevisionForStream(streamId) ?? 0L),
+            StreamStateType.AtRevision => streamState.ExpectedRevision,
             _ => lastRevision
         };
 
