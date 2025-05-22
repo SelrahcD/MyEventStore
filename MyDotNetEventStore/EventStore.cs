@@ -132,13 +132,7 @@ public class EventStore
         //      until we reach that version the check would fail. At the moment we reach that version,
         //      we pass, and try inserting the events. If some events were written between the check and our insertion attempt
         //      we will get a concurrency exception because of the unique constraint.
-        var lastRevisionCommand =
-            new NpgsqlCommand(
-                "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY revision DESC LIMIT 1;",
-                _npgsqlConnection);
-        lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
-
-        var storedRevision = await lastRevisionCommand.ExecuteScalarAsync();
+        var storedRevision = await currentRevisionForStream(streamId);
         var lastRevision = (long)(storedRevision ?? 0L);
 
         if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
@@ -205,6 +199,18 @@ public class EventStore
         });
 
         return new AppendResult(position, revision);
+    }
+
+    private async Task<object?> currentRevisionForStream(string streamId)
+    {
+        var lastRevisionCommand =
+            new NpgsqlCommand(
+                "SELECT revision FROM events WHERE stream_id = @stream_id ORDER BY revision DESC LIMIT 1;",
+                _npgsqlConnection);
+        lastRevisionCommand.Parameters.AddWithValue("stream_id", streamId);
+
+        var storedRevision = await lastRevisionCommand.ExecuteScalarAsync();
+        return storedRevision;
     }
 
 
