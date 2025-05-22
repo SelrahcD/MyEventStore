@@ -117,7 +117,7 @@ public class EventStore
 
         // Check on revision not being greater than the current stored revision forces us to always make the query
         var currentlyKnownRevision = (long) (await currentRevisionForStream(streamId) ?? 0L);
-        long revision = streamState.Type switch
+        long expectedRevision = streamState.Type switch
         {
             StreamStateType.NoStream => 0L,
             StreamStateType.Any => currentlyKnownRevision,
@@ -125,7 +125,7 @@ public class EventStore
             StreamStateType.AtRevision => streamState.ExpectedRevision,
         };
 
-        if (streamState.Type == StreamStateType.StreamExists && revision == 0)
+        if (streamState.Type == StreamStateType.StreamExists && expectedRevision == 0)
         {
             throw ConcurrencyException.StreamDoesntExist(streamId);
         }
@@ -173,7 +173,7 @@ public class EventStore
 
             // Adding parameters for this event
             parameters.Add(new NpgsqlParameter(paramStreamId, NpgsqlDbType.Varchar) { Value = streamId });
-            parameters.Add(new NpgsqlParameter(paramRevision, NpgsqlDbType.Bigint) { Value = ++revision });
+            parameters.Add(new NpgsqlParameter(paramRevision, NpgsqlDbType.Bigint) { Value = ++expectedRevision });
             parameters.Add(new NpgsqlParameter(paramId, NpgsqlDbType.Uuid) { Value = evt.Id });
             parameters.Add(new NpgsqlParameter(paramEventType, NpgsqlDbType.Varchar) { Value = evt.EventType });
             parameters.Add(new NpgsqlParameter(paramData, NpgsqlDbType.Jsonb) { Value = evt.Data });
