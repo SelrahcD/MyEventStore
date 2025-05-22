@@ -153,11 +153,6 @@ public class EventStore
             throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
         }
 
-        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision < lastRevision)
-        {
-            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
-        }
-
         using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
 
         var commandText =
@@ -198,22 +193,28 @@ public class EventStore
         var command = new NpgsqlCommand(commandText.ToString(), _npgsqlConnection);
         command.Parameters.AddRange(parameters.ToArray());
 
-        // We should add a Try/Catch here to catch the unique constraint exception and transform it into a concurrency exception.
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        try
         {
-            position = reader.GetInt64(0);
-            revision = reader.GetInt64(1);
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                position = reader.GetInt64(0);
+                revision = reader.GetInt64(1);
+            }
+
+            Metrics.AppendedEventCounter.Add(events.Count, new TagList
+            {
+                { "StreamId", streamId },
+                { "StreamState", streamState.ToString() }
+            });
+
+            return new AppendResult(position, revision);
         }
-
-        Metrics.AppendedEventCounter.Add(events.Count, new TagList
+        catch (PostgresException e) when (e.SqlState == "23505")
         {
-            { "StreamId", streamId },
-            { "StreamState", streamState.ToString() }
-        });
-
-        return new AppendResult(position, revision);
+            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
+        }
     }
 
     private async Task<object?> currentRevisionForStream(string streamId)
