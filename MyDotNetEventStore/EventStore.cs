@@ -190,10 +190,12 @@ public class EventStore
         {
             await using var reader = await command.ExecuteReaderAsync();
 
+            long resultPosition = 0;
+            long resultRevision = 0;
             while (await reader.ReadAsync())
             {
-                position = reader.GetInt64(0);
-                revision = reader.GetInt64(1);
+                resultPosition = reader.GetInt64(0);
+                resultRevision = reader.GetInt64(1);
             }
 
             Metrics.AppendedEventCounter.Add(events.Count, new TagList
@@ -202,7 +204,7 @@ public class EventStore
                 { "StreamState", streamState.ToString() }
             });
 
-            return new AppendResult(position, revision);
+            return new AppendResult(resultPosition, resultRevision);
         }
         catch (PostgresException e) when (e.SqlState == "23505")
         {
