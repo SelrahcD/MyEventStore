@@ -131,12 +131,14 @@ public class EventStore
         //      we pass, and try inserting the events. If some events were written between the check and our insertion attempt
         //      we will get a concurrency exception because of the unique constraint.
 
+        // Check on revision not being greater than the current stored revision forces us to always make the query
+        var storedRevision = await currentRevisionForStream(streamId);
         long position = 0;
         long revision = streamState.Type switch
         {
             StreamStateType.NoStream => 0L,
-            StreamStateType.Any => (long) (await currentRevisionForStream(streamId) ?? 0L),
-            StreamStateType.StreamExists => (long) (await currentRevisionForStream(streamId) ?? 0L),
+            StreamStateType.Any => (long) (storedRevision ?? 0L),
+            StreamStateType.StreamExists => (long) (storedRevision ?? 0L),
             StreamStateType.AtRevision => streamState.ExpectedRevision,
         };
 
@@ -145,7 +147,6 @@ public class EventStore
             throw ConcurrencyException.StreamDoesntExist(streamId);
         }
 
-        var storedRevision = await currentRevisionForStream(streamId);
         var lastRevision = (long)(storedRevision ?? 0L);
 
         if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision > lastRevision)
