@@ -130,13 +130,6 @@ public class EventStore
         //      until we reach that version the check would fail. At the moment we reach that version,
         //      we pass, and try inserting the events. If some events were written between the check and our insertion attempt
         //      we will get a concurrency exception because of the unique constraint.
-        var storedRevision = await currentRevisionForStream(streamId);
-        var lastRevision = (long)(storedRevision ?? 0L);
-
-        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
-        {
-            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
-        }
 
         long position = 0;
         long revision = streamState.Type switch
@@ -150,6 +143,14 @@ public class EventStore
         if (streamState.Type == StreamStateType.StreamExists && revision == 0)
         {
             throw ConcurrencyException.StreamDoesntExist(streamId);
+        }
+
+        var storedRevision = await currentRevisionForStream(streamId);
+        var lastRevision = (long)(storedRevision ?? 0L);
+
+        if (streamState.Type == StreamStateType.AtRevision && streamState.ExpectedRevision != lastRevision)
+        {
+            throw ConcurrencyException.StreamIsNotAtExpectedRevision(streamState.ExpectedRevision, lastRevision);
         }
 
         using var cmdActivity = Tracing.ActivitySource.StartActivity("InsertEvents", ActivityKind.Client);
