@@ -145,7 +145,6 @@ public class EventStore
             StreamStateType.Any => (long) (await currentRevisionForStream(streamId) ?? 0L),
             StreamStateType.StreamExists => (long) (await currentRevisionForStream(streamId) ?? 0L),
             StreamStateType.AtRevision => streamState.ExpectedRevision,
-            _ => lastRevision
         };
 
         if (streamState.Type == StreamStateType.StreamExists && revision == 0)
